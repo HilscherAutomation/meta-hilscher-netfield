@@ -1,4 +1,5 @@
 #%PAM-1.0
+auth       requisite    pam_abl.so config=/etc/security/pam_abl.conf
 auth       required     pam_env.so
 auth       include      common-auth
 auth       optional     pam_ssh_add.so

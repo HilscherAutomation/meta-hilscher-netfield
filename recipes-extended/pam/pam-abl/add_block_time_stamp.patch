@@ -1,0 +1,312 @@
+--- a/pam_abl.c	2013-08-29 22:52:11.000000000 +0200
++++ b/pam_abl.c	2021-11-26 13:15:52.678033496 +0100
+@@ -20,6 +20,7 @@
+ #include "pam_abl.h"
+ #include "dbfun.h"
+ #include "rule.h"
++#include "typefun.h"
+ 
+ #include <ctype.h>
+ #include <stdlib.h>
+@@ -318,7 +319,7 @@
+ }
+ 
+ static int update_status(Database *db, const char *subject, const char *service, const char *rule, time_t tm,
+-                 log_context *logContext, BlockState *updatedState, int *stateChanged) {
++                 log_context *logContext, BlockState *updatedState, int *stateChanged, long *block_time) {
+     //assume the state will not change
+     *stateChanged = 0;
+     DbEnvironment *dbEnv = db->m_environment;
+@@ -334,7 +335,7 @@
+         log_db_error(logContext, err, "retrieving information failed.");
+     //only update if we have a subjectState (It is already in the database and no error)
+     if (subjectState) {
+-        *updatedState = rule_test(logContext, rule, subject, service, subjectState, tm);
++        *updatedState = rule_test_ext(logContext, rule, subject, service, subjectState, tm, block_time);
+         //is the state changed
+         if (*updatedState != getState(subjectState)) {
+             //update the BlockState in the subjectState
+@@ -359,7 +360,9 @@
+     return err;
+ }
+ 
+-BlockState check_attempt(const PamAblDbEnv *dbEnv, const abl_args *args, abl_info *info, log_context *logContext) {
++BlockState check_attempt(const PamAblDbEnv *dbEnv, const abl_args *args, abl_info *info, log_context *logContext, long *block_time) {
++    long user_block_time = 0;
++    long host_block_time = 0;
+     if (info)
+         info->blockReason = AUTH_FAILED;
+ 
+@@ -377,7 +380,7 @@
+     if (host && *host && dbEnv->m_hostDb && dbEnv->m_hostDb->m_environment && args->host_rule) {
+         int hostStateChanged = 0;
+         int err = update_status(dbEnv->m_hostDb, host, service, args->host_rule, tm,
+-             logContext, &updatedHostState, &hostStateChanged);
++             logContext, &updatedHostState, &hostStateChanged, &host_block_time);
+         if (!err) {
+             if (hostStateChanged)
+                 runHostCommand(updatedHostState, args, info, logContext);
+@@ -391,7 +394,7 @@
+     if (user && *user && dbEnv->m_userDb && dbEnv->m_userDb->m_environment && args->user_rule) {
+         int userStateChanged = 0;
+         int err = update_status(dbEnv->m_userDb, user, service, args->user_rule, tm,
+-             logContext, &updatedUserState, &userStateChanged);
++             logContext, &updatedUserState, &userStateChanged, &user_block_time);
+         if (!err) {
+             if (userStateChanged)
+                 runUserCommand(updatedUserState, args, info, logContext);
+@@ -401,17 +404,30 @@
+             updatedUserState = CLEAR;
+         }
+     }
++    if (block_time != NULL)
++        *block_time = 0;
+ 
+     //last but not least, update the blockreason
+     info->blockReason = AUTH_FAILED;
+     if (updatedHostState == BLOCKED && updatedUserState == BLOCKED) {
++        if (block_time != NULL) {
++            *block_time = host_block_time;
++            if (user_block_time > host_block_time)
++                *block_time = user_block_time;
++        }
+         info->blockReason = BOTH_BLOCKED;
+         return BLOCKED;
+     }
+-    if (updatedHostState == BLOCKED)
++    if (updatedHostState == BLOCKED) {
++        if (block_time != NULL)
++            *block_time = host_block_time;
+         info->blockReason = HOST_BLOCKED;
+-    if (updatedUserState == BLOCKED)
++    }
++    if (updatedUserState == BLOCKED) {
++        if (block_time != NULL)
++            *block_time = user_block_time;
+         info->blockReason = USER_BLOCKED;
++    }
+     return updatedHostState == BLOCKED || updatedUserState == BLOCKED ? BLOCKED : CLEAR;
+ }
+ 
+--- a/pam_abl.h	2013-08-29 22:52:11.000000000 +0200
++++ b/pam_abl.h	2021-11-26 13:14:40.895035833 +0100
+@@ -77,7 +77,7 @@
+     If something goes wrong while checking, CLEAR is returned
+     and diagnostic messages are written using the given logContext.
+ */
+-BlockState check_attempt(const PamAblDbEnv *dbEnv, const abl_args *args, abl_info *info, log_context *logContext);
++BlockState check_attempt(const PamAblDbEnv *dbEnv, const abl_args *args, abl_info *info, log_context *logContext, time_t *tb);
+ 
+ /*
+     Record an authentication attempt.
+--- a/pam_functions.c	2013-08-29 22:52:11.000000000 +0200
++++ b/pam_functions.c	2021-11-26 13:14:40.895035833 +0100
+@@ -24,6 +24,8 @@
+ #include <string.h>
+ #include <security/pam_modules.h>
+ #include <security/pam_appl.h>
++#include <time.h>
++#include <security/pam_ext.h>
+ 
+ #define MODULE_NAME "pam-abl"
+ 
+@@ -34,6 +36,13 @@
+     log_context  *logContext;
+ } abl_context;
+ 
++static void get_reltime(long t, long *days, long *hours, long *minutes, long *seconds) {
++    *days    = t / (24 * 60 * 60);
++    *hours   = t / (60 * 60) % 24;
++    *minutes = t / 60 % 60;
++    *seconds = t % 60;
++}
++
+ static void cleanup(pam_handle_t *pamh, void *data, int err) {
+     (void)(pamh);
+     //if we are replacing our data pointer, ignore the cleanup.
+@@ -68,11 +77,12 @@
+     const char *pUser = NULL;
+     const char *pService = NULL;
+     const char *pHost = NULL;
++    long block_time = 0;
+ 
+     err = pam_get_data(pamh, MODULE_NAME, (const void **)(&context));
+     if (err != PAM_SUCCESS) {
+         context = NULL;
+-	}
++    }
+ 
+     if (!context) {
+         context = malloc(sizeof(abl_context));
+@@ -137,9 +147,17 @@
+     //this will also delete the old info that was already stored
+     setInfo(context->attemptInfo, pUser, pHost, pService);
+ 
+-    BlockState bState = check_attempt(context->dbEnv, context->args, context->attemptInfo, context->logContext);
++    BlockState bState = check_attempt(context->dbEnv, context->args, context->attemptInfo, context->logContext, &block_time);
+     if (bState == BLOCKED) {
+-        log_info(context->logContext, "Blocking access from %s to service %s, user %s", context->attemptInfo->host, context->attemptInfo->service, context->attemptInfo->user);
++        long days = 0;
++        long hours = 0;
++        long minutes = 0;
++        long seconds = 0;
++        time_t now = time(NULL);
++
++        get_reltime( block_time, &days, &hours, &minutes, &seconds);
++        log_info(context->logContext, "Blocking access from %s to service %s, user %s (for d:%ld,h:%ld,m:%ld,s:%ld)", context->attemptInfo->host, context->attemptInfo->service, context->attemptInfo->user, days, hours, minutes, seconds);
++        pam_prompt( pamh, PAM_ERROR_MSG, NULL, "Blocking access from %s to service %s, user %s (for d:%ld,h:%ld,m:%ld,s:%ld)", context->attemptInfo->host, context->attemptInfo->service, context->attemptInfo->user, days, hours, minutes, seconds);
+         return PAM_AUTH_ERR;
+     } else {
+         return PAM_SUCCESS;
+--- a/rule.c	2013-08-29 22:52:11.000000000 +0200
++++ b/rule.c	2021-11-26 13:14:40.895035833 +0100
+@@ -142,20 +142,24 @@
+     return ok;
+ }
+ 
+-static long howmany(log_context *log, AuthState *history, time_t now, long limit) {
++static long howmany(log_context *log, AuthState *history, time_t now, long limit, long *block_time) {
++    long diff = 0;
+     if (firstAttempt(history))
+         return -1;
+     long i = 0;
+     AuthAttempt attempt;
+     while (!nextAttempt(history, &attempt)) {
+-        if (difftime(now, attempt.m_time) <= (double) limit)
++        if ((diff = difftime(now, attempt.m_time)) <= (double) limit) {
+             ++i;
++            if (block_time != NULL)
++                *block_time = limit; /* just return the limit */
++        }
+     }
+     log_debug(log, "howmany(%ld) = %ld", limit, i);
+     return i;
+ }
+ 
+-static int matchperiod(log_context *log, AuthState *history, time_t now, const char **rp) {
++static int matchperiod(log_context *log, AuthState *history, time_t now, const char **rp, long *block_time) {
+     int err;
+     long count, period;
+ 
+@@ -174,25 +178,29 @@
+     }
+     log_debug(log, "period is %ld, **rp='%c'", period, **rp);
+     log_debug(log, "Checking %ld/%ld", count, period);
+-    return howmany(log, history, now, period) >= count;
++    return howmany(log, history, now, period, block_time) >= count;
+ }
+ 
+-int rule_matchperiods(log_context *log, AuthState *history, time_t now, const char **rp) {
+-    if (matchperiod(log, history, now, rp)) {
++int rule_matchperiods_ext(log_context *log, AuthState *history, time_t now, const char **rp, long *block_time) {
++    if (matchperiod(log, history, now, rp, block_time)) {
+         return 1;
+     }
+     while (**rp == ',') {
+         (*rp)++;
+-        if (matchperiod(log, history, now, rp)) {
++        if (matchperiod(log, history, now, rp, block_time)) {
+             return 1;
+         }
+     }
+     return 0;
+ }
+ 
++int rule_matchperiods(log_context *log, AuthState *history, time_t now, const char **rp) {
++    return rule_matchperiods_ext( log, history, now, rp, NULL);
++}
++
+ static int check_clause(log_context *log, const char **rp,
+                         const char *user, const char *service,
+-                        AuthState *history, time_t now) {
++                        AuthState *history, time_t now, long *block_time) {
+     int inv = 0;
+ 
+     if (**rp == '!') {
+@@ -212,18 +220,18 @@
+     }
+ 
+     (*rp)++;
+-    return rule_matchperiods(log, history, now, rp);
++    return rule_matchperiods_ext(log, history, now, rp, block_time);
+ }
+ 
+-BlockState rule_test(log_context *log, const char *rule,
++BlockState rule_test_ext(log_context *log, const char *rule,
+               const char *user, const char *service,
+-              AuthState *history, time_t now) {
++              AuthState *history, time_t now, long* block_time) {
+     if (!rule)
+         return CLEAR;
+     const char *rp = rule;
+ 
+     while (*rp != '\0') {
+-        if (check_clause(log, &rp, user, service, history, now)) {
++        if (check_clause(log, &rp, user, service, history, now, block_time)) {
+             return BLOCKED;
+         }
+         while (*rp != '\0' && !isspace(*rp)) {
+@@ -237,3 +245,12 @@
+     return CLEAR;
+ }
+ 
++BlockState rule_test(log_context *log, const char *rule,
++              const char *user, const char *service,
++              AuthState *history, time_t now) {
++    return rule_test_ext( log, rule, user, service, history, now, NULL);
++}
++
++
++
++
+--- a/rule.h	2013-08-29 22:52:11.000000000 +0200
++++ b/rule.h	2021-11-26 13:14:40.895035833 +0100
+@@ -51,6 +51,8 @@
+ */
+ int rule_matchperiods(log_context *log, AuthState *history, time_t now, const char **rp);
+ 
++int rule_matchperiods_ext(log_context *log, AuthState *history, time_t now, const char **rp, long *block_left);
++
+ /* Apply a rule to a history record returning BLOCKED if the rule matches, CLEAR if the rule fails.
+  *
+  * Rule syntax is like:
+@@ -88,4 +90,8 @@
+               const char *user, const char *service,
+               AuthState *history, time_t now);
+ 
++BlockState rule_test_ext(log_context *log, const char *rule,
++              const char *user, const char *service,
++              AuthState *history, time_t now, long *block_left);
++
+ #endif
+--- a/test_abl.c	2013-08-29 22:52:11.000000000 +0200
++++ b/test_abl.c	2021-11-26 13:14:40.895035833 +0100
+@@ -141,7 +141,7 @@
+     info.user = user;
+     info.host = host;
+     info.service = service;
+-    BlockState newState = check_attempt(dbEnv, &args, &info, NULL);
++    BlockState newState = check_attempt(dbEnv, &args, &info, NULL, NULL);
+     if (newState != expectedBlockState) {
+         printf("   Expected attempt to have as result %d, yet %d was returned.\n", (int)expectedBlockState, (int)newState);
+     }
+--- a/tools.c	2013-08-29 22:52:11.000000000 +0200
++++ b/tools.c	2021-11-26 13:14:40.895035833 +0100
+@@ -673,7 +673,7 @@
+ 
+     int err = record_attempt(dbEnv, args, info, logContext);
+     if (!err)
+-        check_attempt(dbEnv, args, info, logContext);
++        check_attempt(dbEnv, args, info, logContext, NULL);
+     return err;
+ }
+ 
+@@ -904,7 +904,7 @@
+         info.service = service;
+         info.host = num_hosts > 0 ? hosts[0] : NULL;
+         info.user = num_users > 0 ? users[0] : NULL;
+-        BlockState bState = check_attempt(dbEnv, args, &info, logContext);
++        BlockState bState = check_attempt(dbEnv, args, &info, logContext, NULL);
+         if (bState == BLOCKED)
+             err = 1;
+         else
