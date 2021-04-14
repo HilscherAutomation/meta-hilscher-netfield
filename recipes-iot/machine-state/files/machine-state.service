@@ -1,0 +1,16 @@
+[Unit]
+Description=Machine State
+After=network.target
+
+[Service]
+Environment=HOME=/tmp
+# check machine state/update led every 2sec (-r=8 do not indicate steps in between jump to 8/max machine state)
+ExecStart=/usr/lib/machine-state/process_machine_state -p=2 -r=8
+PrivateTmp=yes
+
+# Lower priority so cpu time is passed early to other processes if required
+Nice=10
+#CPUSchedulingPolicy=idle
+
+[Install]
+WantedBy=multi-user.target

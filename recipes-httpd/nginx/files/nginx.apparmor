@@ -1,0 +1,33 @@
+# Last Modified: Fri Jan 20 11:42:10 2017
+#include <tunables/global>
+
+/usr/sbin/nginx {
+  #include <abstractions/base>
+  #include <abstractions/apache2-common>
+  #include <abstractions/nis>
+
+  capability dac_override,
+  capability dac_read_search,
+  capability setgid,
+  capability setuid,
+  capability net_bind_service,
+  capability chown,
+  capability sys_resource,
+
+  /etc/group r,
+  /etc/nginx/** r,
+  /etc/nsswitch.conf r,
+  /etc/passwd r,
+  /etc/ssl/openssl.cnf r,
+  /opt/upnpd/desc/* r,
+  /{var,opt}/www/** r,
+  /etc/ssl/services/nginx/* r,
+  /run/nginx/** rw,
+  /usr/sbin/nginx mr,
+  /var/lib/nginx/** rw,
+  /var/{,volatile/}log/nginx/* w,
+
+  /{var/volatile/,}tmp/{,**} rwk,
+
+  /usr/share/doc/license/{,**} r,
+}

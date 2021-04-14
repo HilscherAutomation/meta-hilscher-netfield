@@ -1,0 +1,142 @@
+#!/bin/sh
+
+#set -e
+stop="0"
+poll=""
+exec_path=$(dirname "$(realpath "$0")")
+led_state_path="${exec_path}/led_state"
+machine_state_path="${exec_path}/machine_state"
+max_state="8"
+req_state="1"
+skip_led="0"
+
+for i in "$@"; do
+	case $i in
+	-i=*|--interface=*)
+		user_if_list="${i#*=}"
+		shift # past argument=value
+	;;
+	-p=*|--poll=*)
+		poll="${i#*=}"
+		shift # past argument=value
+	;;
+	-r=*|--request=*)
+		user_req_state="${i#*=}"
+		shift # past argument=value
+	;;
+	-o)
+		skip_led="1"
+		shift # past argument=value
+	;;
+	-d|--debug)
+		DEBUG="1"
+		shift # past argument=value
+	;;
+	-h*|--help)
+		echo "##################################################################"
+		echo "# The tool returns the current machine state and signals it via  #"
+		echo "# the machine's LEDs.                                            #"
+		echo "#                                                                #"
+		echo "# Options:                                                       #"
+		echo "# -i/--interface=[interface]                                     #"
+		echo "#      Interfaces on which the tests should run on.              #"
+		echo "#      By default every active interface will be checked.        #"
+		echo "#                                                                #"
+		echo "# -p/--poll=[interval]                                           #"
+		echo "#      Run in a loop. Add 'interval' in seconds when state       #"
+		echo "#      changes will be checked.                                  #"
+		echo "#      By default, if not specified with '-r', tool checks every #"
+		echo "#      cycle [current machine state] + 1 until max is reached.   #"
+		echo "#                                                                #"
+		echo "# -r/--request=[state]                                           #"
+		echo "#      Request specific next stage. By default the tool requests #"
+		echo "#      the maximum stage possible.                               #"
+		echo "#                                                                #"
+		echo "# -o                                                             #"
+		echo "#      Request only the current status without setting the appr. #'
+		echo "#      led.                                                      #"
+		echo "#                                                                #"
+		echo "# -d/--debug                                                     #"
+		echo "#      Enable debug messages.                                    #"
+		echo "#                                                                #"
+		echo "# -h/--help                                                      #"
+		echo "#                                                                #"
+		echo "##################################################################"
+		exit
+	;;
+	*)
+	# unknown option
+	;;
+	esac
+done
+
+if [ "${poll}" = "" ]; then
+	req_state="${max_state}"
+fi
+if [ "${user_req_state}x" != x ]; then
+	req_state="${user_req_state}"
+	if [ "${req_state}" -gt "${max_state}" ]; then
+		req_state="${max_state}"
+	fi
+fi
+if [ "${user_if_list}x" = "x" ]; then
+	if_list=$(nmcli -t connection show --active | cut -d ":" -f4)
+else
+	if_list="${user_if_list}"
+fi
+
+state="0"
+# in case of the option 'poll' we run an endless loop...
+while [ "${stop}" = "0" ]; do
+	if [ "${user_if_list}x" = "x" ]; then
+		# NOTE: The user did not pass a specific interface,
+		#       so we need to iterate overall interface which
+		#       are up or !become! up during runtime.
+		if_list=$(nmcli -t connection show --active | cut -d ":" -f4)
+	fi
+	# Iterate over every given interface and check the device state.
+	# If more than one interface is given the machines status will be set
+	# to the highest state.
+	tmp_state="0"
+	for if in $if_list; do
+		if_state="0"
+		[ $DEBUG ] && echo "checking machine state on if ${if}...(req: ${req_state})"
+		resp=$("${machine_state_path}" "$if" "${req_state}")
+		# shellcheck disable=SC2181
+		[ $? = 0 ] && if_state=$resp
+		[ $DEBUG ] && echo "machine state on ${if}: ${if_state}"
+
+		# store highest state
+		[ "${if_state}" -gt "${tmp_state}" ] && tmp_state="${if_state}"
+	done
+	state="${tmp_state}"
+
+	# calculate next req_state
+	if [ "${state}" = "${req_state}" ]; then
+		# reached requested machine state
+		if [ ${req_state} -lt ${max_state} ]; then
+			req_state=$(( req_state + 1 ))
+		fi
+	else
+		# machine state less than requested
+		# only calculate next req_state if user did not ask specific state
+		if [ "${user_req_state}x" = "x" ]; then
+			if [ "${state}" -lt "${req_state}" ]; then
+				req_state=$(( state + 1 ))
+			fi
+		fi
+	fi
+
+	# set led according to current machine state
+	if [ "${skip_led}" = "0" ] && [ -e "$led_state_path" ]; then
+		[ $DEBUG ] && echo "LED state: ${state}"
+		$led_state_path "$state"
+	fi
+	if [ "${poll}" != "" ]; then
+		sleep "$poll"
+	else
+		break
+	fi
+done
+
+echo "$state"

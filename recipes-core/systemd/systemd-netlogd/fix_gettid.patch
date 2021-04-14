@@ -1,0 +1,35 @@
+Newer libc throw a warnung during gettid detection and results in following error during compilation:
+
+| In file included from ../git/src/missing.h:59,
+|                  from ../git/src/utf8.h:17,
+|                  from ../git/src/utf8.c:40:
+| ../git/src/missing_syscall.h:61:21: error: static declaration of 'gettid' follows non-static declaration
+|    61 | static inline pid_t gettid(void) {
+|       |                     ^~~~~~
+| In file included from /build/build_intel/tmp/work/corei7-64-poky-linux/systemd-netlogd/1.1-r0/recipe-sysroot/usr/include/unistd.h:1170,
+|                  from ../git/src/missing.h:27,
+|                  from ../git/src/utf8.h:17,
+|                  from ../git/src/utf8.c:40:
+| /build/build_intel/tmp/work/corei7-64-poky-linux/systemd-netlogd/1.1-r0/recipe-sysroot/usr/include/bits/unistd_ext.h:34:16: note: previous declaration of 'gettid' was here
+|    34 | extern __pid_t gettid (void) __THROW;
+|       |                ^~~~~~
+| ninja: build stopped: subcommand failed.
+
+So we assume gettid is always present in our builds
+
+--- a/meson.build	2020-05-18 16:27:38.548705501 +0200
++++ b/meson.build	2020-05-18 18:53:25.136231290 +0200
+@@ -83,12 +83,7 @@
+ conf.set('SIZEOF_TIME_T', cc.sizeof('time_t', prefix : '#include <sys/time.h>'))
+ conf.set('SIZEOF_RLIM_T', cc.sizeof('rlim_t', prefix : '#include <sys/resource.h>'))
+ 
+-foreach ident : [
+-        ['gettid',            '''#include <sys/types.h>'''],
+-]
+-        have = cc.has_function(ident[0], prefix : ident[1])
+-        conf.set10('HAVE_' + ident[0].to_upper(), have)
+-endforeach
++conf.set10('HAVE_GETTID', true)
+ 
+ if cc.has_function('getrandom', prefix : '''#include <sys/random.h>''')
+         conf.set10('USE_SYS_RANDOM_H', true)

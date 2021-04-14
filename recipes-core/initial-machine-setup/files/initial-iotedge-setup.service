@@ -1,0 +1,16 @@
+[Unit]
+Description=Set initial iotedge container configuration
+DefaultDependencies=no
+After=local-fs.target initial-hostname.service
+Before=network.target dpkg-configure.service
+ConditionPathIsReadWrite=/etc
+
+[Service]
+Type=oneshot
+RemainAfterExit=Yes
+StandardOutput=syslog
+TimeoutSec=0
+ExecStart=/sbin/initial-iotedge-setup.sh
+
+[Install]
+WantedBy=local-fs.target

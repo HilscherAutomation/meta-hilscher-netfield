@@ -1,0 +1,60 @@
+#!/bin/sh -e
+### BEGIN INIT INFO
+# Provides:          netX based virtual ethernet interfaces
+# Required-Start:
+# Required-Stop:
+# Should-Start:
+# Should-Stop:
+# Default-Start:
+# Default-Stop:
+# Short-Description: Raise and configure the netX based virtual ethernet interfaces
+### END INIT INFO
+
+export PATH=$PATH:/sbin:/usr/sbin
+
+case "$1" in
+init)
+    # Create network manager connection if not yet existing
+    if ! nmcli c | grep "$2"; then
+        # Add connection if it does not yet exists, otherwise auto connect will be set which does not
+        # work for cifX TUN interface
+        nmcli c add type tun ifname "$2" con-name "$2" tun.mode 2 connection.autoconnect false
+    fi
+
+    # Set to managed, to allow interactions with cockpit, etc.
+    nmcli dev set "$2" managed yes
+    ;;
+
+change)
+    # Check if MAC address was set
+    if [ -e "/tmp/${2}_mac" ]; then
+        SYNTH_ARG_MAC=$(cat /tmp/${2}_mac)
+        nmcli c mod "$2" ethernet.cloned-mac-address "${SYNTH_ARG_MAC}"
+        ip link set dev "$2" address "${SYNTH_ARG_MAC}"
+    fi
+    ;;
+
+start)
+    ip link set $2 up
+    nmcli c up $2
+    ;;
+
+stop)
+    ip link set $2 down
+    nmcli c down $2
+    ;;
+
+force-reload|restart)
+    ip link set $2 down
+    nmcli c down $2
+    ip link set $2 up
+    nmcli c up $2
+    ;;
+
+*)
+    echo "Usage: /etc/init.d/cifxeth {start|stop}"
+    exit 1
+    ;;
+esac
+
+exit 0

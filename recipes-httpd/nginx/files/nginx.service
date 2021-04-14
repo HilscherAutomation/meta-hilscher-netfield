@@ -1,0 +1,21 @@
+[Unit]
+Description=nginx webserver and reverse-proxy
+After=network.target
+
+[Service]
+Type=forking
+PIDFile=/run/nginx/nginx.pid
+ExecStartPre=@SBINDIR@/nginx_gen_ssl_cert
+ExecStartPre=@SBINDIR@/nginx -t
+ExecStart=@SBINDIR@/nginx
+ExecReload=@SBINDIR@/nginx -s reload
+ExecStop=/bin/kill -s QUIT $MAINPID
+PrivateTmp=true
+LimitNOFILE=50000
+# Always keep active, even if OOM
+OOMScoreAdjust=-1000
+RestartSec=1s
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

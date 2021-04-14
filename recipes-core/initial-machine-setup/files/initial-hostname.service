@@ -1,0 +1,16 @@
+[Unit]
+Description=Set initial host name
+DefaultDependencies=no
+After=local-fs.target
+Before=network.target dpkg-configure.service
+ConditionPathIsReadWrite=/etc
+
+[Service]
+Type=oneshot
+RemainAfterExit=Yes
+StandardOutput=syslog
+TimeoutSec=0
+ExecStart=/sbin/initial-hostname.sh
+
+[Install]
+WantedBy=local-fs.target

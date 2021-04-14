@@ -1,0 +1,14 @@
+Systemd usually renames network names given by kernel according
+to MAC address or PCI address (eth0 -> enp1s0). We want to use
+kernel names like eth0, wlan0
+diff --git a/network/99-default.link b/network/99-default.link
+index 79538f9..8fc018f 100644
+--- a/network/99-default.link
++++ b/network/99-default.link
+@@ -8,5 +8,5 @@
+ OriginalName=*
+ 
+ [Link]
+-NamePolicy=keep kernel database onboard slot path
++NamePolicy=keep kernel
+ MACAddressPolicy=persistent

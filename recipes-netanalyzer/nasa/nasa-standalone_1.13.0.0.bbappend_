@@ -1,0 +1,3 @@
+#DEPENDS_append += "lttng-ust"
+#SRC_URI_append += "file://lttng_tracing.patch"
+SRC_URI_append += "file://printf_tracing.patch"

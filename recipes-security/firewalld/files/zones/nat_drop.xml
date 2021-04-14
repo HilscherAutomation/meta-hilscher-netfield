@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zone target="DROP">
+  <short>NAT-Drop</short>
+  <description>The source IP address of all outgoing IP packets is replaced by the assigned IP address of the interface. All incoming IP packets will be dropped.</description>
+  <masquerade/>
+</zone>

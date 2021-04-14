@@ -1,0 +1,6 @@
+SUBSYSTEMS=="net",ACTION=="add",KERNEL=="cifx*",PROGRAM+="/bin/sh -c 'chgrp cifx /sys/class/net/cifx%n/uevent;chmod 0664 /sys/class/net/cifx%n/uevent;/etc/init.d/cifxeth init cifx%n'"
+SUBSYSTEMS=="net",ACTION!="remove",KERNEL=="cifx*",ENV{ID_VENDOR_FROM_DATABASE}="Hilscher Gesellschaft fuer Systemautomation mbH",ENV{ID_MODEL_FROM_DATABASE}="Fieldbus interface"
+SUBSYSTEMS=="net",ACTION=="online",KERNEL=="cifx*",PROGRAM="/bin/sh -c '/etc/init.d/cifxeth start cifx%n'"
+SUBSYSTEMS=="net",ACTION=="offline",KERNEL=="cifx*",PROGRAM="/bin/sh -c '/etc/init.d/cifxeth stop cifx%n'"
+SUBSYSTEMS=="net",ACTION=="remove",KERNEL=="cifx*",PROGRAM="/bin/sh -c '/etc/init.d/cifxeth stop cifx%n'"
+SUBSYSTEMS=="net",ACTION=="change",KERNEL=="cifx*",PROGRAM="/bin/sh -c '/etc/init.d/cifxeth change cifx%n'"

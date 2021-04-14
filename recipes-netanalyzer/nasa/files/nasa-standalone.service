@@ -1,0 +1,17 @@
+[Unit]
+Description=netANALYZER standalone
+After=network.target
+Conflicts=nasa-remote-access-server.service
+
+[Service]
+Type=simple
+SyslogIdentifier=nasa-standalone
+ExecStartPre=/opt/nasa/scripts/nasa-gen-op-mode-usecases
+EnvironmentFile=/opt/nasa/config/operation-settings/standalone-args
+ExecStart=/opt/nasa/standalone/StandAlone $STANDALONE_ARGS 
+WorkingDirectory=/opt/nasa/standalone
+User=root
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

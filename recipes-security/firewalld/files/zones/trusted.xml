@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zone target="ACCEPT">
+  <short>Trusted</short>
+  <description>All IP packets will be forwarded transparently (the firewall is switched off)</description>
+</zone>

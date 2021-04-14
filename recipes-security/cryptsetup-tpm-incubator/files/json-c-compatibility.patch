@@ -1,0 +1,59 @@
+Wehn upgrading json-c TRUE/FALSE define seem to be missing, resulting in build errors:
+
+| ../git/lib/luks2/luks2_json_metadata.c: In function 'json_str_to_uint64':
+| ../git/lib/luks2/luks2_json_metadata.c:212:10: error: 'FALSE' undeclared (first use in this function)
+|   212 |   return FALSE;
+|       |          ^~~~~
+| ../git/lib/luks2/luks2_json_metadata.c:212:10: note: each undeclared identifier is reported only once for each function it appears in
+| ../git/lib/luks2/luks2_json_metadata.c:216:9: error: 'TRUE' undeclared (first use in this function)
+|   216 |  return TRUE;
+|       |         ^~~~
+
+new json-c also provides the function json_object_get_uint64 which results in conflicting types:
+| ../git/lib/luks2/luks2_json_metadata.c:219:10: error: conflicting types for 'json_object_get_uint64'
+|   219 | uint64_t json_object_get_uint64(json_object *jobj)
+|       |          ^~~~~~~~~~~~~~~~~~~~~~
+
+diff -aurN a/lib/luks2/luks2_internal.h b/lib/luks2/luks2_internal.h
+--- a/lib/luks2/luks2_internal.h	2020-08-04 07:57:31.404421880 +0200
++++ b/lib/luks2/luks2_internal.h	2020-08-11 09:41:32.635980181 +0200
+@@ -27,6 +27,15 @@
+ #include <errno.h>
+ #include <json-c/json.h>
+ 
++// newer json-c does not provide TRUE/FALSE, thus define it here
++#ifndef FALSE
++  #define FALSE (0)
++#endif
++
++#ifndef TRUE
++  #define TRUE (~0)
++#endif
++
+ #include "internal.h"
+ #include "base64.h"
+ #include "luks2.h"
+@@ -59,7 +68,6 @@
+ 		     const char *sep, const char *line_sep);
+ 
+ json_object *parse_json_len(const char *json_area, int length, int *end_offset);
+-uint64_t json_object_get_uint64(json_object *jobj);
+ uint32_t json_object_get_uint32(json_object *jobj);
+ json_object *json_object_new_uint64(uint64_t value);
+ 
+diff -aurN a/lib/luks2/luks2_json_metadata.c b/lib/luks2/luks2_json_metadata.c
+--- a/lib/luks2/luks2_json_metadata.c	2020-08-04 07:57:31.404421880 +0200
++++ b/lib/luks2/luks2_json_metadata.c	2020-08-11 09:41:49.420325023 +0200
+@@ -216,12 +216,6 @@
+ 	return TRUE;
+ }
+ 
+-uint64_t json_object_get_uint64(json_object *jobj)
+-{
+-	uint64_t r;
+-	return json_str_to_uint64(jobj, &r) ? r : 0;
+-}
+-
+ json_object *json_object_new_uint64(uint64_t value)
+ {
+ 	/* 18446744073709551615 */

@@ -1,0 +1,14 @@
+[Unit]
+Description=upnp daemon
+
+[Service]
+Type=simple
+ExecStartPre=/opt/upnpd/init-desc %i
+ExecStart=/opt/upnpd/upnpd.sh %i
+ExecStopPost=/bin/rm -f /opt/upnpd/desc/netiotdevicedesc_%i.xml
+User=root
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

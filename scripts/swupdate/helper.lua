@@ -1,0 +1,161 @@
+#!/usr/bin/lua
+--
+-- This script provides preinst and postinst steps.
+--
+
+osReleaseFile = "/fw_version"
+
+function string.starts(String,Start)
+   return string.sub(String,1,string.len(Start))==Start
+end
+
+function split(inputstr, sep)
+	if inputstr == nil then return {} end
+	if sep == nil then sep = "%s" end
+
+	t = {}; i=1
+	for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+		t[i] = str
+		i = i + 1
+	end
+
+	return t
+end
+
+function splitVersion(versionstr)
+	t = split(versionstr, '.')
+
+	for i=1,4,1 do
+		if tonumber(t[i]) == nil then return end
+	end
+	version = string.format("%d.%d.%d.%d",t[1],t[2],t[3],t[4])
+
+	type = t[5]
+	if type == nil then type = "" end
+
+	return version,type
+end
+
+function getCurVersion()
+	f,err = io.open(osReleaseFile)
+	if err then return nil,err end
+
+	version = f:read()
+
+	return version,err
+end
+
+function mount_system()
+	os.execute("mkdir -p /run/.system_part")
+	if os.execute("test -b /dev/disk/by-bootmode/active") == true then
+		-- We are in active mode with running firmware
+		os.execute("mount -o ro /dev/disk/by-bootmode/active /run/.system_part")
+		os.execute("mount -o remount,rw,nodelalloc /run/.system_part")
+	else
+		-- We are in rescue mode, so standby-0 should be our target to update
+		os.execute("mount -o rw,nodelalloc /dev/disk/by-bootmode/standby-0 /run/.system_part")
+	end
+end
+
+function preinst()
+	newVersion = "@FW_VERSION@"
+
+	curVersion,err = getCurVersion()
+	curVersion,curType = splitVersion(curVersion)
+	newVersion,newType = splitVersion(newVersion)
+
+	if curVersion == nil then
+		swupdate.error("Invalid or missing firmware version on installed system!")
+		return false
+	end
+	if newVersion == nil then
+		swupdate.error("Invalid or missing firmware version in new firmware image!")
+		return false
+	end
+
+	if  string.starts(curType, "debug") or string.starts(newType, "debug") then
+		mount_system()
+		swupdate.info("You are on or installing a debug version: Skip firmware version verification ("..newVersion.."/"..curVersion..")")
+		return true
+	end
+
+	if newVersion == curVersion then
+		-- rc and beta have a version suffix (.rc-1 .beta-1)
+		if string.starts(curType, "beta") then
+			-- beta -> rc and release is allowed
+			if string.starts(newType, "rc") or string.starts(newType, "release") then
+				mount_system()
+				swupdate.info("Upgrading/Recovering from "..curVersion.."."..curType.." to "..newVersion.."."..newType.."!")
+				return true
+			end
+
+			-- beta-x -> beta-(x+y) is allowed
+			if string.starts(newType, "beta") then
+				cur_beta_idx = tonumber(split(curType, '-')[2])
+				new_beta_idx = tonumber(split(newType, '-')[2])
+				if new_beta_idx >= cur_beta_idx then
+					mount_system()
+					swupdate.info("Upgrading/Recovering from "..curVersion.."."..curType.." to "..newVersion.."."..newType.."!")
+					return true
+				end
+			end
+
+			swupdate.error("Denying upgrade/recovery current version:"..curVersion.."."..curType.." to be installed: "..newVersion.."."..newType.."!")
+			return false
+		end
+
+		if string.starts(curType, "rc") then
+			-- rc -> release is allowed
+			if string.starts(newType, "release") then
+				mount_system()
+				swupdate.info("Upgrading/Recovering from "..curVersion.."."..curType.." to "..newVersion.."."..newType.."!")
+				return true
+			end
+
+			-- rc-x -> rx-(x+y) is allowed
+			if string.starts(newType, "rc") then
+				cur_rc_idx = tonumber(split(curType, '-')[2])
+				new_rc_idx = tonumber(split(newType, '-')[2])
+				if new_rc_idx >= cur_rc_idx then
+					mount_system()
+					swupdate.info("Upgrading/Recovering from "..curVersion.."."..curType.." to "..newVersion.."."..newType.."!")
+					return true
+				end
+			end
+
+			swupdate.error("Denying upgrade/recovery current version:"..curVersion.."."..curType.." to be installed: "..newVersion.."."..newType.."!")
+			return false
+		end
+
+		-- Allow factory default reset (same version and same type)
+		if newType == curType then
+			mount_system()
+			swupdate.info("Upgrading/Recovering from "..curVersion.."."..curType.." to "..newVersion.."."..newType.."!")
+			return true
+		end
+
+		swupdate.error("Invalid firmware version found ("..newVersion.." is already installed)!")
+		return false
+	end
+
+	if newVersion < curVersion then
+		swupdate.error("Invalid firmware version found ("..newVersion.." < "..curVersion..")!")
+		return false
+	end
+
+	mount_system()
+	swupdate.info("Valid firmware image found ("..newVersion.." > "..curVersion..").")
+	return true
+end
+
+function postinst()
+	-- Mark swupdate status as failed.
+	os.execute("sync")
+	os.execute("mount -o remount,ro /run/.system_part")
+
+	swupdate.info("Rebooting system ...")
+	os.execute("(sleep 1; reboot;) &")
+
+	return true
+end
+

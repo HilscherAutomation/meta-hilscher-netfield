@@ -1,0 +1,104 @@
+diff -aurN a/msg_sink_mod/msg_sink_mod.c b/msg_sink_mod/msg_sink_mod.c
+--- a/msg_sink_mod/msg_sink_mod.c	2019-04-26 09:46:22.631113605 +0200
++++ b/msg_sink_mod/msg_sink_mod.c	2019-04-26 10:04:19.587814859 +0200
+@@ -6,6 +6,18 @@
+ #include "execute_state.h"
+ #include <assert.h>
+ 
++#include <unistd.h>
++#include <time.h>
++
++uint32_t getTick() {
++    struct timespec ts;
++    unsigned theTick = 0U;
++    clock_gettime( CLOCK_REALTIME, &ts );
++    theTick  = ts.tv_nsec / 1000;
++    theTick += ts.tv_sec * 1000000;
++    return theTick;
++}
++
+ // #define VERBOSE_DEBUG // this enables logging of sent and acknowlaged messages.
+ #ifdef VERBOSE_DEBUG
+ #define VERBOSE_PRINT(...) printf(__VA_ARGS__)
+@@ -285,7 +297,7 @@
+ 
+     if (ptThisInst->tMqttCfg.fPahoOk == 1)
+     {
+-      /* Fix to local broker */
++      /* Fix to local broker */
+       ptThisInst->tMqttCfg.szServerUri = "tcp://localhost:1883";
+       ptThisInst->tMqttCfg.szClientId = "msg_sink_mod";
+       ptThisInst->tMqttCfg.fEnabled = 1;
+@@ -716,18 +728,18 @@
+     uint32_t ulByteIdx;
+     uint8_t  bByte;
+ 
+-    *pszTextBuf++='\"';
++    *pszTextBuf++='\"';
+ 
+     for (ulByteIdx = 0; ulByteIdx < ulVarSize; ulByteIdx++)
+     {
+-      const char hexmap[] = {'0', '1', '2', '3', '4', '5', '6', '7',
+-                             '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
++      const char hexmap[] = {'0', '1', '2', '3', '4', '5', '6', '7',
++                             '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+       bByte = *(pbValue + ulByteIdx);
+-      *pszTextBuf++ = hexmap[(bByte & 0xF0) >> 4];
+-      *pszTextBuf++ = hexmap[bByte & 0xF0];
++      *pszTextBuf++ = hexmap[(bByte & 0xF0) >> 4];
++      *pszTextBuf++ = hexmap[bByte & 0xF0];
+     }
+ 
+-    *pszTextBuf='\"';
++    *pszTextBuf='\"';
+   }
+   break;
+ 
+@@ -762,6 +774,9 @@
+ uint32_t APIENTRY Decode(void* pvDestinationInstanceHandle, void* pvSourceInstanceHandle, VAR_INFO_T* ptVarInfo, uint32_t ulVarGroupId, void* pvUser)
+ {
+   MODULE_INSTANCE_T *ptThisInst = (MODULE_INSTANCE_T*)pvDestinationInstanceHandle;
++  uint32_t start, end, json_start, json_end,mqtt_start, mqtt_end;
++
++  start=getTick();
+ 
+   if (ptThisInst != NULL)
+   {
+@@ -781,6 +796,8 @@
+           char* szVarState;
+           char* szVarType;
+ 
++          json_start=getTick();
++
+           switch (ptVarInfo->ulVarState)
+           {
+           case VAR_STATE_LIC_EXPIRED:
+@@ -921,6 +938,8 @@
+           snprintf(szMessage, sizeof(szMessage), "{ \"jsonVersion\": 1, \"identifier\": \"%s\", \"timestamp\": \"%"PRId64"\", \"state\": \"%s\", \"datatype\": \"%s\", \"val\": %s }",
+             szIdentifier, ptVarInfo->llTimeStamp, szVarState, szVarType, szTextBuf);
+ 
++          json_end=getTick();
++          mqtt_start=getTick();
+           if (ptThisInst->tMqttCfg.fEnabled == 1)
+           {
+             MQTTClient_message tMessage = MQTTClient_message_initializer;
+@@ -934,6 +953,7 @@
+               ptThisInst->tMqttCfg.pfnMQTTClient_publishMessage(ptThisInst->tMqttCfg.tClient, ptMessageSinkParams->szMqttTopic, &tMessage, NULL);
+             }
+           }
++          mqtt_end=getTick();
+ 
+         }
+       }
+@@ -941,6 +961,11 @@
+       PreventConfigChangeUnlock(&ptThisInst->tDecodeLocCond, &ptThisInst->tDecodeLocMutex, &ptThisInst->lDecodeLocCount);
+     }
+   }
++  end=getTick();
++  printf("*Decode(): took %u us\n", end-start);
++  printf("*Decode(): JSON took %u us\n", json_end-json_start);
++  printf("*Decode(): MQTT took %u us\n", mqtt_end-mqtt_start);
++  printf("*Decode(): begin=%u, json_start=%u\n",start,json_start);
+   return RES_OK;
+ }
+ 

@@ -1,0 +1,44 @@
+#!/bin/sh
+
+# Script to dispatch NetworkManager events
+IFACE=$1
+ACTION=$2
+
+if [ -e /etc/default/upnpd ]; then
+  . /etc/default/upnpd
+  if [ "${UPNPD_ENABLED}" != "1" ]; then
+    exit 0
+  fi
+fi
+
+case "$ACTION" in
+    up|vpn-up|dhcp4-change|dhcp6-change|connectivity-change)
+        # restart upnpd for iface (ethernet only)
+        if [[ $IFACE == eth* ]]; then
+	    systemctl stop upnpd@$IFACE
+	    systemctl start upnpd@$IFACE
+        fi
+        ;;
+    down|vpn-down)
+        # stop upnpd for iface
+        if [[ $IFACE == eth* ]]; then
+	    systemctl stop upnpd@$IFACE
+        fi
+        ;;
+    hostname)
+        # Restart all upnp services
+        for IFACE in eth0 eth1
+        do
+          status=`systemctl status upnpd@$IFACE | grep "Active:" | grep "running"`
+          if [ ! -z "$status" ]; then
+              systemctl stop upnpd@$IFACE
+	      systemctl start upnpd@$IFACE
+          fi
+        done
+        ;;
+    *)
+        echo "$0: called with unknown action \`$2'" 1>&2
+        exit 1
+        ;;
+esac
+

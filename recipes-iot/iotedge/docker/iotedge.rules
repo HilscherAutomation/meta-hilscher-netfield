@@ -1,0 +1,3 @@
+ACTION=="add", SUBSYSTEM=="net", KERNEL=="iotedge0", ENV{NM_UNMANAGED}="1"
+# allow iotedge access to tpm0
+KERNEL=="tpm0", SUBSYSTEM=="tpm", GROUP="iotedge", MODE="0660"

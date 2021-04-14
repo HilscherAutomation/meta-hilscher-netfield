@@ -1,0 +1,13 @@
+Remove warning: 'recovery' is deprecated, use 'usebackuproot' instead
+
+--- a/btrfs-mount-repair	2019-02-18 08:51:54.249620481 +0100
++++ b/btrfs-mount-repair	2019-02-18 11:59:39.939958543 +0100
+@@ -44,7 +44,7 @@
+ fi
+ 
+ # First try simple clearing of the free space cache
+-if mount -t btrfs -o recovery,nospace_cache,clear_cache,autodefrag $ROOTDEV $TARGET; then
++if mount -t btrfs -o usebackuproot,nospace_cache,clear_cache,autodefrag $ROOTDEV $TARGET; then
+     echo "$0: Root mounted with recovery options"  > /dev/kmsg
+     exit 0
+ fi

@@ -1,0 +1,192 @@
+def build_cause() {
+    return currentBuild.getBuildCauses()[0].shortDescription
+}
+
+def getChangeLog() {
+    def changeLogSets = currentBuild.changeSets
+    def ret = ""
+
+    if(changeLogSets.size() == 0) {
+        ret = "none"
+    } else {
+        for (int i = 0; i < changeLogSets.size(); i++) {
+            def entries = changeLogSets[i].items
+            for (int j = 0; j < entries.length; j++) {
+                def entry = entries[j]
+                ret = ret + "\n" + "${j}. ${entry.msg} -- ${entry.author}\n--------"
+            }
+        }
+    }
+    return ret;
+}
+
+pipeline {
+	agent any
+
+	parameters {
+		choice(choices: ['netfield-image', 'netfield-image-dev'], description: 'Image to build', name: 'FIRMWARE_IMAGE')
+		string(defaultValue: "2.0.0.0.debug", description: 'Firmware version to use', name: 'FIRMWARE_VERSION')
+		booleanParam(defaultValue: true, description: 'Build a debug image', name: 'DEBUG')
+		string(defaultValue: "master", description: 'Branch / Tag (refs/tags/2.0.0.0.release) to use', name: 'NETFIELD_OS_BRANCH')
+		booleanParam(defaultValue: true, description: 'Use development version of cockpit', name: 'COCKPIT_DEV')
+		string(defaultValue: "develop", description: 'cockpit branch to use', name: 'COCKPIT_BRANCH')
+		string(defaultValue: "\${AUTOREV}", description: 'cockpit commit hash to use', name: 'COCKPIT_SRCREV')
+		booleanParam(defaultValue: true, description: 'Publish artifacts to nexus', name: 'PUBLISH_ARTIFACTS')
+	}
+
+	stages {
+		stage('Cleanup Workspace') {
+			steps {
+				cleanWs();
+			}
+		}
+
+		stage('Checkout projects') {
+			environment {
+				SCMBUILDER_CREDENTIALS = credentials('hilscher-scmbuilder')
+			}
+
+			steps {
+				//Checkout main repository
+				checkout scm: [
+					$class: 'RepoScm',
+					currentBranch: true,
+					manifestBranch: '${NETFIELD_OS_BRANCH}',
+					manifestRepositoryUrl: 'https://${SCMBUILDER_CREDENTIALS_USR}:${SCMBUILDER_CREDENTIALS_PSW}@git.hilscher.com/Bonobo.Git.Server/netfield-manifest.git',
+					quiet: true
+				]
+
+				dir('cockpit') {
+					//Checkout cockpit project to track changes
+					checkout scm: [
+					$class: 'GitSCM',
+					branches: [[name: "*/${COCKPIT_BRANCH}"]],
+					doGenerateSubmoduleConfigurations: false,
+						extensions: [[$class: 'SubmoduleOption',
+						disableSubmodules: false,
+						parentCredentials: false,
+						recursiveSubmodules: true,
+						reference: '',
+						trackingSubmodules: false]],
+						submoduleCfg: [],
+						userRemoteConfigs: [[credentialsId: 'buildmachine', url: 'https://bitbucket.hilscher.com/scm/ial/cockpit-netiot.git']],
+					]
+				}
+			}
+		}
+
+		stage('Build') {
+			agent {
+				dockerfile {
+					dir 'meta-netfield/scripts/docker'
+					args '-v ${WORKSPACE}:/build -v /opt/shared/yocto:/opt/shared/yocto'
+					reuseNode true
+				}
+			}
+
+			environment {
+				FIRMWARE_VERSION = "${params.FIRMWARE_VERSION}"
+				DEBUG = "${params.DEBUG}"
+				FIRMWARE_IMAGE = "${params.FIRMWARE_IMAGE}"
+				COCKPIT_BRANCH = "${params.COCKPIT_BRANCH}"
+				COCKPIT_SRCREV = "${params.COCKPIT_SRCREV}"
+				BUILD_NUMBER = "${env.BUILD_NUMBER}"
+			}
+
+			steps {
+				echo "Build images..."
+
+				sh '''
+					# Search all layers for machine configurations
+					cd /build
+
+					if [ "${DEBUG}" = "true" ]; then
+						extra_features="debug-tweaks"
+					fi
+
+					# Only add nightly suffix on non-rc/non-beta/non-release builds
+					if ! echo "$FIRMWARE_VERSION" | grep -qE '\\.beta-|\\.rc-|\\.release'; then
+						version_suffix=".nightly-${BUILD_NUMBER}"
+					fi
+
+					# Add cockpit branch to overrides
+					for platform in intel raspberrypi netx4000 freescale; do
+						mkdir -p build_$platform/conf
+						if [ "$COCKPIT_DEV" = "true" ]; then
+							echo "BRANCH_pn-cockpit=\\"${COCKPIT_BRANCH}\\"" > build_$platform/conf/local.overrides.conf
+							echo "SRCREV_pn-cockpit=\\"${COCKPIT_SRCREV}\\"" >> build_$platform/conf/local.overrides.conf
+						else
+							echo '# no special settings' > build_$platform/conf/local.overrides.conf
+						fi
+					done
+
+					./build_all.sh -i ${FIRMWARE_IMAGE} -f ${FIRMWARE_VERSION} -s "$version_suffix" -e "$extra_features"
+				'''
+			}
+		}
+
+		stage('Archive artifacts') {
+			when {
+				expression {
+					return params.PUBLISH_ARTIFACTS
+				}
+			}
+			environment {
+				FIRMWARE_VERSION = "${params.FIRMWARE_VERSION}"
+				DEBUG = "${params.DEBUG}"
+				SCMBUILDER_CREDENTIALS = credentials('hilscher-scmbuilder')
+			}
+			steps {
+				sh '''
+					# Only add nightly suffix on non-rc/non-beta/non-release builds
+					if ! echo "$FIRMWARE_VERSION" | grep -qE '\\.beta-|\\.rc-|\\.release'; then
+						version_suffix=".nightly-${BUILD_NUMBER}"
+					fi
+
+					# Deploy to nexus
+					if [ "$DEBUG" = "true" ]; then
+						dest_url="https://nxybuilder01/nexus/repository/netFIELDOS/$FIRMWARE_VERSION$version_suffix"
+					else
+						dest_url="https://nxybuilder01/nexus/repository/netFIELDOS-Release/$FIRMWARE_VERSION$version_suffix"
+					fi
+
+					for machine_dir in dist/*; do
+						machine=$(basename $machine_dir)
+
+						for artifact in $machine_dir/images/*recovery.zip $machine_dir/images/*update.zip $machine_dir/swu-images/*.swu $machine_dir/wic-images/* $machine_dir/ova/*; do
+							if [ -e "$artifact" ]; then
+								echo "Uploading $artifact"
+								curl -k -u "${SCMBUILDER_CREDENTIALS_USR}:${SCMBUILDER_CREDENTIALS_PSW}" \
+									--upload-file $artifact \
+									"$dest_url/$machine/$(basename $artifact)"
+							fi
+						done
+					done
+				'''
+			}
+		}
+	}
+	post {
+		always {
+	                script {
+				if (env.MAIL_NOTIFIERS) {
+					echo "Sending notification e-mails..."
+					emailext (
+						to: "$MAIL_NOTIFIERS",
+						body: """${env.JOB_NAME} - Build # ${env.BUILD_NUMBER} - ${currentBuild.result}:
+
+Check console output at ${env.BUILD_URL} to view the results.
+
+Changes since last build:
+${getChangeLog()}
+
+Build cause: ${build_cause()}""",
+						subject: "${env.JOB_NAME} - Build # ${env.BUILD_NUMBER} - ${currentBuild.result}!",
+						attachLog: true,
+						compressLog: true
+					)
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,13 @@
+FSTYPE detection does not work using older version of coreutils (GPLv2 ones)
+as they return UNKNOWN as they dont know about btrfs
+--- a/btrfsmaintenance-functions	2019-02-08 10:20:12.997704960 +0100
++++ b/btrfsmaintenance-functions	2019-02-08 11:10:19.256186842 +0100
+@@ -72,7 +72,7 @@
+ #
+ # check if filesystem is a btrfs
+ is_btrfs() {
+-	local FS=$(stat -f --format=%T "$1")
++	local FS=$(findmnt -o FSTYPE "$1" | tail -n1)
+ 	[ "$FS" = "btrfs" ] && return 0
+ 	return 1
+ }

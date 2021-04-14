@@ -1,0 +1,192 @@
+#!/usr/bin/env python3
+
+import re
+
+# Valid keys inside each entry
+CVE_VALID_KEYS = [
+  'CVE',
+  'CVE STATUS',
+  'CVE SUMMARY',
+  'CVSS v2 BASE SCORE',
+  'CVSS v3 BASE SCORE',
+  'MORE INFORMATION',
+  'PACKAGE NAME',
+  'PACKAGE VERSION',
+  'VECTOR'
+]
+
+CVSS_SCORE_V3_INVALID = '0.0'
+CVSS_SCORE_V2_TO_SEVERITY = {
+    3.9  : 'Low',
+    6.9  : 'Medium',
+    10.0 : 'High'
+}
+CVSS_SCORE_V3_TO_SEVERITY = {
+    3.9  : 'Low',
+    6.9  : 'Medium',
+    8.9  : 'High',
+    10.0 : 'Critical'
+}
+
+def _is_url(string):
+    regex = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
+    return re.match(regex,string)
+
+def get_severity_from_issue(issue):
+    ret = 'unknown'
+
+    if issue['CVSS v3 BASE SCORE'] != CVSS_SCORE_V3_INVALID:
+        _table = CVSS_SCORE_V3_TO_SEVERITY
+        _score = issue['CVSS v3 BASE SCORE']
+    else:
+        _table = CVSS_SCORE_V2_TO_SEVERITY
+        _score = issue['CVSS v2 BASE SCORE']
+
+    for _key, _value in _table.items():
+        if float(_score) <= _key:
+            ret = _value
+            break
+
+    return ret
+
+def read_cves_from_file(filename):
+    cves = {}
+
+    with open(filename) as logfile:
+        contents = logfile.read()
+
+    cves_to_parse = contents.split('\n\n');
+    for _cve in cves_to_parse:
+        if (_cve is ''):
+            continue
+
+        entry = {}
+
+        allelements = _cve.split('\n')
+        for element in allelements:
+            key = element.split(':')[0]
+            value = ':'.join(element.split(':')[1:]).lstrip()
+            entry[key] = value
+
+        if 'PACKAGE NAME' not in entry:
+            continue
+
+        package_name = entry['PACKAGE NAME']
+        if package_name not in cves:
+            cves[package_name] = []
+
+        cves[package_name].append(entry)
+
+    return cves
+
+if __name__ == '__main__':
+    import argparse, re
+
+    parser = argparse.ArgumentParser(description='Process yocto generated CVE files')
+    parser.add_argument('CVELOG', metavar='logfile', type=str, help='Log file to parse (e.g. build/tmp/work/nginx/<version>/temp/cve.log)')
+    parser.add_argument('--filter', type=str, default='CVE STATUS=Unpatched', help='Filter cves. (default "CVE STATUS=Unpatched")')
+    parser.add_argument('--summary', action='store_true', help='Print summary')
+    parser.add_argument('--format', type=str, choices=['raw', 'warnings-ng'], default='raw', help='Select output format (default=raw python object)')
+    parser.add_argument('--machine', type=str, help='Set machine name used in output formats, supporting it')
+
+    args = parser.parse_args()
+
+
+    cves = read_cves_from_file(args.CVELOG)
+
+    if args.filter:
+        def filter_equal(a, b):
+            return a == b
+        def filter_not_equal(a, b):
+            return a != b
+        def filter_smaller_or_equal(a, b):
+            return a <= b
+        def filter_smaller(a, b):
+            return a < b
+        def filter_larger_or_equal(a, b):
+            return a >= b
+        def filter_larger(a, b):
+            return a > b
+
+        filtered_cves = {}
+        filter_func = {
+            '=' : filter_equal,
+            '!=': filter_not_equal,
+            '<' : filter_smaller,
+            '<=': filter_smaller_or_equal,
+            '>' : filter_larger,
+            '>=': filter_larger_or_equal,
+        }
+        filter_key, filter_condition, filter_value = re.match('(.*)([!=<>]+)(.*)', args.filter).groups()
+        _func = filter_func[filter_condition]
+
+        for component in cves:
+            for _cve in cves[component]:
+                add_to_filter_list = True
+                if filter_key in _cve:
+                    if not _func(_cve[filter_key], filter_value):
+                        add_to_filter_list = False
+
+                if add_to_filter_list:
+                    if component not in filtered_cves:
+                        filtered_cves[component] = []
+
+                    filtered_cves[component].append(_cve)
+
+        cves = filtered_cves
+
+    if args.format == 'raw':
+        import pprint
+        pprint.pprint(cves)
+    elif args.format == 'warnings-ng':
+        SEVERITY_TO_WARNINGSNG = {
+            'Low'      : 'LOW',
+            'Medium'   : 'NORMAL',
+            'High'     : 'HIGH',
+            'Critical' : 'ERROR',
+        }
+        import json
+        _output = {}
+        _output['_class'] = 'io.jenkins.plugins.analysis.core.restapi.ReportApi'
+        _output['issues'] = []
+        _total = 0
+        for _comp in cves:
+            _issues = cves[_comp]
+            for _issue in _issues:
+                _new_issue = {}
+                # mis-use fileName as machine name, so filtering for machines is possible in Jenkins
+                if args.machine:
+                    _new_issue['fileName'] = args.machine
+
+                _new_issue['severity']    = SEVERITY_TO_WARNINGSNG[get_severity_from_issue(_issue)]
+                _new_issue['category']    = 'CVE'
+                _new_issue['type']        = _issue['CVE']
+                _new_issue['packageName'] = _issue['PACKAGE NAME'] + ' - ' + _issue['PACKAGE VERSION']
+
+                # Build HTML description from all interesting fields
+                _descr = ''
+                for _field in ['CVE SUMMARY', 'CVSS v2 BASE SCORE', 'CVSS v3 BASE SCORE', 'VECTOR', 'MORE INFORMATION']:
+                    _descr += '<b>' + _field + ': ' + '</b>'
+                    if _is_url(_issue[_field]):
+                        _descr += '<a href="{0}" target="_blank">{0}</a>'.format(_issue[_field])
+                    else:
+                        _descr += _issue[_field]
+                    _descr += '<br>'
+                _new_issue['description'] = _descr
+
+                _output['issues'].append(_new_issue)
+                _total += 1
+
+        _output['size'] = _total
+        print(json.dumps(_output, indent=4))
+
+    if args.summary:
+        _total_cnt=0
+        print("\nCVE statistics:")
+        print("-" * 32)
+        for component in cves:
+            print("{0: <24}: {1}".format(component, len(cves[component])))
+            _total_cnt += len(cves[component])
+        print("-" * 32)
+        print("{0: <24}: {1}".format("Total", _total_cnt))
+

@@ -1,0 +1,26 @@
+From 0a8058cd5aec88fdf7d404ef8f7fb86a4761c587 Mon Sep 17 00:00:00 2001
+From: MTR <github@hilscher.com>
+Date: Tue, 4 Jul 2017 10:02:46 +0200
+Subject: [PATCH 1/2] Add support for changing host name during runtime
+
+---
+ nbnsd.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/nbnsd.c b/nbnsd.c
+index 52ac6d9..43049dc 100644
+--- a/nbnsd.c
++++ b/nbnsd.c
+@@ -305,6 +305,9 @@ main (int argc, char **argv)
+       from_len = sizeof (from);
+       len = recvfrom (sd, pkt, sizeof (pkt), MSG_WAITALL,
+ 		      (struct sockaddr *) &from, &from_len);
++      // Make sure netbios name get's updated
++      get_nb_name (my_nb_name, sizeof (my_nb_name));
++
+       hdr = (struct nb_header *) pkt;
+       tid = get16 (hdr->name_trn_id);
+       flags = get16 (hdr->flags);
+-- 
+2.7.4
+

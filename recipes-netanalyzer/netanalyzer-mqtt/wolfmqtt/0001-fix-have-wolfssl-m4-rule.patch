@@ -1,0 +1,12 @@
+diff -aurN a/m4/have_wolfssl.m4 b/m4/have_wolfssl.m4
+--- a/m4/have_wolfssl.m4	2019-04-18 08:47:48.460855107 +0200
++++ b/m4/have_wolfssl.m4	2019-04-18 08:51:05.976631946 +0200
+@@ -7,7 +7,7 @@
+ AC_DEFUN([_TAO_SEARCH_LIBWOLFSSL],[
+   AC_REQUIRE([AC_LIB_PREFIX])
+ 
+-  LDFLAGS="$LDFLAGS -L/usr/local/lib"
++  LDFLAGS="$LDFLAGS"
+   LIBS="$LIBS -lwolfssl"
+ 
+   AC_LIB_HAVE_LINKFLAGS(wolfssl,,

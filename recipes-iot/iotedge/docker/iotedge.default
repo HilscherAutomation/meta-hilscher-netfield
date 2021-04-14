@@ -1,0 +1,2 @@
+# This file contains settings used by iotedge service / bridge generation code
+BRIDGE_IP="10.252.253.1/24"

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zone target="%%REJECT%%">
+  <short>Block</short>
+  <description>All packets reaching the interface will be dropped, but the user will get a ICMP &quot;unreachable&quot; information.</description>
+</zone>

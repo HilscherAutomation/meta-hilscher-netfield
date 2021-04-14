@@ -1,0 +1,42 @@
+Unloading fails with a stack trace when using device-tree based devices, as DPM is allocated
+via devm_ioremap and freed with iounmap. In this case the kernel tries to release the DPM as
+it does not know about freeing, resulting in the following stack trace:
+
+[  151.228406] ------------[ cut here ]------------
+[  151.228436] WARNING: CPU: 0 PID: 1313 at /build/build_netx4000/tmp/work-shared/nanl-base-4000-re-rev2/kernel-source/mm/vmalloc.c:1503 __vunmap+0xe4/0xe8
+[  151.228443] Trying to vfree() nonexistent vm area (f10c0000)
+[  151.232815] Modules linked in: netanalyzer(O-) ipt_MASQUERADE nf_nat_masquerade_ipv4 nf_conntrack_netlink xfrm_user xt_addrtype ip6t_REJECT nf_reject_ipv6 ip6t_rpfilter ipt_REJECT nf_reject_ipv4 xt_conntrack ebtable_nat ip6table_nat nf_conntrack_ipv6 nf_defrag_ipv6 nf_nat_ipv6 ip6table_mangle ip6table_raw ip6table_security iptable_nat nf_conntrack_ipv4 nf_defrag_ipv4 nf_nat_ipv4 nf_nat iptable_mangle iptable_raw iptable_security nf_conntrack ip_set nfnetlink ebtable_filter ebtables ip6table_filter ip6_tables iptable_filter ip_tables x_tables tun usb_f_acm u_serial g_serial libcomposite device_data(O) pub_key_loader(O)
+[  151.232934] CPU: 0 PID: 1313 Comm: modprobe Tainted: G           O    4.9.146-rt125-netx4000 #1
+[  151.232938] Hardware name: netX4000 using device tree
+[  151.232969] [<c0113904>] (unwind_backtrace) from [<c010d420>] (show_stack+0x20/0x24)
+[  151.232988] [<c010d420>] (show_stack) from [<c05863c4>] (dump_stack+0x80/0x94)
+[  151.233007] [<c05863c4>] (dump_stack) from [<c0123748>] (__warn+0xec/0x114)
+[  151.233020] [<c0123748>] (__warn) from [<c01237cc>] (warn_slowpath_fmt+0x5c/0x80)
+[  151.233034] [<c01237cc>] (warn_slowpath_fmt) from [<c0272380>] (__vunmap+0xe4/0xe8)
+[  151.233047] [<c0272380>] (__vunmap) from [<c02724d0>] (vunmap+0x44/0x4c)
+[  151.233060] [<c02724d0>] (vunmap) from [<c011ab1c>] (__iounmap+0x68/0x78)
+[  151.233073] [<c011ab1c>] (__iounmap) from [<c011aa88>] (iounmap+0x24/0x28)
+[  151.233090] [<c011aa88>] (iounmap) from [<c05a3a84>] (devm_ioremap_release+0x14/0x18)
+[  151.233110] [<c05a3a84>] (devm_ioremap_release) from [<c0640ea8>] (release_nodes.constprop.6+0x1cc/0x218)
+[  151.233123] [<c0640ea8>] (release_nodes.constprop.6) from [<c0641034>] (devres_release_all+0x3c/0x58)
+[  151.233139] [<c0641034>] (devres_release_all) from [<c063c4c0>] (__device_release_driver+0xb4/0x130)
+[  151.233154] [<c063c4c0>] (__device_release_driver) from [<c063ce90>] (driver_detach+0xb0/0xc0)
+[  151.233168] [<c063ce90>] (driver_detach) from [<c063bf08>] (bus_remove_driver+0x5c/0xb0)
+[  151.233182] [<c063bf08>] (bus_remove_driver) from [<c063d94c>] (driver_unregister+0x38/0x58)
+[  151.233198] [<c063d94c>] (driver_unregister) from [<c063ec68>] (platform_driver_unregister+0x1c/0x20)
+[  151.233233] [<c063ec68>] (platform_driver_unregister) from [<bf121134>] (netana_pci_exit_module+0x24/0x28 [netanalyzer])
+[  151.233291] [<bf121134>] (netana_pci_exit_module [netanalyzer]) from [<c01bdee4>] (SyS_delete_module+0x18c/0x1fc)
+[  151.233312] [<c01bdee4>] (SyS_delete_module) from [<c0108400>] (ret_fast_syscall+0x0/0x50)
+[  151.233318] ---[ end trace 0000000000000002 ]---
+
+--- a/netana_enum.c	2019-03-08 09:06:57.000000000 +0100
++++ b/netana_enum.c	2019-10-07 07:49:39.896497492 +0200
+@@ -307,7 +307,7 @@
+         if (ptdeviceinfo != NULL)
+                 netana_unregisterdevice(ptdeviceinfo);
+ 
+-        iounmap(ptdeviceinfo->dpminfo->internal_addr);
++        devm_iounmap(&pdev->dev, ptdeviceinfo->dpminfo->internal_addr);
+         kfree( ptdeviceinfo->dpminfo);
+         ptdeviceinfo->dpminfo = NULL;
+         kfree( ptdeviceinfo);

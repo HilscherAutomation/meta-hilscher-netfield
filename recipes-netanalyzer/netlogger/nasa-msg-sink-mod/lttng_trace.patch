@@ -1,0 +1,102 @@
+diff -aurN a/msg_sink_mod/msg_sink_mod.c b/msg_sink_mod/msg_sink_mod.c
+--- a/msg_sink_mod/msg_sink_mod.c	2019-04-26 07:31:56.383493987 +0200
++++ b/msg_sink_mod/msg_sink_mod.c	2019-04-26 08:30:26.885196530 +0200
+@@ -5,6 +5,10 @@
+ #include "time.h"
+ #include "execute_state.h"
+ #include <assert.h>
++#include "tracepoints.h"
++static long gettid() {
++    return syscall(SYS_gettid);
++}
+ 
+ // #define VERBOSE_DEBUG // this enables logging of sent and acknowlaged messages.
+ #ifdef VERBOSE_DEBUG
+@@ -285,7 +289,7 @@
+ 
+     if (ptThisInst->tMqttCfg.fPahoOk == 1)
+     {
+-      /* Fix to local broker */
++      /* Fix to local broker */
+       ptThisInst->tMqttCfg.szServerUri = "tcp://localhost:1883";
+       ptThisInst->tMqttCfg.szClientId = "msg_sink_mod";
+       ptThisInst->tMqttCfg.fEnabled = 1;
+@@ -760,6 +764,8 @@
+ {
+   MODULE_INSTANCE_T *ptThisInst = (MODULE_INSTANCE_T*)pvDestinationInstanceHandle;
+ 
++  tracepoint(nasa, data_processing, gettid(), "+msg_sink_mod:Decode()");
++
+   if (ptThisInst != NULL)
+   {
+     /* MQTT only operates on real-time path */
+@@ -778,6 +784,8 @@
+           char* szVarState;
+           char* szVarType;
+ 
++          tracepoint(nasa, data_processing, gettid(), "->msg_sink_mod:Decode() : Conversion start");
++
+           switch (ptVarInfo->ulVarState)
+           {
+           case VAR_STATE_LIC_EXPIRED:
+@@ -918,6 +926,10 @@
+           snprintf(szMessage, sizeof(szMessage), "{ \"jsonVersion\": 1, \"identifier\": \"%s\", \"timestamp\": \"%"PRId64"\", \"state\": \"%s\", \"datatype\": \"%s\", \"val\": %s }",
+             szIdentifier, ptVarInfo->llTimeStamp, szVarState, szVarType, szTextBuf);
+ 
++          tracepoint(nasa, data_processing, gettid(), "->msg_sink_mod:Decode() : Conversion end");
++
++          tracepoint(nasa, data_processing, gettid(), "->msg_sink_mod:Decode() : MQTT Publish start");
++
+           if (ptThisInst->tMqttCfg.fEnabled == 1)
+           {
+             MQTTClient_message tMessage = MQTTClient_message_initializer;
+@@ -931,6 +943,8 @@
+               ptThisInst->tMqttCfg.pfnMQTTClient_publishMessage(ptThisInst->tMqttCfg.tClient, ptMessageSinkParams->szMqttTopic, &tMessage, NULL);
+             }
+           }
++
++          tracepoint(nasa, data_processing, gettid(), "->msg_sink_mod:Decode() : MQTT Publish end");
+ 
+         }
+       }
+@@ -938,6 +952,7 @@
+       PreventConfigChangeUnlock(&ptThisInst->tDecodeLocCond, &ptThisInst->tDecodeLocMutex, &ptThisInst->lDecodeLocCount);
+     }
+   }
++  tracepoint(nasa, data_processing, gettid(), "-msg_sink_mod:Decode()");
+   return RES_OK;
+ }
+ 
+diff -aurN a/msg_sink_mod/tracepoints.h b/msg_sink_mod/tracepoints.h
+--- a/msg_sink_mod/tracepoints.h	1970-01-01 01:00:00.000000000 +0100
++++ b/msg_sink_mod/tracepoints.h	2019-04-26 08:28:29.142988128 +0200
+@@ -0,0 +1,29 @@
++#undef TRACEPOINT_PROVIDER
++#define TRACEPOINT_PROVIDER nasa
++
++#undef TRACEPOINT_INCLUDE
++#define TRACEPOINT_INCLUDE "msg_sink_mod/tracepoints.h"
++
++#if !defined(_HELLO_TP_H) || defined(TRACEPOINT_HEADER_MULTI_READ)
++#define _HELLO_TP_H
++
++#include <sys/syscall.h>
++#include <unistd.h>
++#include <lttng/tracepoint.h>
++
++TRACEPOINT_EVENT(
++    nasa,
++    data_processing,
++    TP_ARGS(
++        int, tid_arg,
++        char*, message_arg
++    ),
++    TP_FIELDS(
++        ctf_string(message_field, message_arg)
++        ctf_integer(int, tid_field, tid_arg)
++    )
++)
++
++#endif /* _HELLO_TP_H */
++
++#include <lttng/tracepoint-event.h>

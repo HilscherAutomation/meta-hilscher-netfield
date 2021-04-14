@@ -1,0 +1,22 @@
+--- a/USER_Linux.c	2019-11-04 16:10:36.170890468 +0100
++++ b/USER_Linux.c	2019-11-04 16:11:34.595955277 +0100
+@@ -87,15 +87,15 @@
+ #endif
+ 
+ uint8_t severity_mapping[] = {
+-  0xff, /* not used */
+-  1,    /* TRACE_LEVEL_DEBUG */
+-  2,    /* TRACE_LEVEL_INFO */
++  7,    /* header */
++  7,    /* TRACE_LEVEL_DEBUG */
++  6,    /* TRACE_LEVEL_INFO */
+   0xff, /* not used */
+   4,    /* TRACE_LEVEL_WARNING */
+   0xff, /* not used */
+   0xff, /* not used */
+   0xff, /* not used */
+-  8,    /* TRACE_LEVEL_ERROR */
++  3,    /* TRACE_LEVEL_ERROR */
+ };
+ 
+ /*****************************************************************************/

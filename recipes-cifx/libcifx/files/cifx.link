@@ -1,0 +1,11 @@
+[Match]
+OriginalName=cifx*
+
+# NOTE: In case of a general 'permanent' policy, we need to set cifx
+#       MAC address generation to 'none' since tun device
+#       MAC address may be set delayed.
+#       So sometimes udev will notify a MAC change.
+#       As a consequence udev will generate a permanent MAC address
+#       for the device and set it each boot.
+[Link]
+MACAddressPolicy=none

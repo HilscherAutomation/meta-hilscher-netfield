@@ -1,0 +1,196 @@
+From dae5d6ee45bb3dc13954622e03c82120c626d8c0 Mon Sep 17 00:00:00 2001
+From: MTR <github@hilscher.com>
+Date: Tue, 4 Jul 2017 10:04:09 +0200
+Subject: [PATCH] Allow handling multiple interfaces with different IPs
+
+---
+ nbnsd.c | 89 +++++++++++++++++++++++++++++++++++------------------------------
+ 1 file changed, 48 insertions(+), 41 deletions(-)
+
+diff --git a/nbnsd.c b/nbnsd.c
+index 43049dc..fc08a62 100644
+--- a/nbnsd.c
++++ b/nbnsd.c
+@@ -39,8 +39,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
+ #include <sys/socket.h>
+ #include <sys/types.h>
+ 
+-#define NETDEV		"eth0"
+-
+ #define NB_NAME_LEN	16
+ 
+ #define NB_NSRR		0x20	/* NetBIOS general Name Svc Resource Record */
+@@ -88,7 +86,6 @@ enum NB_SUFFIX
+ const char *prog_name;
+ int verbose = 0;
+ 
+-static const char *netdev = NETDEV;
+ static unsigned int port = 137;
+ 
+ static inline uint16_t
+@@ -185,30 +182,30 @@ get_nb_name (char *buf, size_t buf_size)
+ }
+ 
+ static int
+-get_ipv4 (uint8_t addr[4])
++get_ipv4 (struct msghdr* mh, uint8_t addr[4])
+ {
+-  struct ifreq ifr;
+-  int fd, ret;
++  int ret = -1;
+ 
+-  /* fetch info from interface: */
+-  fd = socket (PF_INET, SOCK_DGRAM, 0);
+-  if (fd < 0)
++  for ( // iterate through all the control headers
++    struct cmsghdr *cmsg = CMSG_FIRSTHDR(mh);
++    cmsg != NULL;
++    cmsg = CMSG_NXTHDR(mh, cmsg))
++  {
++    // ignore the control headers that don't match what we want
++    if (cmsg->cmsg_level == IPPROTO_IP &&
++        cmsg->cmsg_type == IP_PKTINFO)
+     {
+-      fprintf (stderr, "%s: socket() failed (%s)", prog_name, strerror (errno));
+-      return -1;
+-    }
++      struct in_pktinfo  *pi    = (struct in_pktinfo *)CMSG_DATA(cmsg);
++      // at this point, peeraddr is the source sockaddr
++      // pi->ipi_spec_dst is the destination in_addr
++      // pi->ipi_addr is the receiving interface in_addr
+ 
+-  strncpy (ifr.ifr_name, netdev, sizeof (ifr.ifr_name));
+-  ret = ioctl (fd, SIOCGIFADDR, &ifr);
+-  close (fd);
+-  if (ret < 0)
+-    {
+-      fprintf (stderr, "%s: failed to fetch IP address from %s (%s)",
+-	       prog_name, netdev, strerror (errno));
+-      return -1;
++      memcpy (addr, &pi->ipi_spec_dst.s_addr, 4);
++      ret = 0;
+     }
+-  memcpy (addr, &((struct sockaddr_in *) &ifr.ifr_addr)->sin_addr, 4);
+-  return 0;
++  }
++
++  return ret;
+ }
+ 
+ static void
+@@ -217,22 +214,23 @@ usage (int detailed)
+   fprintf (stderr, "Usage: %s [-hv] [-n name]\n", prog_name);
+   if (detailed)
+     fprintf (stderr,
+-	     "\t-n:\tSet NAME as the NetBIOS name.\n"
+ 	     "\t-h:\tPrint this help message.\n"
+ 	     "\t-v:\tBe more verbose.\n");
+ }
+ 
++static uint8_t pkt[2000];
++static uint8_t cmbuf[0x100];
++
+ int
+ main (int argc, char **argv)
+ {
+   uint16_t tid, flags, qdcount, ancount, arcount, opcode, nm_flags;
+   char nb_name[NB_NAME_LEN], my_nb_name[NB_NAME_LEN];
+   uint16_t rcode, nb, in, ttl, rdlength, nb_flags;
+-  uint8_t pkt[2000], *data;
++  uint8_t *data;
+   struct sockaddr_in sin, from;
+   int ret, sd, on = 1, opt;
+   struct nb_header *hdr;
+-  socklen_t from_len;
+   ssize_t len;
+ 
+   prog_name = strrchr (argv[0], '/');
+@@ -252,15 +250,6 @@ main (int argc, char **argv)
+ 	  usage (1);
+ 	  exit (0);
+ 
+-	case 'i':
+-	  netdev = optarg;
+-	  break;
+-
+-	case 'n':
+-	  if (set_nb_name (my_nb_name, sizeof (my_nb_name), optarg) < 0)
+-	    return -1;
+-	  break;
+-
+ 	case 'v':
+ 	  ++verbose;
+ 	  break;
+@@ -292,6 +281,12 @@ main (int argc, char **argv)
+     fprintf (stderr, "%s: failed to turn on SO_REUSEADDR on port %d (%s)\n",
+ 	     prog_name, port, strerror (errno));
+ 
++  if (setsockopt (sd, IPPROTO_IP, IP_PKTINFO, &on, sizeof (on))) {
++    fprintf (stderr, "%s: failed to enable IP_PKTINFO (%s)\n",
++	     prog_name, strerror (errno));
++    return -1;
++  }
++
+   ret = bind (sd, (struct sockaddr*) &sin, sizeof (sin));
+   if (ret < 0)
+     {
+@@ -302,12 +297,23 @@ main (int argc, char **argv)
+ 
+   while (1)
+     {
+-      from_len = sizeof (from);
+-      len = recvfrom (sd, pkt, sizeof (pkt), MSG_WAITALL,
+-		      (struct sockaddr *) &from, &from_len);
++      struct iovec vec[1];
++      struct msghdr mh = {
++          .msg_name = &from,
++          .msg_namelen = sizeof(from),
++          .msg_control = cmbuf,
++          .msg_controllen = sizeof(cmbuf),
++          .msg_iov = vec,
++          .msg_iovlen = 1,
++      };
++
++      vec[0].iov_base = pkt;
++      vec[0].iov_len  = sizeof(pkt);
++
+       // Make sure netbios name get's updated
+       get_nb_name (my_nb_name, sizeof (my_nb_name));
+ 
++      len = recvmsg (sd, &mh, 0);
+       hdr = (struct nb_header *) pkt;
+       tid = get16 (hdr->name_trn_id);
+       flags = get16 (hdr->flags);
+@@ -319,8 +325,8 @@ main (int argc, char **argv)
+       nm_flags = (flags >> 4) & 0x7f;
+       rcode = (flags >> 0) & 0xf;
+       if (verbose)
+-	printf ("%s: received message of size %zd bytes (from_len=%d)\n",
+-		prog_name, len, from_len);
++	printf ("%s: received message of size %zd bytes\n",
++		prog_name, len);
+       if (verbose > 1)
+ 	printf (" Transaction id = 0x%x\n"
+ 		" Flags          = 0x%x\n"
+@@ -377,7 +383,7 @@ main (int argc, char **argv)
+       put16 (data + 8, rdlength);
+       nb_flags = 0x2 << 1;	/* owner node type: B node */
+       put16 (data + 10, nb_flags);
+-      if (get_ipv4 (data + 12) < 0)
++      if (get_ipv4 (&mh, data + 12) < 0)
+ 	continue;
+       if (verbose)
+ 	printf ("%s: responding with IP address %s\n",
+@@ -389,7 +395,8 @@ main (int argc, char **argv)
+ 	  ++len;
+ 	}
+ 
+-      ret = sendto (sd, pkt, len, 0, (struct sockaddr *) &from, from_len);
++      vec[0].iov_len = len;
++      ret = sendmsg (sd, &mh, 0);
+       if (ret < 0)
+ 	perror ("sendto");
+     }
+-- 
+2.7.4
+

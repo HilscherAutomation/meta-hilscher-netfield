@@ -1,0 +1,16 @@
+Per default swupdate creates the IPC socket with 0666 which allows every local user to perform an update.
+
+Change to 0660 to only allow root to perform updates
+
+diff -aurN a/core/network_thread.c b/core/network_thread.c
+--- a/core/network_thread.c	2020-05-18 16:22:41.723081145 +0200
++++ b/core/network_thread.c	2020-05-18 16:36:59.063243925 +0200
+@@ -136,7 +136,7 @@
+ 			return -1;
+ 		}
+ 
+-		if (chmod(path,  S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH) < 0)
++		if (chmod(path,  S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP) < 0)
+ 			WARN("chmod cannot be set on socket, error %s", strerror(errno));
+ 	}
+ 

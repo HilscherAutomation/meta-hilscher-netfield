@@ -1,0 +1,45 @@
+#!/bin/sh
+
+IFS="="
+SCRIPTDIR=`dirname $0`
+read key value < $SCRIPTDIR/../config/operation-settings/nasa-mode.conf
+
+MODE="none"
+RETMODE=0
+STATE="OK"
+
+if [ "$key" = "mode" ] && [ "$value" = "config" ]; then
+  MODE="config mode"
+  RETMODE=1
+elif [ "$key" = "mode" ] && [ "$value" = "operational" ]; then
+  MODE="operational mode"
+  RETMODE=2
+elif [ "$key" = "mode" ] && [ "$value" = "docker" ]; then
+  MODE="docker mode" 
+  RETMODE=3
+else
+  echo "no valid mode definition found"
+  RETMODE=0
+fi
+
+read key value message < $SCRIPTDIR/../config/operation-settings/nasa-state-info.conf
+
+if [ "$key" = "state" ] && [ "$value" = "OK" ]; then
+  STATE="OK"
+elif [ "$key" = "state" ]; then
+  STATE=$value
+else
+  echo "no valid state definition found"
+fi
+
+
+MESSAGE=""
+if [ "$message" != "" ]; then
+  MESSAGE=", \"message\": \"$message\""
+else 
+  MESSAGE=""
+fi 
+
+echo "{\"mode\": \"$MODE\", \"status\": \"$STATE\"$MESSAGE}"
+exit $RETMODE
+

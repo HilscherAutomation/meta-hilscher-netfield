@@ -1,0 +1,15 @@
+[Unit]
+Description=Setup initial branding options
+After=local-fs.target NetworkManager.service nginx.service
+DefaultDependencies=no
+ConditionPathIsReadWrite=/etc
+
+[Service]
+Type=oneshot
+RemainAfterExit=Yes
+StandardOutput=syslog
+TimeoutSec=0
+ExecStart=/sbin/initial-branding.sh
+
+[Install]
+WantedBy=local-fs.target

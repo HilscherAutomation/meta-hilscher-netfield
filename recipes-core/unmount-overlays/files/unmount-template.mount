@@ -1,0 +1,16 @@
+[Unit]
+Description=@OVERLAY@ (overlay)
+DefaultDependencies=no
+RequiresMountsFor=/run/overlay
+Before=systemd-udevd.service systemd-journald.service shutdown.target
+Conflicts=shutdown.target
+ConditionPathExists=@OVERLAY@
+ConditionPathIsReadWrite=!@OVERLAY@
+
+[Mount]
+What=overlay
+Where=@OVERLAY@
+Type=overlay
+
+[Install]
+WantedBy=multi-user.target

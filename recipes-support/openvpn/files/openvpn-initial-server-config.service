@@ -1,0 +1,17 @@
+[Unit]
+Description=Create openvpn static key
+DefaultDependencies=no
+After=local-fs.target
+Before=network.target dpkg-configure.service openvpn@server.service
+ConditionPathExists=!/etc/openvpn/static.key
+
+[Service]
+Type=oneshot
+RemainAfterExit=Yes
+StandardOutput=syslog
+TimeoutSec=0
+ExecStart=/usr/sbin/openvpn --genkey --secret /etc/openvpn/static.key
+ExecStartPost=/bin/chmod a+r /etc/openvpn/static.key
+
+[Install]
+WantedBy=local-fs.target

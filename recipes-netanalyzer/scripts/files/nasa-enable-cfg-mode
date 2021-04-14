@@ -1,0 +1,20 @@
+#!/bin/sh
+for service in nasa-standalone nasa-netanablocker; do
+  systemctl stop $service
+  systemctl disable $service
+done
+
+/usr/sbin/check_license NIOT-S-LIC-SNIF
+if [ $? -ne 0 ]; then
+  echo "no valid license found"
+  systemctl start nasa-netanablocker
+  systemctl enable nasa-netanablocker
+  echo "state=Failed=Sniffer license not found (NIOT-S-LIC-SNIF)." > /opt/nasa/config/operation-settings/nasa-state-info.conf
+else
+  systemctl start nasa-remote-access-server
+  systemctl enable nasa-remote-access-server
+  echo "state=OK" > /opt/nasa/config/operation-settings/nasa-state-info.conf
+fi
+
+SCRIPTDIR=`dirname $0`
+echo "mode=config" > $SCRIPTDIR/../config/operation-settings/nasa-mode.conf

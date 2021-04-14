@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zone target="ACCEPT">
+  <short>Default</short>
+  <description>Zone for all manageable interfaces that are not assigned to an active zone. The zone must not be configured or assigned manually.</description>
+</zone>

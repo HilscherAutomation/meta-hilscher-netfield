@@ -1,0 +1,29 @@
+#!/bin/sh
+
+if ! [ -e @DATABASE_PATH@ ]; then
+  /usr/sbin/samhain -t init
+  err=$?
+  if [ $err != 0 ]; then
+    # clean database there was an error
+    rm -f @DATABASE_PATH@
+    exit $err
+  fi
+  # just make sure database is written before starting service
+  sync
+fi
+
+# check if we need to update the database (after reboot...)
+if [ -s @UPDATE_FILE@ ]; then
+  echo "Running database update..."
+  # NOTE: remember the permissions when creating an update file, otherwise the logging may become obsolete!!!
+  /usr/sbin/samhain -t update -l none --listfile=@UPDATE_FILE@
+  err=$?
+  if [ $err != 0 ]; then
+    echo "Error updating the database!"
+    # Do not return with an error otherwise we do not have a check at all
+  else
+    echo "Successfully updated the database (ref=@UPDATE_FILE@)!"
+  fi
+fi
+
+exit 0

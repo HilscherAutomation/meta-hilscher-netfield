@@ -1,0 +1,12 @@
+#!/bin/sh
+
+for service in nasa-netanablocker nasa-remote-access-server; do
+  systemctl stop $service
+  systemctl disable $service
+done
+
+systemctl start nasa-standalone
+systemctl enable nasa-standalone
+
+SCRIPTDIR=`dirname $0`
+echo "mode=operational" > $SCRIPTDIR/../config/operation-settings/nasa-mode.conf

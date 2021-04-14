@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "connectTimeout": 300,
+  "serverURIs": ["tcp://localhost:1883", "tcp://mosquitto:1883"],
+  "mqttVersion": 3
+}

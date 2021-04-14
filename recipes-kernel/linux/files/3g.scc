@@ -1,0 +1,4 @@
+define KFEATURE_DESCRIPTION "Enable GSM/3G/4G USB Sticks"
+
+kconf hardware 3g.cfg
+

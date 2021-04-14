@@ -1,0 +1,131 @@
+#!/usr/bin/env python3
+
+import xml.etree.ElementTree as ET
+
+DIRECT_XML="/etc/firewalld/direct.xml"
+DOCKER_RULES = [
+  {
+    'tag'   : 'chain',
+    'table' : 'filter',
+    'ipv'   : 'ipv4',
+    'chain' : 'DOCKER-USER',
+    'index' : 0
+  },
+  {
+    'tag'      : 'rule',
+    'priority' : '0',
+    'table'    : 'filter',
+    'ipv'      : 'ipv4',
+    'chain'    : 'DOCKER-USER',
+    'data'     : ['-m conntrack', '--ctstate RELATED,ESTABLISHED', '-j RETURN'],
+    'comment'  : 'allow internal docker communication'
+  },
+  {
+    'tag'      : 'rule',
+    'priority' : '1',
+    'table'    : 'filter',
+    'ipv'      : 'ipv4',
+    'chain'    : 'DOCKER-USER',
+    'data'     : ['-m mark', '--mark 0x10000', '-j REJECT', '--reject-with icmp-host-prohibited'],
+    'comment'  : 'Reject all packets that were marked in mangle/PREROUTING as not being open ports'
+  },
+  {
+    'tag'      : 'rule',
+    'priority' : '2',
+    'table'    : 'filter',
+    'ipv'      : 'ipv4',
+    'chain'    : 'DOCKER-USER',
+    'data'     : ['-m mark', '--mark 0x20000', '-j DROP'],
+    'comment'  : 'Drop all packets that were marked in mangle/PREROUTING as not being open ports'
+  },
+]
+
+def prettify(elem, indent="  ", level=0):
+    i = "\n" + level*indent
+    if len(elem):
+        if not elem.text or not elem.text.strip():
+            elem.text = i + indent
+        for el in elem:
+            prettify(el, indent, level+1)
+        if not el.tail or not el.tail.strip():
+            el.tail = i
+    if not elem.tail or not elem.tail.strip():
+        elem.tail = i
+
+def write_xml(root):
+    prettify(root)
+    tree = ET.ElementTree(root)
+    tree.write(DIRECT_XML, encoding='utf-8', xml_declaration=True)
+
+def add_direct_element(root, element):
+    new_elem = ET.Element(element['tag'])
+    new_elem.attrib['table'] = element.get('table', 'filter')
+    new_elem.attrib['ipv']   = element.get('ipv', 'ipv4')
+    new_elem.attrib['chain'] = element.get('chain', 'DOCKER-USER')
+    if element.get('priority'):
+        new_elem.attrib['priority'] = element.get('priority')
+
+    if element.get('data'):
+        new_elem.text = " ".join(element.get('data'))
+        if element.get('comment'):
+            new_elem.text = new_elem.text + " -m comment --comment " + "'" + element.get('comment') + "'"
+
+    if 'index' in element:
+        root.insert(element['index'], new_elem)
+    else:
+        root.append(new_elem)
+
+def create_default_direct_xml():
+    root = ET.Element("direct")
+    for _tmp_elem in DOCKER_RULES:
+        add_direct_element(root, _tmp_elem)
+    write_xml(root)
+
+def find_element(root, search_element):
+    for _elem in root:
+        if (_elem.tag == search_element['tag'] and
+               _elem.get('table') == search_element.get('table', 'filter') and
+               _elem.get('chain') == search_element.get('chain', 'DOCKER-USER')):
+
+            prio = search_element.get('priority')
+            if prio is not None and  _elem.get('priority') != prio:
+                continue
+
+            data = search_element.get('data')
+            if data is not None:
+                if _elem.text is None:
+                    continue
+
+                found_data = True
+                for _data_item in data:
+                    if _data_item not in _elem.text:
+                        found_data = False
+                        break
+
+                if not found_data:
+                    continue
+
+            return _elem
+    else:
+        return None
+
+try:
+    modified = False
+    tree = ET.parse(DIRECT_XML)
+    root = tree.getroot()
+    if root.tag != 'direct':
+        raise Exception('Malformed XML. root tag shall be "<direct>"')
+
+    for _tmp_elem in DOCKER_RULES:
+        _found = find_element(root, _tmp_elem)
+        if _found is None:
+            print("Adding unavailable item %r to %r" % (_tmp_elem, DIRECT_XML))
+            add_direct_element(root, _tmp_elem)
+            modified = True
+
+    if modified:
+        write_xml(root)
+
+except Exception as e:
+    print("Error parsing %r (e=%s), creating default" % (DIRECT_XML, e))
+    create_default_direct_xml()

@@ -1,0 +1,71 @@
+diff -aurN a/term-utils/agetty.c b/term-utils/agetty.c
+--- a/term-utils/agetty.c	2020-04-06 07:22:54.991092299 +0200
++++ b/term-utils/agetty.c	2020-04-06 10:04:34.774816205 +0200
+@@ -1542,6 +1542,35 @@
+ 	return ret;
+ }
+ 
++static char* read_text_file(const char *filename)
++{
++	int fd  = -1;
++	struct stat st;
++	char* ret = NULL;
++
++	fd = open(filename, O_RDONLY);
++	if(fd != -1) {
++		if (fstat(fd, &st) < 0 || st.st_size > 4 * 1024) {
++			log_warn(_("cannot open file %s"), filename);
++		} else {
++			ret = malloc(st.st_size + 1);
++			if(!ret)
++				log_err(_("failed to allocate memory: %m"));
++			else {
++				char *newline;
++
++				read(fd, ret, st.st_size);
++				if ((newline=strchr(ret, '\n')) != NULL)
++					*newline = '\0';
++				ret[st.st_size] = 0;
++			}
++		}
++		close(fd);
++	}
++
++	return ret;
++}
++
+ #ifdef AGETTY_RELOAD
+ static void open_netlink(void)
+ {
+@@ -2583,6 +2612,31 @@
+ 		}
+ 		break;
+ 	}
++	case 'I': /* print hardware ID */
++	{
++		const int MAX_SN_LEN=12, MAX_PN_LEN=12;
++		char* product_number = read_text_file("/var/platform/device_data/product_number");
++		char* serial_number  = read_text_file("/var/platform/device_data/serial_number");
++		const char *padding  = "000000000000";
++		int sn_padding = 0, pn_padding = 0;
++		int sn_offset = 0;
++
++		if(serial_number && strlen(serial_number) > MAX_SN_LEN)
++			sn_offset = strlen(serial_number) - MAX_SN_LEN;
++		else
++			sn_padding = MAX_SN_LEN - strlen(serial_number);
++
++		if(product_number && strlen(product_number) < MAX_PN_LEN)
++			pn_padding = MAX_PN_LEN - strlen(product_number);
++
++		fprintf(ie->output, "%*.*s%.*s-%*.*s%.*s",
++			pn_padding, pn_padding, padding, MAX_PN_LEN, product_number ? product_number : "000000000000",
++			sn_padding, sn_padding, padding, MAX_SN_LEN, serial_number  ? serial_number + sn_offset : "000000000000");
++
++		free(product_number);
++		free(serial_number);
++		break;
++	}
+ 	case 'S':
+ 	{
+ 		char *var = NULL, varname[64];

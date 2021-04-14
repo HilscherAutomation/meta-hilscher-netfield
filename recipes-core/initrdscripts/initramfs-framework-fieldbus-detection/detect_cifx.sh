@@ -1,0 +1,117 @@
+#!/bin/sh
+
+detect_cifx_enabled() {
+        return 0
+}
+
+function hex_inverse() {
+    echo ${1} | fold -w2 | tac | tr -d "\n"
+}
+
+write_assembly_options()
+{
+  local asm_options="$1"
+  local file="$2"
+
+  for option in $asm_options; do
+    case $option in
+     0000) echo "0x$option:undefined"        >> $file ;;
+     0001) echo "0x$option:unavailable"      >> $file ;;
+     0010) echo "0x$option:UART"             >> $file ;;
+     0020) echo "0x$option:AS-Interface"     >> $file ;;
+     0030) echo "0x$option:CAN"              >> $file ;;
+     0040) echo "0x$option:DeviceNet"        >> $file ;;
+     0050) echo "0x$option:PROFIBUS"         >> $file ;;
+     0070) echo "0x$option:CC-Link"          >> $file ;;
+     0071) echo "0x$option:CC-Link IE FIELD" >> $file ;;
+     0080) echo "0x$option:Ethernet int"     >> $file ;;
+     0081) echo "0x$option:Ethernet ext"     >> $file ;;
+     0082) echo "0x$option:Ethernet fiber"   >> $file ;;
+     0083) echo "0x$option:Ethernet TAP"     >> $file ;;
+     0090) echo "0x$option:SPI"              >> $file ;;
+     00A0) echo "0x$option:IO-LINK"          >> $file ;;
+     00B0) echo "0x$option:CompoNet"         >> $file ;;
+     FFF4) echo "0x$option:I2C (unknown)"    >> $file ;;
+     FFF5) echo "0x$option:SSI"              >> $file ;;
+     FFF6) echo "0x$option:SYNC"             >> $file ;;
+     FFF8) echo "0x$option:Fieldbus"         >> $file ;;
+     FFFA) echo "0x$option:Touchscreen"      >> $file ;;
+     FFFB) echo "0x$option:I2C (PIO)"        >> $file ;;
+     FFFC) echo "0x$option:I2C (PIO NT)"     >> $file ;;
+     FFFD) echo "0x$option:proprietary"      >> $file ;;
+     FFFE) echo "0x$option:NC"               >> $file ;;
+     FFFF) echo "0x$option:reserved"         >> $file ;;
+     *)    echo "0x$option:unknown"          >> $file ;;
+    esac
+  done
+}
+
+detect_cifx_run() {
+  detect_cifx_setup init
+
+  cifx_pci_devices=$(/opt/cifx/examples/cifx_find_pci)
+
+  if [ -n "$cifx_pci_devices" ]; then
+    for pci_dev in $cifx_pci_devices; do
+      cifx_name=$(echo $pci_dev | cut -d ';' -f1)
+      cifx_dev=$(echo $pci_dev | cut -d ';' -f2)
+      mkdir -p /var/platform/cifx/pci/$cifx_name
+      ln -s $cifx_dev /var/platform/cifx/pci/$cifx_name/dev
+    done
+
+    # Read HW Assembly from DPM (NOTE: We need to initialize all cards as they are RAM based)
+    hw_assembly=$(/opt/cifx/examples/cifx_read_hwinfo)
+
+    for tmp_dev in /var/platform/cifx/pci/*; do
+      tmp_dev=$(basename $tmp_dev)
+      tmp_cifx=$(echo "$hw_assembly" | grep "^${tmp_dev}")
+      tmp_dev_nr=$(echo $tmp_cifx | cut -d ' ' -f 2)
+      tmp_serial=$(echo $tmp_cifx | cut -d ' ' -f 3)
+      tmp_hw_asm=$(echo $tmp_cifx | cut -d ' ' -f 4 | sed 's/.\{4\}/& /g')
+      echo "$tmp_dev_nr" > /var/platform/cifx/pci/$tmp_dev/device_number
+      echo "$tmp_serial" > /var/platform/cifx/pci/$tmp_dev/serial_number
+      write_assembly_options "$tmp_hw_asm" "/var/platform/cifx/pci/$tmp_dev/hw_assembly"
+    done
+  fi
+
+  spi_idx=0
+  for spi_dev in $(find /dev -maxdepth 1 -name 'spidev*' 2>/dev/null); do
+    for try_mode in "3:-H -O" "0:"; do
+        mode_flags=$(echo "$try_mode" | cut -d ':' -f 2-)
+        spi_mode=$(echo "$try_mode" | cut -d ':' -f 1)
+        read_cmd="/opt/cifx/examples/netx_sdpm_read -D $spi_dev $mode_flags -s 10000000"
+
+        dpm_cookie=$($read_cmd -o 0 -l 4)
+        # BOOT=424F4F54
+        # netX=6E657458
+        if [ "$dpm_cookie" = "424F4F54" -o "$dpm_cookie" = "6E657458" ]; then
+            mkdir -p /var/platform/cifx/spi/cifX$spi_idx
+            ln -s $spi_dev /var/platform/cifx/spi/cifX$spi_idx/dev
+            tmp_dev_nr=$($read_cmd -o 8 -l 4)
+            tmp_serial=$($read_cmd -o 12 -l 4)
+            tmp_hw_asm=$($read_cmd -o 16 -l 8 | sed 's/.\{4\}/& /g')
+
+            # Convert to LE32
+            tmp_dev_nr=$(hex_inverse "$tmp_dev_nr")
+            tmp_serial=$(hex_inverse "$tmp_serial")
+
+            # Convert to LE16 (space separated)
+            for _hw_option in $tmp_hw_asm; do
+                hw_asm="${hw_asm}$(hex_inverse ${_hw_option}) "
+            done
+            hw_asm=$(echo $hw_asm | awk '{$1=$1;print}')
+
+            printf "%d" 0x$tmp_dev_nr > /var/platform/cifx/spi/cifX$spi_idx/device_number
+            printf "%d" 0x$tmp_serial > /var/platform/cifx/spi/cifX$spi_idx/serial_number
+            write_assembly_options "$hw_asm" "/var/platform/cifx/spi/cifX$spi_idx/hw_assembly"
+
+            echo "$spi_mode" > /var/platform/cifx/spi/cifX$spi_idx/mode
+
+            spi_idx=$((spi_idx + 1))
+            break
+        fi
+    done
+  done
+
+  detect_cifx_setup deinit
+}

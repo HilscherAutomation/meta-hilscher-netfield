@@ -1,0 +1,51 @@
+#!/bin/sh
+
+function help() {
+	echo "Usage: $(basename ${0}) [options] <archive.fsa>"
+	echo ""
+	echo "Options:"
+	echo " -p <password> : Password protect archive (6-64 chars)"
+	echo ""
+	echo "  Example: $(basename ${0}) -p "password" 20190724.fsa"
+}
+
+while getopts hfc:l:p: opt; do
+   case $opt in
+       h) help; exit 0;;
+       p) password="$OPTARG";;
+   esac
+done
+
+archive=${@:$OPTIND:1}
+
+if [ -z "$archive" ]; then
+	help
+	exit 1
+fi
+
+if [ ! -e "/mnt/backup/$archive" ]; then
+	echo "Error $archive not existant on backup volumt"
+	exit 1
+fi
+
+# Check archive contents
+[ -n "$password" ] && arg_password="-c $password"
+arch_content=$(fsarchiver archinfo /mnt/backup/$archive $arg_password 2>&1)
+if [ $? -ne 0 ]; then
+    echo "Error parsing archive $archive"
+    echo "Output: $arch_content"
+    exit 1
+fi
+fs_count=$(echo "$arch_content" | grep "Filesystems count" | cut -d ":" -f2- | tr -d "\t ")
+[ "$fs_count" = "2" ] && type="full" ||  type="data"
+
+cat <<EOF> /mnt/backup/.restore
+restore=1
+archive=$archive
+password=$password
+type=$type
+EOF
+
+echo "Rebooting in 5 seconds to restore backup"
+sleep 5
+reboot

@@ -1,0 +1,23 @@
+diff -aurN a/src/firewalld.in b/src/firewalld.in
+--- a/src/firewalld.in	2018-11-08 14:40:44.000000000 +0100
++++ b/src/firewalld.in	2019-08-19 13:56:15.755862997 +0200
+@@ -83,19 +83,6 @@
+             log.addInfoLogging("*", log.stdout)
+             log.addDebugLogging("*", log.stdout)
+ 
+-    log_file = FileLog(config.FIREWALLD_LOGFILE, "a")
+-    try:
+-        log_file.open()
+-    except IOError as e:
+-        log.error("Failed to open log file '%s': %s", config.FIREWALLD_LOGFILE,
+-                  str(e))
+-    else:
+-        log.addInfoLogging("*", log_file, [ log.FATAL, log.ERROR, log.WARNING ])
+-        log.addDebugLogging("*", log_file)
+-        if args.debug:
+-            log.addInfoLogging("*", log_file)
+-            log.addDebugLogging("*", log_file)
+-
+ def startup(args):
+     try:
+         if not args.nofork:

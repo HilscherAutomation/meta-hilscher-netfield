@@ -1,0 +1,14 @@
+{
+  "log-driver": "journald",
+  "bridge"    : "iotedge0",
+  "data-root" : "/run/overlay/iotedge-docker",
+  "pidfile"   : "/var/run/iotedge-docker.pid",
+  "exec-root" : "/var/run/iotedge-docker",
+  "cgroup-parent" : "/iotedge-docker",
+  "default-address-pools": [
+    {
+      "base": "10.253.0.1/16",
+      "size": 24
+    }
+  ]
+}

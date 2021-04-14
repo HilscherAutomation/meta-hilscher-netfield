@@ -1,0 +1,11 @@
+#!/bin/sh
+
+URIS_TO_CHANGE=".connect.management_uri .connect.workload_uri .moby_runtime.uri"
+
+for uri in $URIS_TO_CHANGE; do
+    value=$(yq eval "$uri" /etc/iotedge/config.yaml)
+    if echo $value | grep "/var/run/" > /dev/null; then
+        new_value=$(echo $value | sed -e 's@/var/run/@/run/@')
+        yq --inplace eval "$uri=\"$new_value\" | $uri style=\"single\"" /etc/iotedge/config.yaml
+    fi
+done

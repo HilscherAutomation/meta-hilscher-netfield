@@ -1,0 +1,93 @@
+#include <tunables/global>
+
+/opt/upnpd/init-desc {
+  #include <abstractions/base>
+  #include <abstractions/bash>
+  #include <abstractions/nameservice>
+
+  deny @{PROC}/* w,   # deny write for all files directly in /proc (not in a subdir)
+  # deny write to files not in /proc/<number>/** or /proc/sys/**
+  deny @{PROC}/{[^1-9],[^1-9][^0-9],[^1-9s][^0-9y][^0-9s],[^1-9][^0-9][^0-9][^0-9]*}/** w,
+  deny @{PROC}/sys/[^k]** w,  # deny /proc/sys except /proc/sys/k* (effectively /proc/sys/kernel)
+  deny @{PROC}/sys/kernel/{?,??,[^s][^h][^m]**} w,  # deny everything except shm* in /proc/sys/kernel/
+  deny @{PROC}/sysrq-trigger rwklx,
+  deny @{PROC}/mem rwklx,
+  deny @{PROC}/kmem rwklx,
+  deny @{PROC}/kcore rwklx,
+
+  deny mount,
+
+  deny /sys/[^f]*/** wklx,
+  deny /sys/f[^s]*/** wklx,
+  deny /sys/fs/[^c]*/** wklx,
+  deny /sys/fs/c[^g]*/** wklx,
+  deny /sys/fs/cg[^r]*/** wklx,
+  deny /sys/firmware/efi/efivars/** rwklx,
+  deny /sys/kernel/security/** rwklx,
+
+  @{PROC}/@{pid}/loginuid  r,
+  /opt/upnpd/{,**}         r,
+  /opt/upnpd/desc/**       rlwk,
+  /bin/busybox.*           rix,
+  /bin/sed.*               rix,
+  /bin/grep{,.grep}        rix,
+  /usr/bin/dirname.*       rix,
+
+  /dev/tty                 rw,
+
+  # Allow reading device_data (product_name/serial_number)
+  /bin/cat{,.coreutils}                 rix,
+  /bin/hostname{,.coreutils,.net-tools} rix,
+  /var/platform/device_data/{product_name,serial_number} r,
+  /sys/device_data/{product_name,serial_number}          r,
+  # Allow reading nginx port
+  /etc/nginx/nginx.conf r,
+  # Allow ifconfig readout
+  @{PROC}/@{pid}/net/if_inet6 r,
+  @{PROC}/@{pid}/net/dev r,
+  # Allow cutting ip address
+  /usr/bin/cut{,.coreutils} rix,
+
+  # Allow parameter overrides
+  /etc/default/upnpd r,
+}
+
+/opt/upnpd/upnpd{,.sh} {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+
+  network,
+
+  deny @{PROC}/* w,   # deny write for all files directly in /proc (not in a subdir)
+  # deny write to files not in /proc/<number>/** or /proc/sys/**
+  deny @{PROC}/{[^1-9],[^1-9][^0-9],[^1-9s][^0-9y][^0-9s],[^1-9][^0-9][^0-9][^0-9]*}/** w,
+  deny @{PROC}/sys/[^k]** w,  # deny /proc/sys except /proc/sys/k* (effectively /proc/sys/kernel)
+  deny @{PROC}/sys/kernel/{?,??,[^s][^h][^m]**} w,  # deny everything except shm* in /proc/sys/kernel/
+  deny @{PROC}/sysrq-trigger rwklx,
+  deny @{PROC}/mem rwklx,
+  deny @{PROC}/kmem rwklx,
+  deny @{PROC}/kcore rwklx,
+
+  deny mount,
+
+  deny /sys/[^f]*/** wklx,
+  deny /sys/f[^s]*/** wklx,
+  deny /sys/fs/[^c]*/** wklx,
+  deny /sys/fs/c[^g]*/** wklx,
+  deny /sys/fs/cg[^r]*/** wklx,
+  deny /sys/firmware/efi/efivars/** rwklx,
+  deny /sys/kernel/security/** rwklx,
+
+  capability sys_nice,
+
+  @{PROC}/@{pid}/loginuid  r,
+  @{PROC}/@{pid}/net/if_inet6 r,
+  /opt/upnpd/upnpd.sh r,
+  /opt/upnpd/upnpd rix,
+  /bin/grep{,.grep} rix,
+  /bin/cat{,.coreutils} rix,
+  /bin/sed rix,
+  /bin/busybox{,.nosuid} rix,
+  /dev/tty rw,
+  /etc/nginx/nginx.conf r,
+}

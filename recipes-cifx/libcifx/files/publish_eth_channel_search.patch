@@ -1,0 +1,11 @@
+--- a/netx_tap/netx_tap.c	2019-11-27 17:15:37.840298902 +0100
++++ b/netx_tap/netx_tap.c	2019-11-27 17:16:28.461218205 +0100
+@@ -90,7 +90,7 @@
+ 
+ NETX_ETH_DEV_T** g_DeviceList = NULL;
+ 
+-static int32_t cifxeth_search_eth_channel   ( char* szDeviceName, uint32_t ulSearchIdx, uint32_t* pulChannelNumber);
++int32_t        cifxeth_search_eth_channel   ( char* szDeviceName, uint32_t ulSearchIdx, uint32_t* pulChannelNumber);
+ static int     cifxeth_allocate_tap         ( NETX_ETH_DEV_T* internal_dev, char* prefix);
+ static void    cifxeth_free_tap             ( NETX_ETH_DEV_T* internal_dev, char* name);
+ static void    cifxeth_delete_device        ( NETX_ETH_DEV_T* internal_dev);

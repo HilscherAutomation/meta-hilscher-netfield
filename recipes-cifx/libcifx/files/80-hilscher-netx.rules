@@ -1,0 +1,2 @@
+SUBSYSTEMS=="pci",ATTRS{vendor}=="0x15cf",ATTRS{device}=="0x0000",ACTION=="add",MODE="0660",GROUP="cifx",PROGRAM="/bin/sh -c 'chmod 0660 /sys/class/uio/uio%n/device/config'"
+SUBSYSTEMS=="pci",ATTRS{vendor}=="0x15cf",ATTRS{device}=="0x0000",ACTION=="add",PROGRAM+="/bin/sh -c 'chgrp cifx /sys/class/uio/uio%n/device/config'"

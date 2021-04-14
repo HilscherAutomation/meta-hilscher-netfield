@@ -1,0 +1,107 @@
+From 7b9c1ecc15a59043d7a1afff94ebcc66507c4d01 Mon Sep 17 00:00:00 2001
+From: OpenEmbedded <oe.patch@oe>
+Date: Fri, 25 Jan 2019 06:33:55 +0000
+Subject: [PATCH] ACL saving/restoring did not work, as delay_set_stat did pass
+ wrong buffer/length. Invalid Defaults ACL were saved as well
+
+---
+ src/extract.c | 14 ++++++++------
+ src/xattrs.c  | 17 +++++++++++++----
+ 2 files changed, 21 insertions(+), 10 deletions(-)
+
+diff --git a/src/extract.c b/src/extract.c
+index d0c8f0d..638e1fc 100644
+--- a/src/extract.c
++++ b/src/extract.c
+@@ -379,16 +379,18 @@ delay_set_stat (char const *file_name, struct tar_stat_info const *st,
+   data->after_links = 0;
+   data->cntx_name = NULL;
+   assign_string (&data->cntx_name, st->cntx_name);
+-  if (st->acls_a_ptr)
+-    data->acls_a_ptr = xmemdup(st->acls_a_ptr, st->acls_a_len);
+-  else
++  if (st->acls_a_ptr) {
++    data->acls_a_ptr = xmemdup(st->acls_a_ptr, st->acls_a_len + 1);
++    data->acls_a_len = st->acls_a_len;
++  } else
+     {
+       data->acls_a_ptr = NULL;
+       data->acls_a_len = 0;
+     }
+-  if (st->acls_d_ptr)
+-    data->acls_d_ptr = xmemdup(st->acls_d_ptr, st->acls_d_len);
+-  else
++  if (st->acls_d_ptr) {
++    data->acls_d_ptr = xmemdup(st->acls_d_ptr, st->acls_d_len + 1);
++    data->acls_d_len = st->acls_d_len;
++  } else
+     {
+       data->acls_d_ptr = NULL;
+       data->acls_d_len = 0;
+diff --git a/src/xattrs.c b/src/xattrs.c
+index d331188..67f463f 100644
+--- a/src/xattrs.c
++++ b/src/xattrs.c
+@@ -87,6 +87,7 @@ static void xattrs__acls_get_a(struct tar_stat_info *st,
+ #ifdef HAVE_LIBACL
+   char *val = NULL;
+   acl_t acl;
++  size_t len;
+ 
+   if (fd != -1)
+   {
+@@ -105,7 +106,7 @@ static void xattrs__acls_get_a(struct tar_stat_info *st,
+   }
+   
+   
+-  val = acl_to_text(acl, NULL);
++  val = acl_to_text(acl, &len);
+   acl_free (acl);
+   
+   if (val == NULL)
+@@ -113,9 +114,13 @@ static void xattrs__acls_get_a(struct tar_stat_info *st,
+     call_arg_warn ("acl_to_text", file_name);
+     return;
+   }
++
++  if(len == 0) {
++    return;
++  }
+   
+   *ret_ptr = xstrdup (val);
+-  *ret_len = strlen (val);
++  *ret_len = len;
+   
+   acl_free (val);
+ #endif
+@@ -128,6 +133,7 @@ static void xattrs__acls_get_d(struct tar_stat_info *st,
+ #ifdef HAVE_LIBACL
+   char *val = NULL;
+   acl_t acl;
++  size_t len;
+   
+   if ((acl = acl_get_file (file_name, ACL_TYPE_DEFAULT)) == (acl_t)NULL)
+   {
+@@ -136,7 +142,7 @@ static void xattrs__acls_get_d(struct tar_stat_info *st,
+     return;
+   }
+   
+-  val = acl_to_text(acl, NULL);
++  val = acl_to_text(acl, &len);
+   acl_free (acl);
+   
+   if (val == NULL)
+@@ -144,9 +150,12 @@ static void xattrs__acls_get_d(struct tar_stat_info *st,
+     call_arg_warn ("acl_to_text", file_name);
+     return;
+   }
++
++  if(len == 0)
++    return;
+   
+   *ret_ptr = xstrdup (val);
+-  *ret_len = strlen (val);
++  *ret_len = len;
+   
+   acl_free (val);
+ #endif

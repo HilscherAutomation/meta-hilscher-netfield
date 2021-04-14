@@ -1,0 +1,12 @@
+#!/bin/sh
+
+owner_cert_enabled() {
+	return 0
+}
+
+owner_cert_run() {
+	msg "Installing root certificates ..."
+
+	# load modules for devices
+	load_kernel_module pub-key-loader
+}

@@ -1,0 +1,19 @@
+/* -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*- */
+
+polkit.addAdminRule(function(action, subject) {
+    return ["unix-group:sudo"];
+});
+
+polkit.addRule(function(action, subject) {
+    /* timedatectl and firewalld do not allow interactive authentication via cockpit */
+    if (  (action.id.indexOf("org.freedesktop.timedate1.") == 0
+        || action.id.indexOf("org.fedoraproject.FirewallD1.") == 0
+        || action.id == "org.freedesktop.NetworkManager.wifi.scan")
+        && subject.isInGroup("sudo") ) {
+        return polkit.Result.YES;
+    }
+
+    if(!subject.isInGroup("sudo")) {
+        return polkit.Result.NO;
+    }
+});

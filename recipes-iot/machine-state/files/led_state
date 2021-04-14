@@ -1,0 +1,95 @@
+#!/bin/sh
+
+set_led_state (){
+	led_param=("$@")
+	idx="0"
+	led=${led_param[ $idx ]}
+	if [ -d "${led}" ]; then
+		idx=$(( idx + 1 ))
+		state="0"
+		while [ "${state}" -le "${STATE}" ]; do
+			mode=${led_param[ $idx ]}
+			case "${mode}" in
+			"none")
+				if [ "${state}" = "${STATE}" ]; then
+					echo "$mode" > "${led}/trigger"
+					echo "${led_param[ $(( idx + 1 )) ]}" > "${led}/brightness"
+				fi
+				idx=$(( idx + 2 ))
+			;;
+			"timer")
+				if [ "${state}" = "${STATE}" ]; then
+					echo "$mode" > "${led}/trigger"
+					echo "${led_param[ $(( idx + 1 )) ]}" > "${led}/delay_on"
+					echo "${led_param[ $(( idx + 2 )) ]}" > "${led}/delay_off"
+				fi
+				idx=$(( idx + 3 ))
+			;;
+			"pattern")
+				no=${led_param[ $(( idx + 1 )) ]}
+				if [ "${state}" = "${STATE}" ]; then
+					echo "$mode" > "${led}/trigger"
+					echo "${led_param[@]:$(( idx + 2)):$no}" > "${led}/pattern"
+				fi
+				idx=$(( idx + 2 + no ))
+			;;
+			*)
+			break
+			;;
+			esac
+			state=$(( state + 1 ))
+		done
+	fi
+
+	# additional handling
+	case $STATE in
+		0)
+		;;
+		1)
+		;;
+		2)
+		;;
+		3)
+		;;
+		4)
+		;;
+		5)
+		;;
+		6)
+		;;
+		7)
+		;;
+	esac
+}
+
+STATE=$1
+
+# NOTE: For led control set in the resource file (system-leds)
+#       the variable "leds" to the led-variables which define 
+#       the led behaviour.
+#       The led-variable defines for every required system state
+#       a led setup. Currently none,timer and pattern is supported.
+#
+#       Example:
+#       led1=("/sys/class/leds/system-led/"                                        # led to process
+#                   "none"        "1"                                              # state 0 = enable
+#                   "timer"     "100" "200"                                        # state 1 = enable blinking 100ms on and 100ms off
+#                   "pattern"     "8"   "1" "100" "0" "200" "1" "1000" "0" "1000"  # state 2 = the '8' is the number of pattern following
+#                   "none"        "0"                                              # state 3
+#       leds2=("...")
+#       leds="led1 led2 ..."
+
+if [ -e "/etc/machine-state/system-leds" ]; then
+	# shellcheck disable=SC1091
+	. "/etc/machine-state/system-leds"
+fi
+
+# leds come from /etc/machine-state/system-leds
+# shellcheck disable=SC2154,SC2068
+for led in ${leds[@]}; do
+	# shellcheck disable=SC1087
+	ref=$led[@]
+	arr=(${!ref})
+
+	set_led_state "${arr[@]}"
+done

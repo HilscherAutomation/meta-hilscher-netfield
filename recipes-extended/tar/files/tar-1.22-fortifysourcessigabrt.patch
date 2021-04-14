@@ -1,0 +1,41 @@
+From 3520d52cf195175483564632de06ffcc2134580a Mon Sep 17 00:00:00 2001
+From: OpenEmbedded <oe.patch@oe>
+Date: Fri, 25 Jan 2019 06:33:55 +0000
+
+---
+ src/create.c | 15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
+
+diff --git a/src/create.c b/src/create.c
+index eb5ff2e..a7b592b 100644
+--- a/src/create.c
++++ b/src/create.c
+@@ -576,7 +576,10 @@ write_gnu_long_link (struct tar_stat_info *st, const char *p, char type)
+   GNAME_TO_CHARS (tmpname, header->header.gname);
+   free (tmpname);
+ 
+-  strcpy (header->header.magic, OLDGNU_MAGIC);
++  /* OLDGNU_MAGIC is string with 7 chars + NULL */
++  strncpy (header->header.magic, OLDGNU_MAGIC, sizeof(header->header.magic));
++  strncpy (header->header.version, OLDGNU_MAGIC+sizeof(header->header.magic),
++           sizeof(header->header.version));
+   header->header.typeflag = type;
+   finish_header (st, header, -1);
+ 
+@@ -906,9 +909,13 @@ start_header (struct tar_stat_info *st)
+       break;
+ 
+     case OLDGNU_FORMAT:
+-    case GNU_FORMAT:   /*FIXME?*/
+-      /* Overwrite header->header.magic and header.version in one blow.  */
+-      strcpy (header->header.magic, OLDGNU_MAGIC);
++    case GNU_FORMAT:
++      /* OLDGNU_MAGIC is string with 7 chars + NULL */
++      strncpy (header->header.magic, OLDGNU_MAGIC,
++               sizeof(header->header.magic));
++      strncpy (header->header.version,
++               OLDGNU_MAGIC+sizeof(header->header.magic),
++               sizeof(header->header.version));
+       break;
+ 
+     case POSIX_FORMAT:

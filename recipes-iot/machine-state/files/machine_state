@@ -1,0 +1,214 @@
+#!/bin/sh
+
+parse_runtime_status() {
+	string=$1
+	module=$2
+	state=$3
+	ret="fail"
+	idx="0"
+
+	states=$(echo "${string}" | jq ".modules[].status.runtimeStatus.status")
+	if [ -n "${module}" ]; then
+		names=$(echo "${string}" | jq .modules[].name)
+		# shellcheck disable=SC2034
+		for name in $names; do
+			cur=$(echo "${string}" | jq .modules[$idx].name)
+			if [ "${cur}" = "\"${module}\"" ]; then
+				states=$(echo "${string}" | jq ".modules[${idx}].status.runtimeStatus.status")
+				break
+			fi
+			idx=$(( idx + 1 ))
+		done
+	fi
+	for tmpstate in $states; do
+		ret="ok"
+		if [ "${tmpstate}" != "\"${state}\"" ]; then
+			ret="fail"
+			break
+		fi
+	done
+	echo "${ret}"
+}
+
+check_onboarding() {
+	string=$1
+	modules="edgeAgent"
+	ret="fail"
+	idx="0"
+	modules=$(echo "${string}" | jq ".modules[].name")
+	for module in $modules; do
+		cur=$(echo "${string}" | jq ".modules[${idx}].name")
+		if [ "\"edgeAgent\"" = "${cur}" ]; then
+			res=$(echo "${string}" | jq '.modules['$idx'].config.settings.createOptions.Labels."net.azure-devices.edge.env"')
+			# shellcheck disable=SC2181
+			if [ $? = "0" ]; then
+				res=$(echo "$res" | tr -d \\)
+				res=${res:1:${#res}-2} # remove "" from beginning and end
+				res=$(echo "${res}" | jq ".isOnboarded.value")
+				if [ "${res}" = "\"true\"" ]; then
+					ret="ok"
+				fi
+			else
+				# say ok here to be old compatible, older modules do not support the variabls
+				# for newer once we need to check the value to be set to true
+				ret="ok"
+			fi
+			break
+		fi
+		idx=$(( idx + 1 ))
+	done
+	echo "${ret}"
+}
+
+get_upstream_port() {
+	upstream_prot="AMQP"
+	env=$(docker-iotedge inspect -f '{{.Config.Env}}' edgeAgent)
+	for var in $env; do
+		key=$(echo "$var" | cut -d "=" -f1)
+		if [ "${key}" = "UpstreamProtocol" ]; then
+			upstream_prot=$(echo "$var" | cut -d "=" -f2)
+			break
+		fi
+	done
+	# convert tp upper case
+	upstream_prot=$(echo "$upstream_prot" | tr '[:lower:]' '[:upper:]')
+	# get port according protocol
+	case ${upstream_prot} in
+	"MQTT")
+		echo "8883"
+	;;
+	"MQTTWS")
+		echo "443"
+	;;
+	"AMQP")
+		echo "5671"
+	;;
+	"AMQPWS")
+		echo "443"
+	;;
+	*)# default is Amqp
+		echo "5671"
+	;;
+	esac
+}
+
+STATE_WANTED=8
+if [ $# -gt 0 ]; then
+	if=$1
+fi
+if [ $# -gt 1 ]; then
+	STATE_WANTED=$2
+fi
+
+res=$(nmcli -f bridge con show "$if")
+if [ -n "${res}" ]; then
+	# skip bridge devices
+	echo 0
+	exit
+fi
+
+err=""
+STATE="0"
+tmp_machine_state="/tmp/machine_state"
+
+while [ "${STATE}" -le "${STATE_WANTED}" ]; do
+	case $STATE in
+	0)
+		# We are running...
+	;;
+	1) # check if given interface is connected
+		if_state=$(nmcli -f GENERAL.STATE d show "$if" | sed 's/[^0-9]*//g')
+		# shellcheck disable=SC2181
+		if [ $? != 0 ] || [ "${if_state}" != "100" ]; then
+			break
+		fi
+	;;
+	2) # check valid ip
+		ip=$(nmcli -f IP4.ADDRESS d show "${if}" | cut -d ":" -f2 | cut -d "/" -f1 | xargs)
+		# shellcheck disable=SC2181
+		[ $? ] || break
+		[ "${ip}" = "" ] && break
+		ip_dez=$(echo "$ip" | tr . '\n' | awk '{s = s*256 + $1} END{print s}')
+		if [ "${ip_dez}" -ge "2851995648" ] && [ "${ip_dez}" -le "2852061183" ]; then
+			break
+		fi
+	;;
+	3) # check if iotedge service is running
+		service_state=$(systemctl is-active iotedge)
+		# shellcheck disable=SC2181
+		if [ "${?}" != "0" ] || [ "${service_state}" != "active" ]; then
+			break
+		fi
+	;;
+	4) # check if internet connection is available
+		pid=$(docker-iotedge inspect -f '{{.State.Pid}}' edgeAgent)
+		# shellcheck disable=SC2181
+		[ $? ] || break
+		ports=$(nsenter -t "$pid" -n netstat -antl  | grep tcp | tr -s " " | cut -d " " -f5 | tr -s ":" | cut -d ":" -f2 2>/dev/null)
+		# shellcheck disable=SC2181
+		[ $? ] || break
+		res="fail"
+		upstream_port=$(get_upstream_port)
+		for port in $ports; do
+			if [ "${port}" = "${upstream_port}" ]; then
+				res="ok"
+				break
+			fi
+		done
+		if [ "${res}" != "ok" ]; then
+			break
+		fi
+	;;
+	5) # check if edgeAgent is up and running
+		res=$(curl --unix-socket /var/run/iotedge/mgmt.sock "http://dummy/modules?api-version=2018-06-28" 2>/dev/null)
+		# shellcheck disable=SC2181
+		[ $? ] && res=$(parse_runtime_status "${res}" "edgeAgent" "running")
+		if [ "${res}" != "ok" ]; then
+			break
+		fi
+	;;
+	6) # check if edgeAgent is up and running
+		res=$(curl --unix-socket /var/run/iotedge/mgmt.sock "http://dummy/modules?api-version=2018-06-28" 2>/dev/null)
+		# shellcheck disable=SC2181
+		[ $? ] && res=$(parse_runtime_status "${res}" "edgeAgent" "running")
+		if [ "${res}" != "ok" ]; then
+			break
+		fi
+	;;
+	7) # check if device is "onboarded" by user
+		res=$(curl --unix-socket /var/run/iotedge/mgmt.sock "http://dummy/modules?api-version=2018-06-28" 2>/dev/null)
+		# shellcheck disable=SC2181
+		[ $? ] && res=$(check_onboarding "${res}")
+		if [ "${res}" != "ok" ]; then
+			break
+		fi
+	;;
+	8) # check state of all modules
+		res=$(curl --unix-socket /var/run/iotedge/mgmt.sock "http://dummy/modules?api-version=2018-06-28" 2>/dev/null)
+		# shellcheck disable=SC2181
+		[ $? ] && res=$(parse_runtime_status "${res}" "" "running")
+		if [ "${res}" != "ok" ]; then
+			break
+		fi
+	;;
+	*)
+		err="Error: Requested state (${STATE_WANTED}) not supported!"
+		break
+	;;
+	esac
+	STATE=$(( STATE + 1 ))
+done
+STATE=$(( STATE -1 ))
+
+if [ "${err}" != "" ];then
+	echo "$err"
+	exit 1
+else
+	if [ -e "${tmp_machine_state}" ]; then
+		echo "$STATE" > "${tmp_machine_state}"
+	else
+		echo "$STATE"
+	fi
+fi
+
+exit 0

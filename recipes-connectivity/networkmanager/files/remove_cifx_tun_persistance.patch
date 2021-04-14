@@ -1,0 +1,12 @@
+--- a/src/platform/nm-linux-platform.c	2019-11-27 16:53:09.632849414 +0100
++++ b/src/platform/nm-linux-platform.c	2019-11-27 16:54:11.405825374 +0100
+@@ -7291,6 +7291,9 @@
+ 	struct ifreq ifr = { };
+ 	nm_auto_close int fd = -1;
+ 
++	if (strncmp(name,"cifx",strlen("cifx")) == 0)
++		return FALSE;
++
+ 	nm_assert (NM_IN_SET (props->type, IFF_TAP, IFF_TUN));
+ 	nm_assert (props->persist || out_fd);
+ 

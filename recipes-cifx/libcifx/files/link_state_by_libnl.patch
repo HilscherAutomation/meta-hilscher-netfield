@@ -1,0 +1,259 @@
+Index: CMakeLists.txt
+===================================================================
+--- a/CMakeLists.txt	(revision 13409)
++++ b/CMakeLists.txt	(working copy)
+@@ -1,5 +1,7 @@
+ cmake_minimum_required(VERSION 2.8.9)
+ 
++FIND_PACKAGE(PkgConfig REQUIRED)
++
+ project(cifx)
+ 
+ set(DRV_MAJOR 2)
+@@ -69,6 +71,15 @@
+ 	include_directories(${src_tap_dir})
+ 	file(GLOB NETXTAP_SOURCES ${src_tap_dir}/*.c)
+ 	set_source_files_properties(${src_tk_dir}/cifXFunctions.c PROPERTIES COMPILE_FLAGS -DAPIRENAME)
++
++	if(NOT LIBDNL_INCLUDE_DIRS OR NOT LIBDNL_LIBRARY_DIRS OR NOT LIBDNL_LIBRARIES)
++		pkg_check_modules(LIBDNL libnl-3.0)
++		set(REQUIRED_PACKAGES ${REQUIRED_PACKAGES} libnl-3.0)
++	endif(NOT LIBDNL_INCLUDE_DIRS OR NOT LIBDNL_LIBRARY_DIRS OR NOT LIBDNL_LIBRARIES)
++
++	include_directories(${LIBDNL_INCLUDE_DIRS})
++	link_directories(${LIBDNL_LIBRARY_DIRS})
++	set(drv_libs ${drv_libs} ${LIBDNL_LIBRARIES} -lnl-cli-3)
+ endif(VIRTETH)
+ if(HWIF OR PLUGIN OR SPM_PLUGIN)
+ 	add_definitions(-DCIFX_DRV_HWIF)
+Index: netx_tap/netx_tap.c
+===================================================================
+--- a/netx_tap/netx_tap.c	(revision 13410)
++++ b/netx_tap/netx_tap.c	(working copy)
+@@ -45,6 +45,8 @@
+ #include <ctype.h>
+ #include <dirent.h>
+ #include <time.h>
++#include <netlink/cli/utils.h>
++#include <netlink/cli/link.h>
+ 
+ #include "Hil_Packet.h"
+ #include "Hil_Results.h"
+@@ -91,7 +93,7 @@
+ NETX_ETH_DEV_T** g_DeviceList = NULL;
+ 
+ static int32_t cifxeth_search_eth_channel   ( char* szDeviceName, uint32_t ulSearchIdx, uint32_t* pulChannelNumber);
+-static int     cifxeth_allocate_tap         ( NETX_ETH_DEV_T* internal_dev, char* prefix, char *dev, int fClose);
++static int     cifxeth_allocate_tap         ( NETX_ETH_DEV_T* internal_dev, char* prefix);
+ static void    cifxeth_free_tap             ( NETX_ETH_DEV_T* internal_dev, char* name);
+ static void    cifxeth_delete_device        ( NETX_ETH_DEV_T* internal_dev);
+ static int32_t cifxeth_register_app         ( NETX_ETH_DEV_T* internal_dev, int fRegister);
+@@ -104,6 +106,66 @@
+ static void*   cifx_to_eth_thread           ( void* arg);
+ static NETX_ETH_DEV_T* find_device          ( char* name);
+ 
++struct nl_link_arg {
++  struct rtnl_link *change;
++  struct nl_sock *sock;
++  NETX_ETH_DEV_T* priv;
++};
++
++static void set_cb(struct nl_object *obj, void *arg)
++{
++  struct rtnl_link *link = nl_object_priv(obj);
++  struct nl_link_arg *link_arg = arg;
++
++  if (rtnl_link_change(link_arg->sock, link, link_arg->change, 0))
++  {
++    if(g_ulTraceLevel & TRACE_LEVEL_ERROR)
++    {
++      USER_Trace( link_arg->priv->devinst, TRACE_LEVEL_ERROR, "Ethernet-IF Error: Link-update failed for %s", link_arg->priv->cifxeth_name);
++    }
++  }
++}
++
++void nl_signal_link_change( NETX_ETH_DEV_T* internal_dev, int state) {
++  struct nl_sock *sock;
++  struct nl_cache *link_cache;
++  struct rtnl_link *link, *change;
++  struct nl_link_arg link_arg;
++
++  if (NULL == (sock = nl_cli_alloc_socket()))
++  {
++    if(g_ulTraceLevel & TRACE_LEVEL_ERROR)
++    {
++      USER_Trace( internal_dev->devinst, TRACE_LEVEL_ERROR, "Ethernet-IF Error: Link-update failed - failed to allocate socket", internal_dev->cifxeth_name);
++    }
++    return;
++  }
++  if (0 == nl_cli_connect(sock, NETLINK_ROUTE))
++  {
++    link_cache = nl_cli_link_alloc_cache(sock);
++    link = nl_cli_link_alloc();
++    change = nl_cli_link_alloc();
++
++    nl_cli_link_parse_name(link, internal_dev->cifxeth_name); 
++    if (state != 0) {
++      rtnl_link_set_flags(change, IFF_UP);
++    } else {
++      rtnl_link_unset_flags(change, IFF_UP);
++    }
++
++    link_arg.sock = sock;
++    link_arg.change = change;
++    link_arg.priv = internal_dev;
++    nl_cache_foreach_filter(link_cache, OBJ_CAST(link), set_cb, &link_arg);
++  } else
++  {
++    if(g_ulTraceLevel & TRACE_LEVEL_ERROR)
++    {
++      USER_Trace( internal_dev->devinst, TRACE_LEVEL_ERROR, "Ethernet-IF Error: Link-update failed - failed to connect socket", internal_dev->cifxeth_name);
++    }
++  }
++}
++
+ /*****************************************************************************/
+ /*! This function creates a netX based ethernet interface
+ *   \param config  pointer to configuration structure
+@@ -179,7 +241,7 @@
+           prefix[i] = tolower(prefix[i]);
+ 
+         internal_dev->eth_fd = -1;
+-        if( (err = cifxeth_allocate_tap( internal_dev, prefix, internal_dev->cifxeth_name, 1)) < 0)
++        if( (internal_dev->eth_fd = cifxeth_allocate_tap( internal_dev, prefix)) < 0)
+         {
+           if(g_ulTraceLevel & TRACE_LEVEL_ERROR)
+           {
+@@ -187,6 +249,8 @@
+           }
+         } else
+         {
++          /* signal link down since TAP device is up by default */
++          nl_signal_link_change( internal_dev, 0);
+           eth_no++;
+           strcpy( config->eth_dev_name, internal_dev->cifxeth_name);
+ 
+@@ -499,7 +563,7 @@
+ *   \param dev          returns the name of created device (-> cifX[x])
+ *   \return a valid file descriptor to the device - on success (>=0)         */
+ /*****************************************************************************/
+-static int cifxeth_allocate_tap( NETX_ETH_DEV_T* internal_dev, char* prefix, char *dev, int fClose)
++static int cifxeth_allocate_tap( NETX_ETH_DEV_T* internal_dev, char* prefix)
+ {
+   struct ifreq ifr;
+   int          ret;
+@@ -525,20 +589,10 @@
+ 
+     } else
+     {
+-      if ( (err = ioctl(ret, TUNSETPERSIST, 1) < 0 ) )
+-      {
+-        if(g_ulTraceLevel & TRACE_LEVEL_ERROR)
+-        {
+-          USER_Trace( internal_dev->devinst, TRACE_LEVEL_ERROR, "Ethernet-IF Error: Error creating persistent tap device (TUNSETPERSIST) '%s'.    Error=%d", prefix, errno);
+-        }
+-      }
+-      if (dev != NULL) {
+-        strcpy(dev, ifr.ifr_name);
+-        sprintf(internal_dev->event_path,"/sys/class/net/%s/uevent",prefix);
+-        internal_dev->eth_fd = ret; /* set temp. since cifxeth_update_device_config() deals with that handle */
+-        cifxeth_update_device_config(internal_dev);
+-        internal_dev->eth_fd = -1;
+-      }
++      strcpy( internal_dev->cifxeth_name, prefix);
++      sprintf(internal_dev->event_path,"/sys/class/net/%s/uevent",prefix);
++      internal_dev->eth_fd = ret; /* set temp. since cifxeth_update_device_config() deals with that handle */
++      cifxeth_update_device_config(internal_dev);
+     }
+   } else
+   {
+@@ -548,10 +602,6 @@
+     }
+     ret = -errno;
+   }
+-  /* NOTE: A closed device (only persistently created) indicates link down -> open the device to indicate link up */
+-  if ( (fClose != 0) && (ret >= 0) )
+-    close(ret);
+-
+   return ret;
+ }
+ 
+@@ -890,11 +940,11 @@
+   if (CIFX_NO_ERROR == (lRet = cifxeth_get_extended_info( internal_dev, EXT_INFO_LINKSTATE, &tLinkState, sizeof(tLinkState))))
+   {
+     int fSkipUpdate = 0;
+-    if ((internal_dev->eth_fd >= 0) && (tLinkState.bLinkState)) {
++    if ((internal_dev->link_up > 0) && (tLinkState.bLinkState)) {
+       /* device is already online */
+       fSkipUpdate = 1;
+     }
+-    if ((internal_dev->eth_fd < 0) && (tLinkState.bLinkState == 0)) {
++    if ((internal_dev->link_up <= 0) && (tLinkState.bLinkState == 0)) {
+       /* already offline... skip handling */
+       fSkipUpdate = 1;
+     }
+@@ -904,38 +954,31 @@
+         if(g_ulTraceLevel & TRACE_LEVEL_DEBUG) {
+           USER_Trace( internal_dev->devinst, TRACE_LEVEL_DEBUG, "Link up on '%s'", internal_dev->cifxeth_name);
+         }
+-
+         /* notify link state change */
+         internal_dev->link_up = 1;
+         OS_SetEvent( internal_dev->link_event);
+ 
+-        if( (internal_dev->eth_fd = cifxeth_allocate_tap( internal_dev, internal_dev->cifxeth_name, NULL, 0)) < 0)
+-        {
++        if (cifxeth_create_com_thread( internal_dev) != 0) {
+           lRet = CIFX_FUNCTION_FAILED;
+           if(g_ulTraceLevel & TRACE_LEVEL_ERROR)
+           {
+-            USER_Trace( internal_dev->devinst, TRACE_LEVEL_ERROR, "Ethernet-IF Error: Link-up-error: error open tun device '%s'. Error=%d", internal_dev->cifxeth_name, internal_dev->eth_fd);
++            USER_Trace( internal_dev->devinst, TRACE_LEVEL_ERROR, "Ethernet-IF Error: Error creating cifX Ethernet communication thread for %s.",internal_dev->cifxeth_name);
+           }
+         } else {
+-          if (cifxeth_create_com_thread( internal_dev) != 0) {
++          FILE *file = NULL;
++
++          nl_signal_link_change( internal_dev, 1);
++
++          /* notify link up via uevent */
++          if (NULL != (file = fopen(internal_dev->event_path,"r+"))) {
++            fprintf(file, "online");
++            fclose(file);
++          } else {
+             lRet = CIFX_FUNCTION_FAILED;
+             if(g_ulTraceLevel & TRACE_LEVEL_ERROR)
+             {
+-              USER_Trace( internal_dev->devinst, TRACE_LEVEL_ERROR, "Ethernet-IF Error: Error creating cifX Ethernet communication thread for %s.",internal_dev->cifxeth_name);
++              USER_Trace( internal_dev->devinst, TRACE_LEVEL_ERROR, "Ethernet-IF Error: Error opening event path of cifX Ethernet IF %s (online event).",internal_dev->cifxeth_name);
+             }
+-          } else {
+-            FILE *file = NULL;
+-            /* notify link up via uevent */
+-            if (NULL != (file = fopen(internal_dev->event_path,"r+"))) {
+-              fprintf(file, "online");
+-              fclose(file);
+-            } else {
+-              lRet = CIFX_FUNCTION_FAILED;
+-              if(g_ulTraceLevel & TRACE_LEVEL_ERROR)
+-              {
+-                USER_Trace( internal_dev->devinst, TRACE_LEVEL_ERROR, "Ethernet-IF Error: Error opening event path of cifX Ethernet IF %s (online event).",internal_dev->cifxeth_name);
+-              }
+-            }
+           }
+         }
+       } else
+@@ -954,10 +997,9 @@
+           pthread_join( internal_dev->eth_to_cifx_thread, 0);
+           internal_dev->eth_to_cifx_thread = 0;
+         }
+-        if (internal_dev->eth_fd >= 0) {
+-          close(internal_dev->eth_fd);
+-          internal_dev->eth_fd = -1;
+-        }
++
++        nl_signal_link_change( internal_dev, 0);
++
+         /* notify link down via uevent */
+         if (NULL != (file = fopen(internal_dev->event_path,"r+"))) {
+           fprintf(file, "offline");

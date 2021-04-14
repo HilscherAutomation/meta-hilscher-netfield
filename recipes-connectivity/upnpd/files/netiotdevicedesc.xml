@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<root xmlns="urn:schemas-upnp-org:device-1-0">
+  <specVersion>
+    <major>1</major>
+    <minor>0</minor>
+  </specVersion>
+  <device>
+    <deviceType>urn:hilscher-com:device:iotgw:1</deviceType>
+    <friendlyName></friendlyName>
+    <manufacturer>Hilscher Gesellschaft fuer Systemautomation mbH</manufacturer>
+    <manufacturerURL>http://www.hilscher.com</manufacturerURL>
+    <modelDescription>netIOT Edge Gateway</modelDescription>
+    <modelName>netIOT Edge Gateway</modelName>
+    <modelNumber>1.0</modelNumber>
+    <modelURL>http://www.hilscher.com/products/product-groups/industrial-internet-industry-40/netiot-edge/</modelURL>
+    <serialNumber></serialNumber>
+    <UDN>uuid:</UDN>
+    <UPC></UPC>
+    <iconList>
+      <icon>
+        <mimetype>image/png</mimetype>
+        <width>100</width>
+        <height>100</height>
+        <depth>16</depth>
+        <url>logo.png</url>
+      </icon>
+    </iconList>
+    <presentationURL>/</presentationURL>
+</device>
+</root>

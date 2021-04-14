@@ -1,0 +1,52 @@
+#!/bin/sh
+
+install_path="/etc/ssl/services/nginx/"
+hostname=$(hostname)
+cert_subj="/CN=${hostname}/O=self-signed certificate/"
+
+generate_selfsigned_keys()
+{
+  openssl req -nodes -x509 -newkey rsa:4096 -keyout ${install_path}key.pem \
+              -out ${install_path}cert.pem -days 365 \
+              -sha512 \
+              -subj "${cert_subj}" 2> /dev/null
+  sync
+}
+
+generate_selfsigned_cert()
+{
+  openssl req -out /tmp/nginx_vendor-cert.csr -key ${install_path}key.pem \
+              -new -subj "${cert_subj}" \
+              -sha512 2> /dev/null
+  openssl x509 -req -days 365 -in /tmp/nginx_vendor-cert.csr \
+               -signkey ${install_path}key.pem \
+               -sha512 \
+               -out ${install_path}cert.pem 2> /dev/null
+  rm -f /tmp/nginx_vendor-cert.csr
+  sync
+}
+
+key_modulus=$(openssl rsa -noout -modulus -in ${install_path}key.pem 2> /dev/null)
+if [ $? -ne 0 ]; then
+  echo "<3>Error opening private key. Regenerating self-signed keys"
+  generate_selfsigned_keys
+else
+  cert_modulus=$(openssl x509 -noout -modulus -in ${install_path}cert.pem 2> /dev/null)
+  if [ $? -ne 0 ]; then
+    echo "<3>Error opening certificate. Regenerating self-signed certificate from key"
+    generate_selfsigned_cert
+  else
+    if [ "${key_modulus}" != "${cert_modulus}" ]; then
+      echo "<3>private keys <-> certificate mismatch. Regenerating self-signed keys"
+      generate_selfsigned_cert
+    fi
+  fi
+fi
+
+dh_param=$(openssl dhparam -check -in /etc/nginx/ssl/dhparam.pem 2> /dev/null)
+if [ $? -ne 0 ]; then
+  openssl dhparam -dsaparam -out /etc/nginx/ssl/dhparam.pem 2048 2> /dev/null
+  sync
+fi
+
+exit 0

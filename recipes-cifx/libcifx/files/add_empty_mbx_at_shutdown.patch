@@ -1,0 +1,41 @@
+--- a/netx_tap/netx_tap.c	2020-10-12 13:37:05.114646394 +0200
++++ b/netx_tap/netx_tap.c	2020-10-12 13:49:08.483584433 +0200
+@@ -340,6 +340,28 @@
+ }
+ 
+ /*****************************************************************************/
++/*! This function empties mailbox
++*   \param internal_dev pointer to internal netx-ethernet device             */
++/*****************************************************************************/
++void empty_mailbox( NETX_ETH_DEV_T* internal_dev) {
++  uint32_t ulRecvPktCount = 0;
++  uint32_t ulSendPktCount = 0;
++  int32_t  lRet           = 0;
++
++  if ((internal_dev == NULL) || (internal_dev->cifx_channel == NULL))
++    return;
++
++  lRet = xChannelGetMBXState( internal_dev->cifx_channel, &ulRecvPktCount, &ulSendPktCount);
++  while((lRet == CIFX_NO_ERROR) && (ulRecvPktCount > 0)) {
++    CIFX_PACKET cifx_packet;
++
++    lRet = xChannelGetPacket( internal_dev->cifx_channel, sizeof(cifx_packet), &cifx_packet, CIFX_TO_CONT_PACKET);
++    if (lRet == CIFX_NO_ERROR)
++      lRet = xChannelGetMBXState( internal_dev->cifx_channel, &ulRecvPktCount, &ulSendPktCount);
++  }
++}
++
++/*****************************************************************************/
+ /*! This function deletes netX based ethernet interface
+ *   \param internal_dev pointer to internal netx-ethernet device
+ *   \return CIFX_NO_ERROR on success                                         */
+@@ -361,6 +383,9 @@
+     if (internal_dev->cifx_channel != NULL)
+       cifxeth_register_app( internal_dev, 0);
+ 
++    /* remove any pending packets */
++    empty_mailbox( internal_dev);
++
+     cifxeth_free_tap(internal_dev,internal_dev->cifxeth_name);
+ 
+     if (NULL != internal_dev->link_event)

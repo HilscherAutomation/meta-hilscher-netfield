@@ -1,0 +1,14 @@
+import base64
+import json
+
+def filter_request(request):
+    uri = request['RequestUri']
+    method = request['RequestMethod']
+
+    if method == 'POST':
+        if uri.endswith('/containers/create'):
+            body = json.loads(base64.b64decode(request['RequestBody']))
+            if body['HostConfig']['Privileged'] is True:
+                return False, 'Privileged containers are denied', 'Privileged violation'
+ 
+    return True, '', ''

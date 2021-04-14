@@ -1,0 +1,32 @@
+#!/bin/sh
+
+interface=$1
+
+WEBDIR=$(dirname $0)
+NAME=$(hostname)
+SERIALNO=$(cat /var/platform/device_data/serial_number)
+PRODNAME=$(cat /var/platform/device_data/product_name)
+IP=$(/sbin/ifconfig $interface | grep -o 'inet addr:[0-9.]*' | cut -d: -f2)
+
+PORT=$(cat /etc/nginx/nginx.conf | grep listen | grep -v ssl | sed -e 's/.*:\([0-9]\+\).*/\1/g')
+
+# Check if port is overriden
+if [ -e /etc/default/upnpd ]; then
+  . /etc/default/upnpd
+  if [ -n "${UPNPD_PRESENTATION_PORT}" -a "${UPNPD_PRESENTATION_PORT}" != "-1" ]; then
+    PORT="${UPNPD_PRESENTATION_PORT}"
+  fi
+fi
+
+if [ "$PORT" != "80" ]; then
+  PRESENTATION_URL="http://${IP}:${PORT}/"
+else
+  PRESENTATION_URL="http://${IP}/"
+fi
+
+sed -e 's/<friendlyName>.*<\/friendlyName>/<friendlyName>'"${PRODNAME}"' ('"${NAME}"')<\/friendlyName>/g' \
+    -e 's/<modelNumber>.*<\/modelNumber>/<modelNumber>'"${PRODNAME}"'<\/modelNumber>/g' \
+    -e 's/<serialNumber>.*<\/serialNumber>/<serialNumber>'"${SERIALNO}"'<\/serialNumber>/g' \
+    -e 's/<UDN>uuid:.*<\/UDN>/<UDN>uuid:'"${NAME}"'<\/UDN>/g' \
+    -e "s@<presentationURL>.*<\/presentationURL>@<presentationURL>${PRESENTATION_URL}<\/presentationURL>@g" \
+    ${WEBDIR}/netiotdevicedesc.xml > ${WEBDIR}/desc/netiotdevicedesc_${interface}.xml

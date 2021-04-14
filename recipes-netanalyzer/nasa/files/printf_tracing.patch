@@ -1,0 +1,44 @@
+diff -aurN a/src/StandAlone.c b/src/StandAlone.c
+--- a/src/StandAlone.c	2019-04-18 07:28:08.000000000 +0200
++++ b/src/StandAlone.c	2019-04-26 09:59:51.706784494 +0200
+@@ -49,6 +49,18 @@
+ 
+ #include <version.h>
+ 
++#include <unistd.h>
++#include <time.h>
++
++uint32_t getTick() {
++    struct timespec ts;
++    unsigned theTick = 0U;
++    clock_gettime( CLOCK_REALTIME, &ts );
++    theTick  = ts.tv_nsec / 1000;
++    theTick += ts.tv_sec * 1000000;
++    return theTick;
++}
++
+ /* be aware of architecture */
+ #define BACKEND_PATH "./bin/libbackend.so"
+ #define NETANA_DRIVER_LIB  "libnetana.so.1"
+@@ -1185,15 +1197,21 @@
+   /* we call backend here */
+   long lUser = 0;
+   STANDALONE_INSTANCE_T* ptInstance = pvUser;
++  uint32_t start, end;
+ 
+   if(ptInstance == NULL)
+     return;
+ 
++  start=getTick();
++
+   /* backend requires pvUser of "0" (zero) because it is the first instance
+    * normally ths is a json handle */
+   lUser = ptInstance->tBackendData.ulInstanceNr;
+   ptInstance->tBackendFunc.pfnDataCallback(pvData, ulDataLen, (void*)lUser);
+ 
++  end=getTick();
++  printf("*DataCallback took %u us\n", end-start);
++
+   return;
+ }
+ 
