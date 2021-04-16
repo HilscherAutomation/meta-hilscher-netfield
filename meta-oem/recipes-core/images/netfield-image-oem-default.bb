@@ -9,6 +9,7 @@ CVE_CHECK_CREATE_MANIFEST="0"
 BASE_IMAGE="netfield-image-oem"
 
 OEM_IMAGE_INSTALL = " \
+	login-welcome-oem-ovl \
 	os-release-oem-ovl \
 	upnpd-oem-ovl \
 	nginx-oem-ovl \
