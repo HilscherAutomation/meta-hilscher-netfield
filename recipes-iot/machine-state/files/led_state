@@ -1,5 +1,13 @@
 #!/bin/sh
 
+_update_sysfs_value() {
+	file="$1"
+	value="$2"
+
+	curval=$(cat "$file")
+	[ "$curval" != "$value" ] && echo "$value" > "${file}"
+}
+
 set_led_state (){
 	led_param=("$@")
 	idx="0"
@@ -12,24 +20,24 @@ set_led_state (){
 			case "${mode}" in
 			"none")
 				if [ "${state}" = "${STATE}" ]; then
-					echo "$mode" > "${led}/trigger"
-					echo "${led_param[ $(( idx + 1 )) ]}" > "${led}/brightness"
+					_update_sysfs_value "${led}/trigger" "$mode"
+					_update_sysfs_value "${led}/brightness" "${led_param[ $(( idx + 1 )) ]}"
 				fi
 				idx=$(( idx + 2 ))
 			;;
 			"timer")
 				if [ "${state}" = "${STATE}" ]; then
-					echo "$mode" > "${led}/trigger"
-					echo "${led_param[ $(( idx + 1 )) ]}" > "${led}/delay_on"
-					echo "${led_param[ $(( idx + 2 )) ]}" > "${led}/delay_off"
+					_update_sysfs_value "${led}/trigger" "$mode"
+					_update_sysfs_value "${led}/delay_on" "${led_param[ $(( idx + 1 )) ]}"
+					_update_sysfs_value "${led}/delay_off" "${led_param[ $(( idx + 2 )) ]}"
 				fi
 				idx=$(( idx + 3 ))
 			;;
 			"pattern")
 				no=${led_param[ $(( idx + 1 )) ]}
 				if [ "${state}" = "${STATE}" ]; then
-					echo "$mode" > "${led}/trigger"
-					echo "${led_param[@]:$(( idx + 2)):$no}" > "${led}/pattern"
+					_update_sysfs_value "${led}/trigger" "$mode"
+					_update_sysfs_value "${led}/pattern" "${led_param[@]:$(( idx + 2)):$no}"
 				fi
 				idx=$(( idx + 2 + no ))
 			;;
