@@ -8,6 +8,7 @@ OEM_IMAGE_INSTALL += " \
     cockpit-oem-ovl-remove-docker \
     cockpit-oem-ovl-remove-general-settings \
     cockpit-oem-ovl-remove-iotedge-docker \
+    cockpit-oem-ovl-remove-networkservices \
     cockpit-oem-ovl-remove-onboarding \
     cockpit-oem-ovl-remove-terminal \
 "
