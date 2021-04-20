@@ -132,20 +132,18 @@ backup_oem ()
 	vgchange -ay ${LVM_OPTS} > /dev/null
 	vgscan --mknodes ${LVM_OPTS} > /dev/null
 
-	tmp_dev=$(blkid | grep "LABEL='system'" | cut -d ':' -f1)
-	if [ ! -b "$tmp_dev" ]; then
-		vmsg -n "- Creating a backup of oem directory ..."
+	tmp_dev=$(blkid | grep 'LABEL="system"' | cut -d ':' -f1)
+	if [ -b "$tmp_dev" ]; then
 		tmpdir=$(mktemp -d)
 		mount -o ro $tmp_dev $tmpdir
 		if [ -d "$tmpdir/oem" ]; then
 			vmsg -n "- Creating a backup of oem directory ..."
-				tar cf oem.tar -C $tmpdir oem
-			fi
-			umount $tmpdir
+			tar cf oem.tar -C $tmpdir oem
 			vmsg " done"
 		fi
+		umount $tmpdir
 		rmdir $tmpdir
-	done
+	fi
 
 	vgchange -an ${LVM_OPTS} > /dev/null
 }
