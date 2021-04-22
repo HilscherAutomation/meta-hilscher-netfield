@@ -92,6 +92,17 @@ finish_run() {
 			done
 		fi
 
+		# Mount additional 'default' required partitions
+		mount -t tmpfs -o size=128K,mode=777 tmpfs ${ROOTFS_DIR}/mnt
+		for platform_mnt in backup; do
+			dev=$(blkid | grep "LABEL=\"${platform_mnt}\"" | cut -d ":" -f1)
+			if [ -n "${dev}" ]; then
+				msg "Info: Platform mount: ${dev} on ${ROOTFS_DIR}/mnt/${platform_mnt} ..."
+				mkdir -p ${ROOTFS_DIR}/mnt/${platform_mnt}
+				mount ${dev} ${ROOTFS_DIR}/mnt/${platform_mnt}
+			fi
+		done
+
 		info "Switching root to '${ROOTFS_DIR}'..."
 
 		debug "Moving /dev, /proc, /sys and /run onto rootfs..."

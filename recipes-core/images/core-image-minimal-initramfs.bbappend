@@ -8,7 +8,6 @@ INITRAMFS_SCRIPTS = " \
 	initramfs-framework-provisioning \
 	initramfs-framework-owner-cert \
 	initramfs-framework-platform-init \
-	initramfs-framework-platform-mounts \
 	initramfs-framework-fieldbus-detection \
 	initramfs-framework-fscheck \
 	initramfs-framework-restore-backup \
