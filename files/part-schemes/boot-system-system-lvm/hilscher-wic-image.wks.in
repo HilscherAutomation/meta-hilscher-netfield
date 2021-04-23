@@ -1,0 +1,6 @@
+# Create SD-card image.
+
+part /boot --source rootfs --rootfs-dir ${WIC_BOOT_TMPDIR} --ondisk mmcblk --fstype=vfat --label boot --active --align 1024 --fixed-size=${IMAGE_PART_BOOT_SIZE}
+part / --source rootfs --rootfs-dir ${WIC_SYSTEM_TMPDIR}  --ondisk mmcblk --fstype=ext4 --mkfs-extraopts "-T default" --label system --align 1024 --size 64M --overhead-factor 1.1 --extra-space 0
+
+${WIC_EXTRA_LINES}

@@ -1,0 +1,205 @@
+#!/bin/sh
+
+check_loop_support() {
+	[ -b /dev/loop0 ] || load_kernel_module loop
+	[ -b /dev/loop0 ] || return 1
+	return 0
+}
+
+check_filesystem_support() {
+	local fstype=$1
+
+	[ -z "$fstype" ] && return 0
+
+	grep -q $fstype /proc/filesystems || load_kernel_module $fstype
+	grep -q $fstype /proc/filesystems || return 1
+	return 0
+}
+
+boot_cfg_enabled() {
+	return 0
+}
+
+boot_cfg_run() {
+	if [ -n "$bootparam_bootCfg" ]; then
+		if [ "`echo ${bootparam_bootCfg} | cut -c1-6`" = "LABEL=" ]; then
+			root_label=$(echo $bootparam_bootCfg | cut -c7- | cut -d '/' -f1)
+			debug "Waiting for ${root_label} ..."
+			while ! blkid | grep -q "LABEL=\"${root_label}\""; do sleep 1; done
+			blk_dev=$(blkid | grep "LABEL=\"${root_label}\"" | head -n1 | cut -d ":" -f1)
+			debug "Using dev=${blk_dev} with label=${root_label} ..."
+			bootparam_bootCfg=$(echo $bootparam_bootCfg | sed -e "s@LABEL=.*/\(.*\)@$blk_dev/\1@")
+		fi
+
+		msg "Info: Using boot.cfg from ${bootparam_bootCfg}"
+
+		dev=$(dirname $bootparam_bootCfg)
+		part=$(basename $dev)
+
+		debug "Waiting for $dev" ...
+		while [ ! -b "$dev" ]; do sleep 1; done
+
+		mp=$(grep $part /proc/mounts | cut -d' ' -f2)
+		if [ -z "$mp" ]; then
+			mp="/tmp/mp-$part"
+			mkdir -p $mp
+			mount -o ro $dev $mp
+		fi
+		export BOOT_LOCATION="$mp"
+
+		config=$mp/$(basename $bootparam_bootCfg)
+		if [ ! -r $config ]; then
+			fatal "Error: $bootparam_bootCfg: No such file or directory"
+		fi
+
+		conf_offs=$(verify_file $config) || {
+			fatal "Error: $bootparam_bootCfg: Invalid or missing signature"
+		}
+		msg "Info: $bootparam_bootCfg: Successfully verified"
+
+		new_config=$(basename $config)
+		tail -c+${conf_offs} ${config} > $new_config
+		cat $new_config | sed 's/^/  /'
+		. $new_config
+	fi
+
+	# Mandatory: root (e.g. root="rootfs.squashfs")
+	# Optional: rootfstype (e.g. rootfstype="squashfs"
+	# Optional: rootflags (e.g. rootflags="sync")
+	dummy=${bootparam_root:=$root}
+	dummy=${bootparam_rootfstype:=$rootfstype}
+	dummy=${bootparam_rootflags:=$rootflags}
+	if [ -z "$bootparam_root" ]; then
+		fatal "Error: $bootparam_bootCfg: Invalid or missing 'root' parameter"
+	else
+		if [ -f $mp/$bootparam_root ]; then
+			bootparam_root=$mp/$bootparam_root
+			bootparam_root_ext=$(echo $bootparam_root | grep -o '[^.]*$')
+			if [ -z "$bootparam_rootfstype" ]; then
+				case $bootparam_root_ext in
+					'squashfs')
+						bootparam_rootfstype=$bootparam_root_ext
+						verify_file $bootparam_root || {
+							fatal "Error: $bootparam_root: Invalid or missing signature"
+						}
+						msg "Info: $bootparam_root: Successfully verified"
+						;;
+					'ext4' | 'ext3' | 'ext2')
+						bootparam_rootfstype=$bootparam_root_ext
+						;;
+					*)
+						# unknown fstype
+						bootparam_rootfstype=""
+						;;
+				esac
+			fi
+
+			[ -f $bootparam_root ] &&  bootparam_rootflags="loop,$bootparam_rootflags"
+			[ "$bootparam_root_ext" == "squashfs" ] &&  bootparam_rootflags="ro,$bootparam_rootflags"
+
+			bootparam_rootwait=false
+		fi
+	fi
+
+	# Optional: overlay (e.g. overlay="overlay.ext4:2G")
+	# Optional: overlayfstype (e.g. overlayfstype="ext4")
+	# Optional: overlayflags (e.g. overlayflags="sync")
+	# Optional: overlaytargets (e.g. overlaytargets="rootfs" or overlaytargets="/etc /opt")
+	dummy=${bootparam_overlay:=$overlay}
+	dummy=${bootparam_overlayfstype:=$overlayfstype}
+	dummy=${bootparam_overlayflags:=$overlayflags}
+	dummy=${bootparam_overlaytargets:=$overlaytargets}
+	if [ -n "$bootparam_overlay" -a ! -b "$bootparam_overlay" ]; then
+		bootparam_overlaysize=$(echo $mp/$bootparam_overlay | grep ':' | cut -d ':' -f2)
+		bootparam_overlay="$(echo $mp/$bootparam_overlay | cut -d ':' -f1)"
+		bootparam_overlay_ext=$(echo $bootparam_overlay | grep -o '[^.]*$')
+		if [ -z "$bootparam_overlayfstype" ]; then
+			case $bootparam_overlay_ext in
+				'ext4' | 'ext3' | 'ext2')
+					bootparam_overlayfstype=$bootparam_overlay_ext
+					;;
+				*)
+					# unknown fstype
+					bootparam_overlayfstype=""
+					;;
+			esac
+		fi
+		if [ -n "$bootparam_overlay"  -a -n "$bootparam_overlayfstype" ]; then
+			# Handel as overlay image file
+			if [ ! -f "$bootparam_overlay" ]; then
+				truncate $bootparam_overlay -s $bootparam_overlaysize || fatal "Error: $bootparam_overlay: Invalid or missing image size"
+				mkfs.$bootparam_overlayfstype $bootparam_overlay || {
+					rm -f $bootparam_overlay
+					fatal "Error: $bootparam_overlay: Creating filesystem failed"
+				}
+			fi
+		elif [ -n "$bootparam_overlay" ]; then
+			# Handel unknown fstype as overlay directory
+			mkdir -p $bootparam_overlay || fatal "Error: $bootparam_overlay: Creating directory failed"
+			[ -z "$bootparam_overlayflags" ] && bootparam_overlayflags="bind" || bootparam_overlayflags="$bootparam_overlayflags,bind"
+		fi
+
+		[ -f $bootparam_overlay ] &&  bootparam_overlayflags="loop,$bootparam_overlayflags"
+	fi
+
+	# Check for root
+	if [ -n "$bootparam_rootfstype" ]; then
+		check_filesystem_support "$bootparam_rootfstype" || fatal "Error: $bootparam_root: '$bootparam_rootfstype' filesystem not supported"
+	fi
+	if echo $bootparam_rootflags | grep -q loop; then
+		check_loop_support || fatal "Error: $bootparam_root: 'loop' rootflag not supported"
+	fi
+
+	# Check for overlay
+	if [ -n "$bootparam_overlay" ]; then
+		check_filesystem_support "overlay" || fatal "Error: $bootparam_overlay: 'overlay' filesystem not supported"
+		if [ -n "$bootparam_overlayfstype" ]; then
+			check_filesystem_support "$bootparam_overlayfstype" || fatal "Error: $bootparam_overlay: '$bootparam_overlayfstype' filesystem not supported"
+		fi
+		if echo $bootparam_overlayflags | grep -q loop; then
+			check_loop_support || fatal "Error: $bootparam_overlay: 'loop' overlayflag not supported"
+		fi
+	fi
+
+	# Create directory for boot mode dependent partition symlinks
+	mkdir -p /dev/disk/by-bootmode
+
+	# Create symlinks for rescue partitions
+	if blkid | grep -q "rescue"; then
+		for respart in $(blkid | grep "rescue" | cut -d':' -f1); do
+			ln -s $respart /dev/disk/by-bootmode/rescue-$(ls /dev/disk/by-bootmode/rescue-* 2>/dev/null | wc -l)
+		done
+		for f in $(ls /dev/disk/by-bootmode/rescue-*); do
+			dev="$(basename $(readlink $f))"
+			if echo $bootparam_root | grep -q $(basename $(readlink -f "/sys/class/block/$dev/..")); then
+				ln -s $(basename $f) /dev/disk/by-bootmode/rescue
+			fi
+		done
+		test -L /dev/disk/by-bootmode/rescue || {
+			ln -s rescue-0 /dev/disk/by-bootmode/rescue
+		}
+	fi
+
+	# Create symlinks for system partitions
+	if blkid | grep -q "system"; then
+		for syspart in $(blkid | grep "system" | cut -d':' -f1 | sort); do
+			ln -s $syspart /dev/disk/by-bootmode/system-$(ls /dev/disk/by-bootmode/system-* 2>/dev/null | wc -l)
+		done
+		for f in $(ls /dev/disk/by-bootmode/system-*); do
+			dev="$(basename $(readlink $f))"
+			if echo $bootparam_root | grep -q $dev; then
+				ln -s $(basename $f) /dev/disk/by-bootmode/active
+			elif echo $bootparam_root | grep -q $(basename $(readlink -f "/sys/class/block/$dev/..")); then
+				ln -s $(basename $f) /dev/disk/by-bootmode/standby
+			fi
+		done
+		if ! test -L /dev/disk/by-bootmode/standby; then
+			standby="$(ls /dev/disk/by-bootmode/system-* | grep -v $(readlink /dev/disk/by-bootmode/active) | head -n1)"
+			[ -n "$standby" ] && ln -s $(basename $standby) /dev/disk/by-bootmode/standby
+		fi
+		# Create link to support the old name scheme of swupdate helper.lua.
+		ln -s standby /dev/disk/by-bootmode/standby-0
+	fi
+
+	return 0
+}

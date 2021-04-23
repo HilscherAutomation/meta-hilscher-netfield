@@ -1,0 +1,66 @@
+#!/bin/sh
+
+provisioning_enabled() {
+	if [ -z "${bootparam_provisioning}" ]  || [ "${bootparam_provisioning}" = "0" ]; then
+		return 1
+	fi
+	if [ "${bootparam_root}" != "/dev/nfs" ] || [ -z "${bootparam_nfsroot}" ]; then
+		return 1
+	fi
+	return 0
+}
+
+provisioning_run() {
+	local nfs_opts
+	local location
+	local server_ip
+
+	echo "Running provisioning initialization..."
+
+	nfs_opts=""
+	if [ "${bootparam_nfsroot#*,}" != "${bootparam_nfsroot}" ]; then
+		nfs_opts="-o ${bootparam_nfsroot#*,}"
+	fi
+
+	platform=""
+	if [ -n "${bootparam_platform}" ]; then
+		platform="${bootparam_platform}"
+	fi
+	devno=""
+	if [ -n "${bootparam_devno}" ]; then
+		devno="${bootparam_devno}"
+	fi
+
+	location="${bootparam_nfsroot%%,*}"
+	if [ "${location#*:}" = "${location}" ]; then
+		# server-ip not given. Get server ip from ip option
+		server_ip=""
+		if [ "${bootparam_ip#*:}" != "${bootparam_ip}" ]; then
+			server_ip=$(echo "$bootparam_ip" | cut -d: -f2)
+		fi
+
+		if [ -z "$server_ip" ]; then
+			fatal "Server IP is not set. Update ip or nfsroot options."
+		fi
+		location=${server_ip}:${location}
+	fi
+
+	if [ -e /init.d/functions ]; then
+		source /init.d/functions; configure_ip $bootparam_ip
+	fi
+
+	mkdir nfs_dir
+	echo "Mount nfs ${location}... (opts=${nfs_opts})"
+	mount -t nfs ${nfs_opts} ${location} nfs_dir
+	if [ $? = 0 ]; then
+		if [ -e "/nfs_dir/provision-tools/start" ]; then
+			/nfs_dir/provision-tools/start ${devno} ${platform}
+		else
+			echo "No provision script found!"
+		fi
+		umount nfs_dir
+	else
+		echo "Error mounting nfs!"
+	fi
+	rm -r nfs_dir
+}

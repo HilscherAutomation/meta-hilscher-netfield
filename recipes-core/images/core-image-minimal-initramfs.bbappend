@@ -1,3 +1,31 @@
+# Remove unneeded stuff
+PACKAGE_INSTALL_remove += " \
+	initramfs-live-install \
+	initramfs-live-install-efi \
+	initramfs-live-boot \
+"
+
+# Add required stuff
+PACKAGE_INSTALL_append += " \
+	initramfs-framework-initrd-api \
+	initramfs-framework-boot-cfg \
+	initramfs-framework-provisioning \
+	lvm2 \
+"
+
+INITRAMFS_SCRIPTS_append += " \
+	initramfs-module-udev \
+	initramfs-module-lvm \
+	initramfs-framework-fscheck \
+"
+INITRAMFS_SCRIPTS_remove += " \
+	initramfs-module-setup-live \
+	initramfs-module-install \
+	initramfs-module-install-efi \
+"
+
+COMPATIBLE_HOST_arm = "arm-.*-linux"
+
 do_rootfs[vardepsexclude] += "FIRMWARE_VERSION FULL_FW_VERSION"
 
 INITRAMFS_SCRIPTS = " \

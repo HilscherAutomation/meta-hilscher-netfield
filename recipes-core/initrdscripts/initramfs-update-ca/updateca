@@ -1,0 +1,42 @@
+#!/bin/sh
+
+BACKUP_DIR="/backup/updateca"
+
+updateca_preoverlay() {
+	mkdir -p ${BACKUP_DIR}
+	cp /rootfs/etc/ca-certificates.conf ${BACKUP_DIR}/ca-certificates.conf.update
+}
+
+updateca_postoverlay() {
+	echo "Updating system CA certificates..."
+
+	# Create new config file by inserting new revocations and keeping old revocations
+	# partially borrowed from https://salsa.debian.org/debian/ca-certificates/-/blob/debian/20210119/debian/ca-certificates.postinst)
+	while read line
+	do
+		if echo "$line" | grep -q '^#'; then
+			echo "$line"
+		else
+			ca=$(echo "$line" | sed -e 's/^!//')
+
+			if grep -q "^!$ca" "${BACKUP_DIR}/ca-certificates.conf.update" || echo "$line" | grep -q '^!'; then
+				# Keep revocation if found on either side
+				echo "!$ca"
+			elif grep -q "^$ca" "${BACKUP_DIR}/ca-certificates.conf.update"; then
+				# Trust if marked trusted on new side
+				echo "$ca"
+			elif [ -f ${ROOTFS_DIR}/usr/share/ca-certificates/"$ca" ]; then
+				# Add it as trusted if not found on new list, but file is available
+				echo "$ca"
+			fi
+		fi
+	done < ${ROOTFS_DIR}/etc/ca-certificates.conf > ${BACKUP_DIR}/ca-certificates.conf.new
+
+	cp ${BACKUP_DIR}/ca-certificates.conf.new ${ROOTFS_DIR}/etc/ca-certificates.conf
+
+	# update-ca-certificates uses mktemp which requires a writable /tmp
+	mount -o bind /tmp ${ROOTFS_DIR}/tmp
+	chroot ${ROOTFS_DIR} update-ca-certificates --fresh
+	umount ${ROOTFS_DIR}/tmp
+	sync
+}

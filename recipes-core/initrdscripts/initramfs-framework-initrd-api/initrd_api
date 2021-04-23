@@ -1,0 +1,53 @@
+#!/bin/sh
+
+do_initrd_api() {
+	mkdir -p /tmp/initrd-api
+	cd /tmp/initrd-api
+
+	api_offset=$(verify_file $1) || {
+		fatal "Error: $1: Invalid or missing signature"
+		return 1
+	}
+	msg "Info: $1: Successfully verified"
+
+	runscript_arg="apifile=$1 logfile=$1.log ${add_params}"
+
+	tail -c+${api_offset} $1 | tar xzv | sed 's/^/  /'
+	[ -x runscript.sh ] && ./runscript.sh $runscript_arg
+
+	rm -rf *
+	cd - >/dev/null
+
+	return 0
+}
+
+initrd_api_enabled() {
+	return 0
+}
+
+initrd_api_run() {
+	if [ "$(echo ${bootparam_root} | cut -c1-6)" = "LABEL=" ]; then
+		add_label=$(echo $bootparam_root | cut -c7- | cut -d '/' -f1)
+		debug "Waiting for ${add_label}" ...
+		while ! blkid | grep -q "LABEL=\"${add_label}\""; do sleep 1; done
+	fi
+
+	for label in ${add_label} rescue system; do
+		for dev in $(blkid | grep "LABEL=\"$label\"" | head -n1 | cut -d ':' -f1); do
+			mp=$(mktemp -d)
+			mount $dev $mp
+
+			echo "Info: Searching for initrd-api files on $dev (label=$label) ..."
+
+			# Multi initrd-api support
+			for f in $mp/firmware $mp/initrd-api $mp/*-initrd-api; do
+				[ "${label}" = "rescue" -o "${label}" = "system" ] && add_params="internal=1" || add_params="external=1"
+				[ -e $f ] && do_initrd_api $f "$add_params"
+			done
+
+			sync; umount $mp; rmdir $mp
+		done
+	done
+
+	return 0
+}

@@ -1,0 +1,15 @@
+[Unit]
+Description=Security Auditing Service
+DefaultDependencies=no
+After=local-fs.target
+Conflicts=shutdown.target
+Before=sysinit.target shutdown.target
+After=systemd-tmpfiles-setup.service
+
+[Service]
+ExecStart=/sbin/auditd -n
+ExecStartPost=-/sbin/augenrules --load
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target

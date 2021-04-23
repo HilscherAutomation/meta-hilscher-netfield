@@ -1,3 +1,10 @@
+RDEPENDS_${PN}_append += "systemd-machine-units"
+
+PACKAGECONFIG_append += "${@bb.utils.contains('DISTRO_FEATURES', 'apparmor', 'apparmor', '', d)}"
+PACKAGECONFIG_append += "seccomp audit"
+
+PACKAGECONFIG[apparmor] = "-Dapparmor=true,-Dapparmor=false,apparmor"
+
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
 SRC_URI_append += "file://disable_predictable_network_names.patch"

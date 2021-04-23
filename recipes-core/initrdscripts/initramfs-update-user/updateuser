@@ -1,0 +1,105 @@
+#!/bin/sh
+
+updateuser_preoverlay() {
+	mkdir -p /backup/updateuser
+	cp /rootfs/etc/passwd /rootfs/etc/group /rootfs/etc/shadow /backup/updateuser
+}
+
+updateuser_postoverlay() {
+	src_dir="/backup/updateuser"
+
+	echo "Updating groups..."
+	while IFS='' read -r groupline
+	do
+		[ -z "$groupline" ] && continue
+		# Format of lines in /etc/group
+		#    group_name:password:GID:user_list
+		groupname=$(echo $groupline | cut -d ':' -f 1)
+		gid=$(echo $groupline | cut -d ':' -f 3)
+
+		# Only sync system groups
+		[ $gid -gt 999 ] && continue
+
+		existinggroup_line=$(grep "^.*:.*:$gid" ${ROOTFS_DIR}/etc/group)
+		if [ -z "${existinggroup_line}" ]; then
+			echo "Adding group $groupname"
+			chroot ${ROOTFS_DIR} groupadd -g $gid -r $groupname
+		else
+			existinggroup_name=$(echo ${existinggroup_line} | cut -d ':' -f 1)
+			if [ "$groupname" != "${existinggroup_name}" ]; then
+				echo "!!!ERROR!!!: Mismatch of groupname in new and existing group $groupname vs ${existinggroup_name}"
+			fi
+		fi
+	done < ${src_dir}/group
+
+	echo "Updating users..."
+	while IFS='' read -r userline
+	do
+		[ -z "$userline" ] && continue
+		# Format of lines in /etc/passwd:
+		#    name:password:UID:GID:GECOS:directory:shell
+		username=$(echo $userline | cut -d ':' -f 1)
+		uid=$(echo $userline | cut -d ':' -f 3)
+		gid=$(echo $userline | cut -d ':' -f 4)
+		comment=$(echo $userline | cut -d ':' -f 5)
+		home=$(echo $userline | cut -d ':' -f 6)
+		shell=$(echo $userline | cut -d ':' -f 7)
+
+		# Skip root
+		[ $uid -eq 0 ] && continue
+
+		# Only sync system users (uid < 1000)
+		[ $uid -gt 999 ] && continue
+
+		if ! grep "^$username:" ${ROOTFS_DIR}/etc/passwd >/dev/null; then
+			# User not existing
+			echo "Adding user $username"
+
+			# Add user
+			chroot ${ROOTFS_DIR} useradd -c "$comment" -g "$gid" -s "$shell" -u "$uid" -M -d "$home" -r "$username"
+		else
+			# User already exists
+			thisuser=$(grep "^$username:" ${ROOTFS_DIR}/etc/passwd)
+			thisuser_uid=$(echo $thisuser | cut -d ':' -f 3)
+			thisuser_gid=$(echo $thisuser | cut -d ':' -f 4)
+			thisuser_shell=$(echo $thisuser | cut -d ':' -f 7)
+			if [ "$uid" != "${thisuser_uid}" ]; then
+				echo "!!!ERROR!!!: Mismatch of uid for $username ($uid vs ${thisuser_uid}). System might be unusable"
+			fi
+			if [ "$gid" != "${thisuser_gid}" ]; then
+				echo "!!!ERROR!!!: Mismatch of gid for $username ($gid vs ${thisuser_gid}). System might be unusable"
+			fi
+			if [ "${thisuser_shell}" = "/bin/sh" ]; then
+				echo "Updating shell for $username (system user shall not be able to login (${thisuser_shell} -> /sbin/nologin)"
+				chroot ${ROOTFS_DIR} usermod -s "/sbin/nologin" "$username"
+			elif [ "${thisuser_shell}" != "/sbin/nologin" -a "$shell" != "${thisuser_shell}" ]; then
+				echo "Updating shell for $username (${thisuser_shell} -> $shell)"
+				chroot ${ROOTFS_DIR} usermod -s "${shell}" "$username"
+			fi
+		fi
+	done < ${src_dir}/passwd
+
+	echo "Updating additional group memberships..."
+	while IFS='' read -r groupline
+	do
+		[ -z "$groupline" ] && continue
+		# Format of lines in /etc/group
+		#    group_name:password:GID:user_list
+		groupname=$(echo $groupline | cut -d ':' -f 1)
+		gid=$(echo $groupline | cut -d ':' -f 3)
+		userlist=$(echo $groupline | cut -d ':' -f 4)
+
+		# Only sync system groups
+		[ $gid -gt 999 ] && continue
+		[ -z "$userlist" ] && continue
+
+		for groupmember in $(echo $userlist | sed 's/,/ /g'); do
+			userline=$(grep "^$groupmember:" ${ROOTFS_DIR}/etc/passwd)
+			uid=$(echo $userline | cut -d ':' -f 3)
+			[ $uid -gt 999 ] && continue
+			echo "User $groupmember is a member of $groupname"
+			chroot ${ROOTFS_DIR} usermod -a -G "$groupname" "$groupmember"
+		done
+	done < ${src_dir}/group
+	sync
+}

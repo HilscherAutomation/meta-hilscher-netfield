@@ -1,0 +1,13 @@
+[Unit]
+Description=Recovery daemon
+Before=swupdate.service
+
+[Service]
+Type=simple
+ExecStart=/opt/rescue/prepare_platform.sh
+User=root
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

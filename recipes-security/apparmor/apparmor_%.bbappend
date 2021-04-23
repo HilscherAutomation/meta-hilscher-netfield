@@ -1,3 +1,14 @@
+SYSTEMD_AUTO_ENABLE = "enable"
+
+# xargs -d is used in scripts, thus we need full xargs not the busybox ones
+# getconf is used in scripts thus we need libc6-utils
+RDEPENDS_${PN}_append += "findutils glibc-utils"
+
+do_install_append() {
+    # Enable caching per default
+    sed -i -e 's/#write-cache/write-cache/g' ${D}/${sysconfdir}/apparmor/parser.conf
+}
+
 inherit python3targetconfig
 
 SYSTEMD_AUTO_ENABLE = "enable"

@@ -1,0 +1,55 @@
+#!/bin/sh -e
+
+getImagePath() {
+	imageType=$1
+	image="$(find -name "*.$imageType" -type l)"
+	[ -z "$image" ] && {
+		echo "Error: No image found!" >&2
+		exit 1
+	}
+	image=$(readlink $image)
+	echo $image
+}
+
+### Main function
+
+[ $# -lt 1 ] && {
+	echo "Usage: $0 DEST-DEV";
+	exit 1;
+}
+
+target=$1
+
+image="$(getImagePath 'wic.bz2')"
+
+# Security check for unexpected device types.
+[ -b $target ] || {
+	echo "Error: Invalid block device '$target'!"
+	exit 1
+}
+
+# Security check for mounted devices.
+grep -q $target /proc/mounts && {
+	echo "Error: Device $target is mounted!"
+	exit 1
+}
+
+# Security check for unexpected device sizes.
+target_size_max_gib=16
+target_size_max_bytes=$((target_size_max_gib*1024*1024*1024))
+target_size=$(lsblk -n -p -o NAME,SIZE -r | grep "$target " | cut -d' ' -f2)
+target_size_bytes=$(lsblk -n -p -o NAME,SIZE -b -r | grep "$target " | cut -d' ' -f2)
+[ $target_size_bytes -gt $target_size_max_bytes ] && {
+	echo "Warning: Size of $target ($target_size) exceeds ${target_size_max_gib}GiB!"
+	read -p "Continue [yes/no]: " input
+	[ "$input" != "yes" ] && exit 1
+}
+
+echo "Deploying to $target"
+echo "image: $image"
+
+bzcat $image | sudo dd of=$target bs=10M status=progress && sync
+
+date
+
+echo "... done"

@@ -1,0 +1,64 @@
+#!/bin/sh
+
+get_tag_offset() {
+  local tag_name="$1"
+  local file_name="$2"
+  local __result=$3
+
+  retval=$(grep -m 1 --byte-offset --only-matching --text "${tag_name}" ${file_name} | cut -d ":" -f 1)
+  if [ -z "${retval}" ]; then
+    msg "failed to extract tag ${tag_name}"
+  fi
+
+  eval $__result="${retval}"
+}
+
+do_verify_file_sig() {
+	file="$1"
+
+	if [ ! -e $file.sig ]; then
+		if grep -m 1 -q "== SIGNATURE START ==" $file; then
+			get_tag_offset "== SIGNATURE START ==" "${file}" ofs_sign_start
+			get_tag_offset "== SIGNATURE END =="   "${file}" ofs_sign_end
+			get_tag_offset "== DATA START =="      "${file}" ofs_data_start
+
+			if [ -z "${ofs_sign_start}" -o -z "${ofs_sign_end}" -o -z "${ofs_data_start}" ]; then
+				return 1
+			fi
+
+			# Signature and data start after tag
+			ofs_sign_start=$((${ofs_sign_start} + 22))
+			ofs_data_start=$((${ofs_data_start} + 17 + 1))
+			signature_bytes=$((${ofs_sign_end} - ${ofs_sign_start} - 1))
+
+			dd if=$file of=$(basename $file).sig bs=1 skip=${ofs_sign_start} count=${signature_bytes} >/dev/null 2>&1
+			tail -c+${ofs_data_start} ${file} > $(basename $file)
+
+			file="$(basename $file)"
+		fi
+	else
+		# External signature, thus data starts at offset 0
+		ofs_data_start="0"
+	fi
+
+	# return offset
+	echo "$ofs_data_start"
+
+	[ -e $file.sig ] || return 1
+
+	if [ -e /etc/ssl/platform.pub.key ]; then
+		tail -c+${ofs_data_start} ${1} | \
+			openssl dgst -verify /etc/ssl/platform.pub.key -sha512 -signature $file.sig $file >/dev/null || return 1
+	else
+		hashCalc=$(tail -c+${ofs_data_start} ${1} | sha256sum | cut -d' ' -f1)
+		hashSig=$(cat $file.sig)
+		[ "$hashCalc" = "$hashSig" ] || return 1
+	fi
+
+	return 0
+}
+
+do_verify_file_sig $*
+
+exit $?
+

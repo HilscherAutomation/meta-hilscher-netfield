@@ -1,0 +1,6 @@
+[Match]
+# Default ethernet and WiFi to DHCP
+Name=e* w*
+
+[Network]
+DHCP=yes

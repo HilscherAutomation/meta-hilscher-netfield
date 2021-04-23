@@ -1,0 +1,24 @@
+#!/bin/sh
+
+file=$1
+priv_key=$2
+
+echo -n "Signing $file "
+
+# Create separate signature file
+if [ -n "$priv_key" ]; then
+	echo "with priv_key"
+	openssl dgst -sha512 -sign ${priv_key} -out ${file}.sig ${file}
+else
+	echo "with sha256sum"
+	sha256sum ${file} | cut -d' ' -f1 | tr -d '\n' > ${file}.sig
+fi
+
+# Create monolithic signed file with signature included.
+echo "== SIGNATURE START ==" > ${file}.work
+cat ${file}.sig >> ${file}.work
+echo "" >> ${file}.work
+echo "== SIGNATURE END ==" >> ${file}.work
+echo "== DATA START ==" >> ${file}.work
+cat ${file} >> ${file}.work
+mv ${file}.work ${file}.signed
