@@ -24,8 +24,8 @@ else
   PRESENTATION_URL="http://${IP}/"
 fi
 
-sed -e 's/<friendlyName>.*<\/friendlyName>/<friendlyName>'"${PRODNAME}"' ('"${NAME}"')<\/friendlyName>/g' \
-    -e 's/<modelNumber>.*<\/modelNumber>/<modelNumber>'"${PRODNAME}"'<\/modelNumber>/g' \
+sed -e 's@<friendlyName>.*<\/friendlyName>@<friendlyName>'"${PRODNAME}"' ('"${NAME}"')<\/friendlyName>@g' \
+    -e 's@<modelNumber>.*<\/modelNumber>@<modelNumber>'"${PRODNAME}"'<\/modelNumber>@g' \
     -e 's/<serialNumber>.*<\/serialNumber>/<serialNumber>'"${SERIALNO}"'<\/serialNumber>/g' \
     -e 's/<UDN>uuid:.*<\/UDN>/<UDN>uuid:'"${NAME}"'<\/UDN>/g' \
     -e "s@<presentationURL>.*<\/presentationURL>@<presentationURL>${PRESENTATION_URL}<\/presentationURL>@g" \
