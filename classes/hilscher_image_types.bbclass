@@ -1,7 +1,7 @@
 inherit kernel-artifact-names
 
 HILSCHER_RESCUE_IMAGE_LINK_NAME ??= "${HILSCHER_RESCUE_IMAGE}-${MACHINE}"
-INITRAMFS_IMAGE ??= ""
+INITRAMFS_IMAGE_NAME ?= "${@['${INITRAMFS_IMAGE}-${MACHINE}', ''][d.getVar('INITRAMFS_IMAGE') == '']}"
 
 ########################################
 # Anonymous python function for firmware version handling
@@ -210,12 +210,7 @@ WIC_BOOT_TMPDIR = "${WIC_TMPDIR}/boot"
 WIC_RESCUE_TMPDIR = "${WIC_TMPDIR}/rescue"
 WIC_SYSTEM_TMPDIR = "${WIC_TMPDIR}/system"
 
-WIC_BOOT_PART_BASE_CONTENT ??= ""
-WIC_RESCUE_PART_BASE_CONTENT ??= "${HILSCHER_RESCUE_IMAGE_LINK_NAME}.squashfs"
-WIC_SYSTEM_PART_BASE_CONTENT ??= "${IMAGE_LINK_NAME}.squashfs"
-
 do_image_wic[depends] += "${HILSCHER_RESCUE_IMAGE}:do_image_complete"
-
 do_image_wic[depends] += "file-signature-native:do_populate_sysroot"
 do_image_wic[vardeps] += "PLATFORM_SIGN PLATFORM_KEYDIR PLATFORM_KEYNAME"
 
@@ -228,13 +223,13 @@ do_image_wic_prefunc() {
 	}
 
 	mkdir -p ${WIC_BOOT_TMPDIR} && {
-		copy_part_content "${WIC_BOOT_PART_BASE_CONTENT} ${WIC_BOOT_PART_EXTRA_CONTENT}" ${WIC_BOOT_TMPDIR}
+		copy_part_content "${WIC_BOOT_PART_CONTENT}" ${WIC_BOOT_TMPDIR}
 	}
 	mkdir -p ${WIC_RESCUE_TMPDIR} && {
-		copy_part_content "${WIC_RESCUE_PART_BASE_CONTENT} ${WIC_RESCUE_PART_EXTRA_CONTENT}" ${WIC_RESCUE_TMPDIR}
+		copy_part_content "${WIC_RESCUE_PART_CONTENT}" ${WIC_RESCUE_TMPDIR}
 	}
 	mkdir -p ${WIC_SYSTEM_TMPDIR} && {
-		copy_part_content "${WIC_SYSTEM_PART_BASE_CONTENT} ${WIC_SYSTEM_PART_EXTRA_CONTENT}" ${WIC_SYSTEM_TMPDIR}
+		copy_part_content "${WIC_SYSTEM_PART_CONTENT}" ${WIC_SYSTEM_TMPDIR}
 	}
 }
 
@@ -257,9 +252,6 @@ SWUPDATE_KEYDIR ??= "${PLATFORM_KEYDIR}"
 SWUPDATE_KEYNAME ??= "${PLATFORM_KEYNAME}"
 
 SWU_TMPDIR = "${WORKDIR}/${IMAGE_BASENAME}.swu.tmpdir"
-
-SWU_BOOT_PART_BASE_CONTENT ??= "${WIC_BOOT_PART_BASE_CONTENT}"
-SWU_SYSTEM_PART_BASE_CONTENT ??= "${WIC_SYSTEM_PART_BASE_CONTENT}"
 
 __create_sw_description_file() {
 	local fileList="$(find . -type f ! -name 'sw-description*' ! -name *.lua ! -name '*.sh' | sed 's,^./,,' | sort)"
@@ -347,12 +339,7 @@ create_sw_description_file() {
 }
 
 do_image_swu[depends] += "${HILSCHER_RESCUE_IMAGE}:do_image_complete"
-
 do_image_swu[depends] += "file-signature-native:do_populate_sysroot"
-
-inherit hilscher-helpers
-SWUPDATE_DIRS = "${TOPDIR}/../meta-hilscher-netfield/files/swupdate"
-SWUPDATE_HELPER_FILES = "${@dir_dep_hash(d, d.getVar('SWUPDATE_DIRS'))}"
 do_image_swu[vardeps] += "PLATFORM_SIGN PLATFORM_KEYDIR PLATFORM_KEYNAME SWUPDATE_HELPER_FILES"
 
 IMAGE_CMD_swu() {
@@ -364,34 +351,22 @@ IMAGE_CMD_swu() {
 	mkdir -p $tmpdir
 	cd $tmpdir
 
-	for dir in ${SWUPDATE_DIRS}; do
-		[ -e "$dir/default" ] && default_swudir=${default_swudir:-"$dir/default"}
-		[ -e "$dir/${PART_SCHEME}" ] && swudir=${swudir:-"$dir/${PART_SCHEME}"}
-	done
-	swudir=${swudir:-$default_swudir}
-	bbnote "SWU image creation uses directory: $swudir"
-
 	if [ -z "${SWU_RSYNC_PART_UPDATE}" ]; then
 		# Populate temporary directory
-		cp -r $swudir/* ./
-		copy_part_content "${SWU_SYSTEM_PART_BASE_CONTENT}" ./
-		copy_part_content "${SWU_SYSTEM_PART_EXTRA_CONTENT}" ./
+		copy_part_content "${SWU_SYSTEM_PART_CONTENT}" ./
 	else
 		# Populate temporary directory
-		cp -r $swudir/* ./
 		for p in $(echo ${SWU_RSYNC_PART_UPDATE}); do
 			case "$p" in
 			"boot")
 				mkdir -p $tmpdir/boot
-				copy_part_content "${SWU_BOOT_PART_BASE_CONTENT}" ./boot
-				copy_part_content "${SWU_BOOT_PART_EXTRA_CONTENT}" ./boot
+				copy_part_content "${SWU_BOOT_PART_CONTENT}" ./boot
 				mksquashfs ./boot boot.squashfs
 				rm -rf $tmpdir/boot
 				;;
 			"system")
 				mkdir -p $tmpdir/system
-				copy_part_content "${SWU_SYSTEM_PART_BASE_CONTENT}" ./system
-				copy_part_content "${SWU_SYSTEM_PART_EXTRA_CONTENT}" ./system
+				copy_part_content "${SWU_SYSTEM_PART_CONTENT}" ./system
 				mksquashfs ./system system.squashfs
 				rm -rf $tmpdir/system
 				;;
@@ -495,6 +470,7 @@ IMAGE_CMD_fastboot() {
 ########################################
 
 HILSCHER_DEPLOY_ROOT_DIR ??= "${DEPLOY_DIR}/dist/"
+PSEUDO_IGNORE_PATHS .= ",${HILSCHER_DEPLOY_ROOT_DIR}"
 DEPLOY_EXT_LIST ??= "${IMAGE_FSTYPES}"
 
 do_image_complete[postfuncs] += "do_hilscher_deploy"
@@ -511,7 +487,7 @@ do_hilscher_deploy() {
 
 	extList="${DEPLOY_EXT_LIST}"
 	for ext in $extList; do
-		# Delete old image typs
+		# Delete old image types
 		rm -f $deploydir/*.$ext
 
 		# Deploy images

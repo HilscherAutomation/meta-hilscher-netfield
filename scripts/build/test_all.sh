@@ -71,7 +71,7 @@ for machine in $PLATFORMS; do
 		0|1) ;;
 		*) echo "Error: multiconfig: Multiple $mcmachine.conf files found!"; exit 1;;
 	esac
-	[ -n "$mcconf" ] && mconf="$mcconf"
+	[ -z "$mconf" ] && mconf="$mcconf"
 	[ -z "$mconf" ] && { echo "ERROR: $machine.conf not found! "; exit 1; }
 
 	# Set machine meta layer

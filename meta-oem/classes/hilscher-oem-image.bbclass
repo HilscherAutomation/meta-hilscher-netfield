@@ -150,7 +150,7 @@ create_swu() {
 	for tmp_brand in $brandings_to_include; do
 		tmp_file="$(readlink -f ${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.data-oem.squashfs)"
 		[ "${OEM_BRANDING_MERGE}" = "1" ] &&
-			tmp_file=$(find "${HILSCHER_DEPLOY_ROOT_DIR}" -type l -name "${VENDOR_ID}-$tmp_brand-*.data-oem.squashfs")
+			tmp_file=$(find "${HILSCHER_DEPLOY_ROOT_DIR}/${MACHINE}" -type l -name "${VENDOR_ID}-$tmp_brand-*.data-oem.squashfs")
 		if [ ! -r "$tmp_file" ]; then
 			bbfatal "Missing branding file $tmp_file for $tmp_brand (using find \"${HILSCHER_DEPLOY_ROOT_DIR}\" -type l -name \"${VENDOR_ID}-$tmp_brand\")"
 		fi

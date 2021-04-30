@@ -1,19 +1,17 @@
-RDEPENDS_${PN}_append += "systemd-machine-units"
-
-PACKAGECONFIG_append += "${@bb.utils.contains('DISTRO_FEATURES', 'apparmor', 'apparmor', '', d)}"
-PACKAGECONFIG_append += "seccomp audit"
-
-PACKAGECONFIG[apparmor] = "-Dapparmor=true,-Dapparmor=false,apparmor"
-
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+
+RDEPENDS_${PN}_append += "systemd-machine-units"
 
 SRC_URI_append += "file://disable_predictable_network_names.patch"
 
 # Default servers to add to initial configuration
 EXTRA_OEMESON_append += "-Dntp-servers='0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org'"
 
-PACKAGECONFIG_remove += "networkd"
+PACKAGECONFIG_append += "${@bb.utils.contains('DISTRO_FEATURES', 'apparmor', 'apparmor', '', d)}"
+PACKAGECONFIG[apparmor] = "-Dapparmor=true,-Dapparmor=false,apparmor"
+PACKAGECONFIG_append += "seccomp audit"
 PACKAGECONFIG_append += "journal-upload"
+PACKAGECONFIG_remove += "networkd"
 # Make sure journal-upload is not automatically started, as it requires a configuration
 SYSTEMD_PACKAGES_remove += "${PN}-journal-upload"
 SYSTEMD_SERVICE_${PN}-journal-upload = ""

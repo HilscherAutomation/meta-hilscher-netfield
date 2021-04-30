@@ -4,35 +4,26 @@ HOMEPAGE = "www.hilscher.com"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384361b4de20420"
 
+PACKAGE_ARCH="${MACHINE_ARCH}"
+
 SRC_URI = " \
 	file://runscript.sh \
 "
 
-PACKAGE_ARCH="${MACHINE_ARCH}"
-inherit hilscher-helpers
-PART_SCHEME_DIRS += "${TOPDIR}/../meta-hilscher-netfield/files/part-schemes"
-python () {
-    dirsHash = dir_dep_hash(d, d.getVar('PART_SCHEME_DIRS'))
-    bb.debug(1, "PART_SCHEME_DIRS (overall hash): %s" % dirsHash)
-
-    d.setVar('DIRS_HASH', dirsHash)
-    d.appendVarFlag('do_fetch', 'vardeps', ' DIRS_HASH')
-}
-
-do_fetch[vardeps] += "PHYSICAL_SYSTEM_DEVICE IMAGE_PART_BOOT_SIZE IMAGE_PART_RESCUE_SIZE IMAGE_PART_SYSTEM_SIZE IMAGE_PART_DATA_SIZE PART_DATA_LV_DATA_SIZE PART_DATA_LV_BACKUP_SIZE"
-
-python do_fetch_prepend() {
+# Fetch supported WKS_FILE dependent part.cfg files.
+PART_SCHEMES  = "boot-rescue-system-lvm"
+PART_SCHEMES += " boot-system-system-lvm"    
+do_fetch[vardeps] += "WKS_FILE PHYSICAL_SYSTEM_DEVICE IMAGE_PART_BOOT_SIZE IMAGE_PART_RESCUE_SIZE IMAGE_PART_SYSTEM_SIZE IMAGE_PART_DATA_SIZE PART_DATA_LV_DATA_SIZE PART_DATA_LV_BACKUP_SIZE"
+do_fetch_append() {
     from shutil import copyfile
 
-    file = "part.cfg"
-
-    for dir in d.getVar('PART_SCHEME_DIRS').split():
-        if os.path.isdir(os.path.join(dir, d.getVar('PART_SCHEME'))):
-            src = os.path.join(dir, d.getVar('PART_SCHEME'))
-            if os.path.isfile(os.path.join(src, file)):
-                src = os.path.join(src, file)
-                dst = os.path.join(d.getVar('WORKDIR'), file)
-                copyfile(src, dst)
+    part_schemes = d.getVar('PART_SCHEMES')
+    wks_file = d.getVar('WKS_FILE')
+    for ps in part_schemes.split():
+        if wks_file.endswith(ps+'.wks.in'):
+            src = os.path.join(d.getVar('THISDIR')+"/part-schemes", ps+".cfg")
+            dst = os.path.join(d.getVar('WORKDIR'), "part.cfg")
+            copyfile(src, dst)
 }
 
 do_configure() {
