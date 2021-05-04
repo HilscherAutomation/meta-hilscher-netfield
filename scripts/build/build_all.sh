@@ -73,6 +73,7 @@ shift $((OPTIND-1))
 
 # Set default values
 FW_VERSION="${fw_version:-"2.3.0.0"}"
+FW_VERSION="$FW_VERSION${debug_enable:+".debug"}"
 FW_VERSION="$FW_VERSION${fw_suffix:+"_$fw_suffix"}"
 BUILD_DIR="${build_dir:-"build"}"
 DEPLOY_DIR="${deploy_dir:-"dist"}"
@@ -134,7 +135,6 @@ for machine in $PLATFORMS; do
 	# Set image name and bitbake target
 	target="$IMAGE"
 	if echo $mconf | grep -q "conf/multiconfig/"; then
-		echo mc build
 		mcmachine="$machine"
 		machine="$(grep "MACHINE *=" $mcconf | cut -d\" -f2)"
 		image="$MCIMAGE"
