@@ -119,17 +119,19 @@ while [ "${STATE}" -le "${STATE_WANTED}" ]; do
 	1) # check if given interface is connected
 		if_state=$(nmcli -f GENERAL.STATE d show "$if" | sed 's/[^0-9]*//g')
 		# shellcheck disable=SC2181
-		if [ $? != 0 ] || [ "${if_state}" != "100" ]; then
+		if [ $? != "0" ] || [ "${if_state}" != "100" ]; then
+			# error interface not up
 			break
 		fi
 	;;
 	2) # check valid ip
 		ip=$(nmcli -f IP4.ADDRESS d show "${if}" | cut -d ":" -f2 | cut -d "/" -f1 | xargs)
 		# shellcheck disable=SC2181
-		[ $? ] || break
+		[ $? != "0" ] && break
 		[ "${ip}" = "" ] && break
 		ip_dez=$(echo "$ip" | tr . '\n' | awk '{s = s*256 + $1} END{print s}')
 		if [ "${ip_dez}" -ge "2851995648" ] && [ "${ip_dez}" -le "2852061183" ]; then
+			# error ip not valid
 			break
 		fi
 	;;
@@ -137,16 +139,17 @@ while [ "${STATE}" -le "${STATE_WANTED}" ]; do
 		service_state=$(systemctl is-active iotedge)
 		# shellcheck disable=SC2181
 		if [ "${?}" != "0" ] || [ "${service_state}" != "active" ]; then
+			# error iotedge is not active
 			break
 		fi
 	;;
 	4) # check if internet connection is available
-		pid=$(docker-iotedge inspect -f '{{.State.Pid}}' edgeAgent)
+		pid=$(docker-iotedge inspect -f '{{.State.Pid}}' edgeAgent 2>/dev/null)
 		# shellcheck disable=SC2181
-		[ $? ] || break
-		ports=$(nsenter -t "$pid" -n netstat -antl  | grep tcp | tr -s " " | cut -d " " -f5 | tr -s ":" | cut -d ":" -f2 2>/dev/null)
+		[ $? != "0" ] && break
+		ports=$(nsenter -t "$pid" -n netstat -antl 2>/dev/null | grep tcp | tr -s " " | cut -d " " -f5 | tr -s ":" | cut -d ":" -f2 2>/dev/null)
 		# shellcheck disable=SC2181
-		[ $? ] || break
+		[ $? != "0" ] && break
 		res="fail"
 		upstream_port=$(get_upstream_port)
 		for port in $ports; do
@@ -162,7 +165,7 @@ while [ "${STATE}" -le "${STATE_WANTED}" ]; do
 	5) # check if edgeAgent is up and running
 		res=$(curl --unix-socket /var/run/iotedge/mgmt.sock "http://dummy/modules?api-version=2018-06-28" 2>/dev/null)
 		# shellcheck disable=SC2181
-		[ $? ] && res=$(parse_runtime_status "${res}" "edgeAgent" "running")
+		[ $? = "0" ] && res=$(parse_runtime_status "${res}" "edgeAgent" "running")
 		if [ "${res}" != "ok" ]; then
 			break
 		fi
@@ -170,7 +173,7 @@ while [ "${STATE}" -le "${STATE_WANTED}" ]; do
 	6) # check if edgeAgent is up and running
 		res=$(curl --unix-socket /var/run/iotedge/mgmt.sock "http://dummy/modules?api-version=2018-06-28" 2>/dev/null)
 		# shellcheck disable=SC2181
-		[ $? ] && res=$(parse_runtime_status "${res}" "edgeAgent" "running")
+		[ $? = "0" ] && res=$(parse_runtime_status "${res}" "edgeAgent" "running")
 		if [ "${res}" != "ok" ]; then
 			break
 		fi
@@ -178,7 +181,7 @@ while [ "${STATE}" -le "${STATE_WANTED}" ]; do
 	7) # check if device is "onboarded" by user
 		res=$(curl --unix-socket /var/run/iotedge/mgmt.sock "http://dummy/modules?api-version=2018-06-28" 2>/dev/null)
 		# shellcheck disable=SC2181
-		[ $? ] && res=$(check_onboarding "${res}")
+		[ $? = "0" ] && res=$(check_onboarding "${res}")
 		if [ "${res}" != "ok" ]; then
 			break
 		fi
@@ -186,7 +189,7 @@ while [ "${STATE}" -le "${STATE_WANTED}" ]; do
 	8) # check state of all modules
 		res=$(curl --unix-socket /var/run/iotedge/mgmt.sock "http://dummy/modules?api-version=2018-06-28" 2>/dev/null)
 		# shellcheck disable=SC2181
-		[ $? ] && res=$(parse_runtime_status "${res}" "" "running")
+		[ $? = "0" ] && res=$(parse_runtime_status "${res}" "" "running")
 		if [ "${res}" != "ok" ]; then
 			break
 		fi

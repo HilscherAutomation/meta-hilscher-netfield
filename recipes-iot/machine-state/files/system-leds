@@ -11,6 +11,9 @@
 #       leds2=("...")
 #       leds="led1 led2 ..."
 
+# NOTE: In case the system does not provide a cloud_red/green LED but LED signalling
+#       is required, any free LED can be configured. For led control check "machine-state" service.
+
 led1=("/var/platform/led_cloud_red/"
       "none"     "1"         # state 0
       "timer"  "500" "500"   # state 1
