@@ -63,6 +63,8 @@ while getopts ":b:cd:De:f:i:p:P:s:t" o; do
 			;;
 		t)  # Include test configuration/data
 			test_enabled="1"
+			# Debug features are required for testing (root shell without password).
+			debug_enable="1"
 			;;
 		*)
 			usage
@@ -74,7 +76,7 @@ shift $((OPTIND-1))
 # Set default values
 FW_VERSION="${fw_version:-"2.3.0.0"}"
 FW_VERSION="$FW_VERSION${debug_enable:+".debug"}"
-FW_VERSION="$FW_VERSION${fw_suffix:+"_$fw_suffix"}"
+FW_VERSION="$FW_VERSION${fw_suffix:+".$fw_suffix"}"
 BUILD_DIR="${build_dir:-"build"}"
 DEPLOY_DIR="${deploy_dir:-"dist"}"
 IMAGE="${image:-"netfield-image"}"
