@@ -4,6 +4,8 @@
 # Disable this step until the cause is clear
 #include sstate-cache.inc
 
+require fragattack.inc
+
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
 # 3G
