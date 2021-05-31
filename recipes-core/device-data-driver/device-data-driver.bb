@@ -15,7 +15,6 @@ SRC_URI = " \
 
 S = "${WORKDIR}/src"
 
-EXTRA_OEMAKE  = "${@bb.utils.contains('DISTRO_FEATURES', 'grsecurity', 'DISABLE_PAX_PLUGINS=y', '', d)}"
 EXTRA_OEMAKE += "KERNEL_SRC=${STAGING_KERNEL_DIR}"
 
 # Make sure package signing works correctly
