@@ -19,7 +19,6 @@ SRC_URI = "https://sourceforge.net/projects/ibmswtpm2/files/ibmtpm${PV}.tar.gz \
            file://tune-makefile.patch \
            file://fix-wrong-cast.patch \
            "
-SRC_URI[md5sum] = "43b217d87056e9155633925eb6ef749c"
 SRC_URI[sha256sum] = "dd3a4c3f7724243bc9ebcd5c39bbf87b82c696d1c1241cb8e5883534f6e2e327"
 SRC_URI[sha1sum] = "ab4b94079e57a86996991e8a2b749ce063e4ad3e"
 SRC_URI[sha384sum] = "bbef16a934853ce78cba7ddc766aa9d7ef3cde3430a322b1be772bf3ad4bd6d413ae9c4de21bc1a4879d17dfe2aadc1d"

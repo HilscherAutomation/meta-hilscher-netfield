@@ -10,7 +10,6 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=4325afd396febcb659c36b49533135d4"
 
 SRC_URI = "http://guichaz.free.fr/iotop/files/${BP}.tar.bz2 \
            file://python3_compatibility.patch"
-SRC_URI[md5sum] = "5ef9456b26d7694abf3101a72e1e0d1d"
 SRC_URI[sha256sum] = "3adea2a24eda49bbbaeb4e6ed2042355b441dbd7161e883067a02bfc8dcef75b"
 
 UPSTREAM_CHECK_URI = "http://repo.or.cz/iotop.git/tags"
