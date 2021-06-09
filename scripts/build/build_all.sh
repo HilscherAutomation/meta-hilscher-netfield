@@ -154,7 +154,9 @@ for machine in $PLATFORMS; do
 		[ $(basename $f) == "local.conf.sample" ] && continue # already done by poky/oe-init-build-env
 		[ -e conf/$(basename ${f%.*}) ] && diff -ua $f conf/$(basename ${f%.*}) || cp -i $f conf/$(basename ${f%.*})
 	done
-    [ -e conf/site.conf ] && diff -ua ../site.conf conf/site.conf || cp -i ../site.conf conf/site.conf
+	if [ -e ../site.conf ]; then
+		[ -e conf/site.conf ] && diff -ua ../site.conf conf/site.conf || cp -i ../site.conf conf/site.conf
+	fi
 
 	# Set build parameters
 	if touch conf/local.overrides.conf; then
