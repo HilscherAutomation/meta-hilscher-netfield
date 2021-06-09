@@ -8,7 +8,6 @@ DEPENDS = "libtool libmnl"
 
 SRC_URI = "http://ftp.netfilter.org/pub/ipset/${BPN}-${PV}.tar.bz2"
 
-SRC_URI[md5sum] = "72b477d1ce076d681b0799f88280f2f3"
 SRC_URI[sha256sum] = "7b5eb3b93205c20cdc39e3fc8b6e5f7bb214bf79a7c0c00729dd4a31ce16adc4"
 
 inherit autotools pkgconfig module-base

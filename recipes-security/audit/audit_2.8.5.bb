@@ -12,7 +12,6 @@ SRC_URI = "http://people.redhat.com/sgrubb/${BPN}/${BPN}-${PV}.tar.gz \
            file://auditd.service \
            file://audit-volatile.conf \
 "
-SRC_URI[md5sum] = "9455e5773670afdbccaeb92681b2e97d"
 SRC_URI[sha256sum] = "0e5d4103646e00f8d1981e1cd2faea7a2ae28e854c31a803e907a383c5e2ecb7"
 
 inherit autotools python3native update-rc.d systemd

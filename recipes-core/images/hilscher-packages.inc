@@ -10,8 +10,6 @@ IMAGE_INSTALL  += "openssh-sftp-server"
 # Base system
 #################
 
-inherit xattr-images
-
 # Include service that unmounts overlays correctly on shutdown
 IMAGE_INSTALL += "${@('unmount-overlays' if d.getVar('NETIOT_OVERLAY_DIRS')!='' else '')}"
 

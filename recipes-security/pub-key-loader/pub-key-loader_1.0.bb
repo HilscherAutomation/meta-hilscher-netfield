@@ -11,8 +11,6 @@ SRC_URI += "file://Makefile"
 
 S = "${WORKDIR}"
 
-EXTRA_OEMAKE = "${@bb.utils.contains('DISTRO_FEATURES', 'grsecurity', 'DISABLE_PAX_PLUGINS=y', '', d)}"
-
 # Make sure package signing works correctly
 INHIBIT_PACKAGE_STRIP="1"
 EXTRA_OEMAKE   += "INSTALL_MOD_STRIP=1"

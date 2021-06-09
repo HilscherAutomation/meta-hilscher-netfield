@@ -16,7 +16,6 @@ SRCREV="12706"
 
 S = "${WORKDIR}/V${PV}/netanalyzer_kernel_mod/"
 
-EXTRA_OEMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'grsecurity', 'DISABLE_PAX_PLUGINS=y', '', d)}"
 EXTRA_OEMAKE += "KDIR=${STAGING_KERNEL_DIR}"
 
 # Make sure package signing works correctly
