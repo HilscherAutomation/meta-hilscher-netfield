@@ -1,8 +1,4 @@
-#TODO: Currently sstate-caching kernel compile step arises several different errors:
-# - do_prepare_recipe_sysroot: The file /usr/lib/x86_64-poky-linux/9.3.0/crtfastmath.o is installed by both libgcc-initial and libgcc, aborting
-# - /meta/recipes-kernel/make-mod-scripts/make-mod-scripts_1.0.bb:do_configure failed with exit code '1' : /tmp/work-shared/niot-e-tijcx-gb/kernel-source/Makefile:710: scripts/Makefile.kcov: No such file or directory
-# Disable this step until the cause is clear
-#include sstate-cache.inc
+include sstate-cache.inc
 
 require fragattack.inc
 
