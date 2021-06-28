@@ -1,0 +1,28 @@
+diff -aurN a/Makefile b/Makefile
+--- a/Makefile	2021-04-12 14:58:03.435726701 +0200
++++ b/Makefile	2021-04-13 16:42:40.462437238 +0200
+@@ -1,4 +1,5 @@
+ CARGO = cargo
++CARGO_TARGET ?= x86_64-unknown-linux-gnu
+ 
+ # Installed via `cargo install`. See /ci/install-build-deps.sh for exact command and versions.
+ BINDGEN = bindgen
+@@ -32,18 +33,6 @@
+ 	CARGO_PROFILE_DIRECTORY = release
+ endif
+ 
+-ifeq ($(ARCH), arm32v7)
+-	CARGO_TARGET = armv7-unknown-linux-gnueabihf
+-	DPKG_ARCH_FLAGS = --host-arch armhf
+-else ifeq ($(ARCH), aarch64)
+-	CARGO_TARGET = aarch64-unknown-linux-gnu
+-	DPKG_ARCH_FLAGS = --host-arch arm64 --host-type aarch64-linux-gnu --target-type aarch64-linux-gnu
+-else
+-	CARGO_TARGET = x86_64-unknown-linux-gnu
+-	DPKG_ARCH_FLAGS =
+-endif
+-
+-
+ # Some of the targets use bash-isms like `set -o pipefail`
+ SHELL := /bin/bash
+ 

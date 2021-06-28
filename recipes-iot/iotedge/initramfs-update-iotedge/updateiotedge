@@ -1,0 +1,21 @@
+#!/bin/sh
+
+updateiotedge_preoverlay() {
+	:
+}
+
+updateiotedge_postoverlay() {
+	echo "Updating iotedge system daemons..."
+
+	# Update docker socket in config.yaml
+	if [ -e "${ROOTFS_DIR}/etc/iotedge/config.yaml" ]; then
+		sed -i -e 's@/var/run/@/run/@g' ${ROOTFS_DIR}/etc/iotedge/config.yaml
+
+		# Check if iotedge service is available and active
+		if [ -e "${ROOTFS_DIR}/etc/systemd/system/multi-user.target.wants/iotedge.service" ]; then
+			rm ${ROOTFS_DIR}/etc/systemd/system/multi-user.target.wants/iotedge.service
+			chroot "${ROOTFS_DIR}" iotedge config import
+			chroot "${ROOTFS_DIR}" iotedge config apply
+		fi
+	fi
+}

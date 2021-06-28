@@ -1,0 +1,32 @@
+diff -aurN a/contrib/third-party-notices.sh b/contrib/third-party-notices.sh
+--- a/contrib/third-party-notices.sh	2021-04-15 10:51:10.582872468 +0200
++++ b/contrib/third-party-notices.sh	2021-04-15 11:36:36.013326190 +0200
+@@ -208,7 +189,8 @@
+             # https://github.com/hannobraun/inotify/commit/52c18c527fe227b329f8428d73a1c732f2d56ce5
+             # but that requires inotify v0.8 and notify v4 uses inotify v0.7.
+             # notify v5.0 will depend on inotify v0.8, so remove this when that happens.
+-            curl -Lo "$crate_directory/LICENSE" 'https://github.com/hannobraun/inotify/raw/52c18c527fe227b329f8428d73a1c732f2d56ce5/LICENSE'
++            # curl -Lo "$crate_directory/LICENSE" 'https://github.com/hannobraun/inotify/raw/52c18c527fe227b329f8428d73a1c732f2d56ce5/LICENSE'
++            cp inotify-LICENSE "$crate_directory/LICENSE"
+         fi
+ 
+         if [ "$name:$version" == 'inotify-sys:0.1.4' ]; then
+@@ -217,14 +199,16 @@
+             # notify will need to depend on newer version of inotify (> 0.8) that depends 
+             # on newer version of inotify-sys (> 0.1.4), so remove this when that happens.
+             # The ISC license content is identical in both inotify and inotify-sys repos. 
+-            curl -Lo "$crate_directory/LICENSE" 'https://github.com/hannobraun/inotify/raw/52c18c527fe227b329f8428d73a1c732f2d56ce5/LICENSE'
++            # curl -Lo "$crate_directory/LICENSE" 'https://github.com/hannobraun/inotify/raw/52c18c527fe227b329f8428d73a1c732f2d56ce5/LICENSE'
++            cp inotify-LICENSE "$crate_directory/LICENSE"
+         fi
+ 
+         if [ "$name:$version" == 'notify:4.0.15' ]; then
+             # TODO: Crate doesn't ship with LICENSE file but it's CC0-1.0. Fixed by upstream in
+             # https://github.com/notify-rs/notify/commit/e0982ffc760bc0e34544d2a7c9d10cdba65183d9
+             # but that requires notify v5.0, so remove this when that happens.
+-            curl -Lo "$crate_directory/LICENSE" 'https://github.com/notify-rs/notify/raw/e0982ffc760bc0e34544d2a7c9d10cdba65183d9/LICENSE'
++            # curl -Lo "$crate_directory/LICENSE" 'https://github.com/notify-rs/notify/raw/e0982ffc760bc0e34544d2a7c9d10cdba65183d9/LICENSE'
++            cp notify-LICENSE "$crate_directory/LICENSE"
+         fi
+ 
+         license_file="$(find "$crate_directory" -maxdepth 1 -type f -regextype posix-egrep -regex ".*/LICEN[CS]E-$license_file_suffix(\\.(md|txt))?" | head -n1)"

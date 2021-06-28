@@ -36,16 +36,16 @@ EOF
 fi
 
 do_tpm_onboarding() {
-    cat <<EOF>/etc/iotedge/config.yaml
+    cat <<EOF>/etc/aziot/config.toml
 # DPS TPM provisioning configuration
-provisioning:
-  source: "dps"
-  global_endpoint: "${global_endpoint}"
-  scope_id: "${scope_id}"
-  attestation:
-    method: "tpm"
-    registration_id: "${registration_id}"
+[provisioning]
+source = "dps"
+global_endpoint = "$global_endpoint"
+id_scope = "$scope_id"
 
+[provisioning.attestation]
+method = "tpm"
+registration_id = "$registration_id"
 EOF
 }
 
@@ -57,17 +57,17 @@ do_symmetric_key_onboarding() {
 
     symmetric_key=$(cat /var/platform/device_data/oem_data/iotedge/symmetric_key)
 
-    cat <<EOF>/etc/iotedge/config.yaml
+    cat <<EOF>/etc/aziot/config.toml
 # DPS symmetric key provisioning configuration
-provisioning:
-  source: "dps"
-  global_endpoint: "${global_endpoint}"
-  scope_id: "${scope_id}"
-  attestation:
-    method: "symmetric_key"
-    registration_id: "${registration_id}"
-    symmetric_key: "${symmetric_key}"
+[provisioning]
+source = "dps"
+global_endpoint = "$global_endpoint"
+id_scope ="$scope_id"
 
+[provisioning.attestation]
+method = "symmetric_key"
+registration_id = "$registration_id"
+symmetric_key = { value = "$symmetric_key" }
 EOF
 }
 
@@ -85,30 +85,25 @@ do_general_settings() {
         esac
     fi
 
-    cat <<EOF>>/etc/iotedge/config.yaml
-agent:
-  name: "edgeAgent"
-  type: "docker"
-  env:
-    UpstreamProtocol: "$upstreamprotocol"
-  config:
-    image: "mcr.microsoft.com/azureiotedge-agent:1.0"
-    auth: {}
+    cat <<EOF>>/etc/aziot/config.toml
 
 hostname: "$(hostname)"
 
-connect:
-  management_uri: "unix:///var/run/iotedge/mgmt.sock"
-  workload_uri: "unix:///var/run/iotedge/workload.sock"
+[agent]
+name = "edgeAgent"
+type = "docker"
 
-listen:
-  management_uri: "fd://iotedge.mgmt.socket"
-  workload_uri: "fd://iotedge.socket"
+[agent.config]
+image = "mcr.microsoft.com/azureiotedge-agent:1.2"
+createOptions = { HostConfig = { Binds = ["/var/lib/aziot/storage/edgeagent:/iotedge/storage"] } }
 
-homedir: "/var/lib/iotedge"
+[agent.env]
+"storageFolder" = "/iotedge/storage"
+"UpstreamProtocol" = "$upstreamprotocol"
 
-moby_runtime:
-  uri: "unix:///var/run/iotedge-docker.sock"
+[moby_runtime]
+uri = "unix:///run/iotedge-docker.sock"
+network = "azure-iot-edge"
 EOF
     sync
 }
@@ -146,12 +141,12 @@ if [ "$iotedge_status" != "enabled" ]; then
             "symmetric_key")
                 do_symmetric_key_onboarding
                 do_general_settings
-                systemctl enable --now --no-block iotedge
+		iotedge config apply
                 ;;
             "tpm")
                 do_tpm_onboarding
                 do_general_settings
-                systemctl enable --now --no-block iotedge
+		iotedge config apply
                 ;;
             *)
                 echo "<4>Invalid zero-touch onboarding method ($method)"
