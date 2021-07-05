@@ -50,7 +50,7 @@ DATE=`date +%Y%m%d%H%M%S`
 SCRIPTDIR=$(dirname "$0")
 
 # Parse Options
-while getopts "a:k:s:p:vh" opt ; do
+while getopts "a:k:s:p:e:vh" opt ; do
 	echo "${OPTARG}" | grep -q "^-.*" && {
 		echo "option -${opt} requires an argument!"
     exit 1
@@ -59,6 +59,7 @@ while getopts "a:k:s:p:vh" opt ; do
 		a) fw_image=$OPTARG;;
 		k) priv_key=${OPTARG};;
 		s) user_script_dir=${OPTARG};;
+		e) engine=${OPTARG};;
 		v) verbose=1;;
 		h) show_help && exit 0;;
 		?) show_help && exit 1;;
@@ -102,7 +103,11 @@ if [ -e "${fw_image}" ]; then
     cp -r ${fw_image}/* _firmware_api/firmware
   else
     cp ${fw_image} _firmware_api/firmware
-    openssl dgst -sha512 -sign ${priv_key} -out _firmware_api/firmware/$(basename $fw_image).sig ${fw_image}
+
+    if [ -n ${engine} ];
+      swtpm_param="-engine ${engine} -keyform engine"
+    fi
+    openssl dgst $swtpm_param -sha512 -sign ${priv_key} -out _firmware_api/firmware/$(basename $fw_image).sig ${fw_image}
   fi
 fi
 [ $? -eq 0 ] && vmsg "done" || vmsg_errout "failed!"

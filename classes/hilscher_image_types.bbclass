@@ -1,4 +1,4 @@
-inherit kernel-artifact-names
+inherit kernel-artifact-names sign-wrapper
 
 HILSCHER_RESCUE_IMAGE_LINK_NAME ??= "${HILSCHER_RESCUE_IMAGE}-${MACHINE}"
 INITRAMFS_IMAGE_NAME ?= "${@['${INITRAMFS_IMAGE}-${MACHINE}', ''][d.getVar('INITRAMFS_IMAGE') == '']}"
@@ -101,13 +101,7 @@ create_boot_cfg_file() {
 	esac
 
 	# Signing $dst
-	priv_key=""
-	if [ "${@bb.utils.contains('PLATFORM_SIGN', '1', 'true', 'false', d)}" = "true" ]; then
-		priv_key="${PLATFORM_KEYDIR}/${PLATFORM_KEYNAME}.key"
-		[ ! -e "$priv_key" ] && bbfatal "Signing key $priv_key not found"
-	fi
-	sign_file $dst $priv_key
-	rm $dst.signed
+	openssl_sign_wrapper ${PLATFORM_KEYNAME} "sha512" ${dst}
 }
 
 copy_part_content() {
@@ -160,13 +154,7 @@ copy_part_content() {
 sign_squashfs_image() {
 	local ext="$1"
 
-	priv_key=""
-	if [ "${@bb.utils.contains('PLATFORM_SIGN', '1', 'true', 'false', d)}" = "true" ]; then
-		priv_key="${PLATFORM_KEYDIR}/${PLATFORM_KEYNAME}.key"
-		[ ! -e "$priv_key" ] && bbfatal "Signing key $priv_key not found"
-	fi
-
-	sign_file ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.$ext $priv_key
+	openssl_sign_wrapper ${PLATFORM_KEYNAME} "sha512" ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.${ext} "merge"
 	ln -sf ${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.$ext.sig ${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.$ext.sig
 	ln -sf ${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.$ext.signed ${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.$ext.signed
 }
@@ -431,7 +419,8 @@ IMAGE_CMD_swu() {
 	fileList="sw-description"
 	[ "${SWUPDATE_SIGN_ENFORCE}" != "0" ] && {
 		# If necessary sign sw-description file
-		openssl dgst -sha256 -sign ${SWUPDATE_KEYDIR}/${SWUPDATE_KEYNAME}.key sw-description > sw-description.sig
+		SIGN_WRAPPER_KEY_SRC="${SWUPDATE_KEYDIR}"
+		openssl_sign_wrapper "${SWUPDATE_KEYNAME}" "sha256" "sw-description"
 		fileList="$fileList sw-description.sig"
 	}
 	for file in $(find . -type f ! -name 'sw-description*'); do

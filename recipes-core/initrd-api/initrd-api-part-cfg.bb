@@ -6,6 +6,8 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384
 
 PACKAGE_ARCH="${MACHINE_ARCH}"
 
+inherit sign-wrapper
+
 SRC_URI = " \
 	file://runscript.sh \
 "
@@ -51,15 +53,7 @@ do_install() {
 do_sign[depends] += "file-signature-native:do_populate_sysroot"
 do_sign[vardeps] += "PLATFORM_SIGN PLATFORM_KEYDIR PLATFORM_KEYNAME"
 do_sign() {
-	priv_key=""
-	if [ "${@bb.utils.contains('PLATFORM_SIGN', '1', 'true', 'false', d)}" = "true" ]; then
-		priv_key="${PLATFORM_KEYDIR}/${PLATFORM_KEYNAME}.key"
-		[ ! -e "$priv_key" ] && bbfatal "Signing key $priv_key not found"
-	fi
-
-	for file in ${PN}; do
-		sign_file ${WORKDIR}/$file $priv_key
-	done
+	openssl_sign_wrapper "${PLATFORM_KEYNAME}" "sha512" "${WORKDIR}/${PN}" "merge"
 }
 addtask sign after do_compile
 

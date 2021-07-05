@@ -23,4 +23,4 @@ EXTRA_OEMAKE = "KDIR=${STAGING_KERNEL_DIR} \
 INHIBIT_PACKAGE_STRIP="1"
 EXTRA_OEMAKE_append   += " INSTALL_MOD_STRIP=1 "
 
-inherit module
+inherit module sign-wrapper

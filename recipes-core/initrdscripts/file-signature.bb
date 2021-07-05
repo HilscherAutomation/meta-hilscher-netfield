@@ -4,7 +4,7 @@ HOMEPAGE = "http://www.hilscher.com"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384361b4de20420"
 
-inherit allarch
+inherit allarch sign-wrapper
 
 SRC_URI = " \
 	file://verify_file \
@@ -12,14 +12,11 @@ SRC_URI = " \
 "
 PACKAGES = "${PN}"
 
-DEPENDS += "${@bb.utils.contains('PLATFORM_SIGN', '1', 'openssl-native', '', d)}"
 do_compile[vardeps] += "PLATFORM_SIGN PLATFORM_KEYDIR PLATFORM_KEYNAME"
 do_compile() {
 	if [ "${@bb.utils.contains('PLATFORM_SIGN', '1', 'true', 'false', d)}" = "true" ]; then
-		priv_key="${PLATFORM_KEYDIR}/${PLATFORM_KEYNAME}.key"
-		[ ! -e "$priv_key" ] && bbfatal "Signing key $priv_key not found"
-
-		openssl rsa -in $priv_key -pubout > ${WORKDIR}/${PLATFORM_KEYNAME}.pub.key
+		# public key is populated by sign-wrapper
+		cp "${SIGN_WRAPPER_KEY_DST}/${PLATFORM_KEYNAME}/${PLATFORM_KEYNAME}.pub" "${WORKDIR}/${PLATFORM_KEYNAME}.pub.key"
 	fi
 }
 

@@ -48,13 +48,14 @@ MYNAME=$(basename ${0})
 MYVERSION="20160404"
 
 # Parse Options
-while getopts "f:k:vh" opt ; do
+while getopts "f:k:e:vh" opt ; do
 	echo "${OPTARG}" | grep -q "^-.*" && {
 		vmsg_errout "option -${opt} requires an argument!"
 	}
 	case ${opt} in
 		f) api_file=$OPTARG;;
 		k) priv_key=${OPTARG};;
+		e) engine=${OPTARG};;
 		v) verbose=1;;
 		h) show_help && exit 0;;
 		?) show_help && exit 1;;
@@ -73,7 +74,11 @@ fi
 
 vmsg "Creating (${api_file}.signed)"
 
-openssl dgst -sha512 -sign ${priv_key} -out ${api_file}.signature ${api_file} &&
+if [ -n "${engine}" ]; then
+	swtpm_params="-engine ${engine} -keyform engine"
+fi
+
+openssl ${swtpm_params} dgst -sha512 -sign ${priv_key} -out ${api_file}.signature ${api_file} &&
 echo "== SIGNATURE START ==" > ${api_file}.signed &&
 cat ${api_file}.signature >> ${api_file}.signed &&
 rm ${api_file}.signature &&

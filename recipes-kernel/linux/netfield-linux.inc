@@ -2,6 +2,8 @@
 
 require fragattack.inc
 
+inherit sign-wrapper
+
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
 # 3G
@@ -59,20 +61,44 @@ SRC_URI_append += "file://enable_iscsi.cfg"
 
 # Kernel module signing
 SRC_URI_append += "file://enable_signed_modules.cfg"
+SRC_URI_append += "file://0001-Add-support-for-module-signing-via-swtpm.patch"
+
 INHIBIT_PACKAGE_STRIP="1"
 EXTRA_OEMAKE_append += " INSTALL_MOD_STRIP=1 "
-do_kernel_configme_prepend() {
-  set -e
-  mkdir -p ${B}/certs
-  cat ${KEYS_IMAGE_SIGN_PRIV} > ${B}/certs/iotgw_signing_key.pem
-  cat ${KEYS_IMAGE_SIGN_CERT} >> ${B}/certs/iotgw_signing_key.pem
+do_kernel_configme_append() {
+	setup_swtpm_env ${PLATFORM_KEYNAME}
+
+	mkdir -p ${B}/certs
+	if [ "x${SIGN_WRAPPER_USES_SWTPM}" = "x" ]; then
+		cat ${PLATFORM_KEYDIR}/${PLATFORM_KEYNAME}.key > ${B}/certs/iotgw_signing_key.pem
+		cat ${KEYS_IMAGE_SIGN_CERT} >> ${B}/certs/iotgw_signing_key.pem
+	fi
+	cp ${KEYS_IMAGE_SIGN_CERT_DER} ${B}/certs/signing_key.x509
+}
+do_kernel_configme[vardeps] += "PLATFORM_SIGN PLATFORM_KEYDIR PLATFORM_KEYNAME"
+
+do_compile_prepend() {
+	setup_swtpm_env ${PLATFORM_KEYNAME}
+
+	if [ "x${SIGN_WRAPPER_USES_SWTPM}" = "x" ]; then
+		sed -i 's/CONFIG_MODULE_SIG_KEY=.*/CONFIG_MODULE_SIG_KEY="certs\/iotgw_signing_key.pem"/g' ${B}/.config
+		sed -i 's/CONFIG_MODULE_SIG_ENGINE=.*/CONFIG_MODULE_SIG_ENGINE=""/g' ${B}/.config
+	else
+		#'"${PLATFORM_KEYNAME}"'
+		sed -i 's/CONFIG_MODULE_SIG_KEY=.*/CONFIG_MODULE_SIG_KEY="'${PLATFORM_KEYNAME}'"/g' ${B}/.config
+		sed -i 's/CONFIG_MODULE_SIG_ENGINE=.*/CONFIG_MODULE_SIG_ENGINE="tpm2tss"/g' ${B}/.config
+	fi
 }
 
 do_shared_workdir_append() {
-  kerneldir=${STAGING_KERNEL_BUILDDIR}
-  mkdir -p $kerneldir/certs
-  cp ${KEYS_IMAGE_SIGN_PRIV} $kerneldir/certs/iotgw_signing_key.pem
-  cp ${KEYS_IMAGE_SIGN_CERT_DER} $kerneldir/certs/signing_key.x509
+	setup_swtpm_env ${PLATFORM_KEYNAME}
+
+	if [ "x${SIGN_WRAPPER_USES_SWTPM}" = "x" ]; then
+		kerneldir=${STAGING_KERNEL_BUILDDIR}
+		mkdir -p $kerneldir/certs
+		cp ${KEYS_IMAGE_SIGN_PRIV} $kerneldir/certs/iotgw_signing_key.pem
+		cp ${KEYS_IMAGE_SIGN_CERT_DER} $kerneldir/certs/signing_key.x509
+	fi
 }
 
 # Misc
@@ -97,3 +123,15 @@ CVE_CHECK_WHITELIST_append += "CVE-2015-7312 CVE-2016-2853 CVE-2016-2854"
 
 # CVE-2017-5897 is fixed since 4.10 (we are using 4.14+)
 CVE_CHECK_WHITELIST_append += "CVE-2017-5897"
+
+do_assemble_fitimage_prepend() {
+	setup_swtpm_env ${PLATFORM_KEYNAME}
+
+	# we need to change the mkimage command line in case swtpm is used
+	UBOOT_MKIMAGE_PARAMS="-k ${UBOOT_SIGN_KEYDIR}"
+	if [ "x${SIGN_WRAPPER_USES_SWTPM}" != "x" ]; then
+		UBOOT_MKIMAGE_PARAMS="-N ${SIGN_WRAPPER_ENGINE}"
+	fi
+	# for debugging puposes uncomment the following line
+	#export TSS2_LOG="all+TRACE"
+}

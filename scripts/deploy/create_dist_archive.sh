@@ -43,6 +43,9 @@ while [ "$1" != "" ]; do
         -t | --image-type )     shift
                                 image_type=$1
                                 ;;
+        -e | --engine )         shift
+                                engine_params=$1
+                                ;;
         -v | --verbose )        debug="1"
                                 ;;
         -h | --help )           usage
@@ -72,6 +75,9 @@ fi
 if [ -z "$custom_scripts" ]; then
    echo "Missing scripts directory. Please provide -c <dir>"
    exit 1
+fi
+if [ -n ${engine_params} ]; then
+	engine_params="-e ${engine_params}"
 fi
 
 input_image=`realpath ${input_image}`
@@ -114,7 +120,7 @@ elif [ "${image_type}" == "update" ] ; then
 fi
 
 firmware_api_file="${SCRIPTDIR}/create_firmware_api_file.sh"
-${firmware_api_file} ${add_image_params} -k ${signing_key} ${user_script_arg} ${update_param} -v || exit 1
+${firmware_api_file} ${engine_params} ${add_image_params} -k ${signing_key} ${user_script_arg} ${update_param} -v || exit 1
 rm -rf _firmware_api tmp_repo
 if [ -e "firmware.signed" ]; then
   realfirmware=$(basename $(readlink firmware.signed))
