@@ -1,6 +1,6 @@
 SRC_URI="git://bitbucket.hilscher.com/scm/ial/cockpit-netiot.git;user=${HILSCHER_BITBUCKET_USER};protocol=https;nobranch=1 \
          file://use_tarball_version_if_available.patch"
-SRCREV = "e30ba0e88934859aef6a49cf2726d7644b9038cb"
+SRCREV = "cd405715552731f26c64861ca7ef81bf8a3536e7"
 
 LIC_FILES_CHKSUM="file://COPYING;md5=4fbd65380cdd255951079008b364516c"
 
