@@ -26,7 +26,7 @@ class Base(OERuntimeTestCase):
         '3f007000.dma', 
         '3f200000.gpio', 
         '3f201000.serial',
-        '3f204000.spi', '3f215080.spi', '3f215000.aux',
+        '3f204000.spi', '3f215000.aux',
         '3f804000.i2c',
     )
     dev_list_niot_e_tijcx_gb = (
