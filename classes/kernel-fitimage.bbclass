@@ -472,7 +472,8 @@ fitimage_assemble() {
 		fi
 		uboot-mkimage \
 			${@'-D "${UBOOT_MKIMAGE_DTCOPTS}"' if len('${UBOOT_MKIMAGE_DTCOPTS}') else ''} \
-			-F -k "${UBOOT_SIGN_KEYDIR}" \
+			-F \
+			${UBOOT_MKIMAGE_PARAMS} \
 			$add_key_to_u_boot \
 			-r arch/${ARCH}/boot/${2}
 	fi
