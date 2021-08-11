@@ -254,9 +254,6 @@ SWUPDATE_KEYNAME ??= "${PLATFORM_KEYNAME}"
 SWU_TMPDIR = "${WORKDIR}/${IMAGE_BASENAME}.swu.tmpdir"
 
 __create_sw_description_file() {
-	local fileList="$(find . -type f ! -name 'sw-description*' ! -name *.lua ! -name '*.sh' | sed 's,^./,,' | sort)"
-	local scriptList="$(find . -name '*.lua' -o -name '*.sh' | sed 's,^./,,' | sort)"
-
 	if [ -z "${SWU_BOARD_SPEC}" ]; then
 		SWU_BOARD_SPEC="$(echo ${MACHINE} | sed 's/-rev[0-9]*//')"
 	fi
@@ -272,55 +269,91 @@ __create_sw_description_file() {
 	echo "	${SWU_BOARD_SPEC} = {"
 	echo "		hardware-compatibility: [\"$(echo ${SWU_BOARD_REV_SPEC} | sed 's/ /\",\"/g')\"];"
 	echo ""
-	[ -n "$fileList" ] && {
+
+	[ -n "$swu_files" ] && {
 		echo "		files: ("
-		for f in $fileList; do
-			filename="$f"
-			path="/media/system/$f"
-			for fattr in $(echo "${SWU_FILE_ATTRIBUTES}"); do
-				[ "$(echo $fattr';' | cut -d';' -f1)" != "$f" ] && continue
-				for attr in $(echo $fattr | cut -d';' -f2- | tr ';' ' '); do
-					attr=$(echo $attr | sed 's,=, = ,')
-					echo "$attr" | grep -q path && { path="$(echo $attr | cut -d'"' -f2)"; continue; }
-				done
-			done
+		for f in $swu_files; do
+			# extract real filename
+			f=$(echo "$f" | cut -d';' -f2)
 			echo "			{"
-			echo "				filename = \"$filename\";"
+			echo "				filename = \"$f\";"
 			echo "				sha256 = \"$(sha256sum $f | cut -d' ' -f1)\";"
-			case "$f" in
-				"boot.squashfs" | "system.squashfs")
-					# Set path to /dev/null so file is not copied to disk if tmpdir and path is different
-					# Copying is done after running preinstall step
-					echo "				path = \"/dev/null\";"
-					;;
-				*)
-					echo "				path = \"$path\";"
-					;;
-			esac
 
-			for fattr in $(echo "${SWU_FILE_ATTRIBUTES}"); do
-				[ "$(echo $fattr';' | cut -d';' -f1)" != "$f" ] && continue
-				for attr in $(echo $fattr | cut -d';' -f2- | tr ';' ' '); do
-					attr=$(echo $attr | sed 's,=, = ,')
-					echo "$attr" | grep -q path && continue
-					[ "$attr" = "version" ] && attr="$attr = \"$(sha256sum $f | cut -d' ' -f1)\""
-					echo "				$attr;"
-				done
+			# search for file attributes and separate these by spaces
+			for fattr in $swu_file_attributes dummy; do
+				[ "$(echo $fattr';' | cut -d';' -f1)" = "$f" ] && break
+				fattr=""
 			done
+			fattr="$(echo $fattr | cut -d';' -f2- | tr ';' ' ')"
 
+			# add mandatory default path if not available
+			echo $fattr | grep -q path || fattr="$fattr path=\"/media/system/$f\""
+
+			# add attributes to sw-description file
+			for attr in $fattr; do
+				attr=$(echo $attr | sed 's,=, = ,')
+				[ "$attr" = "version" ] && attr="$attr = \"$(sha256sum $f | cut -d' ' -f1)\""
+				echo "				$attr;"
+			done
 			echo "			},"
 		done
 		echo "		);"
 	}
-	[ -n "$scriptList" ] && {
+	[ -n "$swu_images" ] && {
 		echo ""
-		echo "		scripts: ("
-		for f in $scriptList; do
+		echo "		images: ("
+		for f in $swu_images; do
+			# extract real filename
+			f=$(echo "$f" | cut -d';' -f2)
 			echo "			{"
 			echo "				filename = \"$f\";"
-			echo $f | grep -q ".lua$" && echo "				type = \"lua\";"
-			echo $f | grep -q ".sh$" && echo "				type = \"shellscript\";"
 			echo "				sha256 = \"$(sha256sum $f | cut -d' ' -f1)\";"
+
+			# search for image attributes and separate these by spaces
+			for fattr in $swu_image_attributes dummy; do
+				[ "$(echo $fattr';' | cut -d';' -f1)" = "$f" ] && break
+				fattr=""
+			done
+			fattr="$(echo $fattr | cut -d';' -f2- | tr ';' ' ')"
+
+			# add attributes to sw-description file
+			for attr in $fattr; do
+				attr=$(echo $attr | sed 's,=, = ,')
+				[ "$attr" = "version" ] && attr="$attr = \"$(sha256sum $f | cut -d' ' -f1)\""
+				echo "				$attr;"
+			done
+			echo "			},"
+		done
+		echo "		);"
+	}
+	[ -n "$swu_scripts" ] && {
+		echo ""
+		echo "		scripts: ("
+		for f in $swu_scripts; do
+			# extract real filename
+			f=$(echo "$f" | cut -d';' -f2)
+			echo "			{"
+			echo "				filename = \"$f\";"
+			echo "				sha256 = \"$(sha256sum $f | cut -d' ' -f1)\";"
+
+			# search for script attributes and separate these by spaces
+			for fattr in $swu_script_attributes dummy; do
+				[ "$(echo $fattr';' | cut -d';' -f1)" = "$f" ] && break
+				fattr=""
+			done
+			fattr="$(echo $fattr | cut -d';' -f2- | tr ';' ' ')"
+
+			# add script type if not available
+			echo $fattr | grep type || {
+				echo $f | grep -q ".lua$" && fattr="$fattr type=\"lua\""
+				echo $f | grep -q ".sh$" && fattr="$fattr type=\"shellscript\""
+			}
+
+			# add attributes to sw-description file
+			for attr in $fattr; do
+				attr=$(echo $attr | sed 's,=, = ,')
+				echo "				$attr;"
+			done
 			echo "			},"
 		done
 		echo "		);"
@@ -343,6 +376,13 @@ do_image_swu[depends] += "file-signature-native:do_populate_sysroot"
 do_image_swu[vardeps] += "PLATFORM_SIGN PLATFORM_KEYDIR PLATFORM_KEYNAME SWUPDATE_HELPER_FILES"
 
 IMAGE_CMD_swu() {
+	swu_files="${SWU_FILES}"
+	swu_file_attributes="${SWU_FILE_ATTRIBUTES}"
+	swu_images="${SWU_IMAGES}"
+	swu_image_attributes="${SWU_IMAGE_ATTRIBUTES}"
+	swu_scripts="${SWU_SCRIPTS}"
+	swu_script_attributes="${SWU_SCRIPT_ATTRIBUTES}"
+
 	tmpdir=${SWU_TMPDIR}
 	[ -e "$tmpdir" ] && {
 		bbwarn "Removing leftover temporary directory $tmpdir from old build!"
@@ -353,9 +393,12 @@ IMAGE_CMD_swu() {
 
 	if [ -z "${SWU_RSYNC_PART_UPDATE}" ]; then
 		# Populate temporary directory
+		copy_part_content "$swu_files $swu_images $swu_scripts" ./
 		copy_part_content "${SWU_SYSTEM_PART_CONTENT}" ./
+		swu_files="$swu_files ${SWU_SYSTEM_PART_CONTENT}"
 	else
 		# Populate temporary directory
+		copy_part_content "$swu_files $swu_images $swu_scripts" ./
 		for p in $(echo ${SWU_RSYNC_PART_UPDATE}); do
 			case "$p" in
 			"boot")
@@ -363,19 +406,22 @@ IMAGE_CMD_swu() {
 				copy_part_content "${SWU_BOOT_PART_CONTENT}" ./boot
 				mksquashfs ./boot boot.squashfs
 				rm -rf $tmpdir/boot
+				swu_files="$swu_files boot.squashfs"
+				swu_file_attributes="$swu_file_attributes boot.squashfs;path=\"/dev/null\""
 				;;
 			"system")
 				mkdir -p $tmpdir/system
 				copy_part_content "${SWU_SYSTEM_PART_CONTENT}" ./system
 				mksquashfs ./system system.squashfs
 				rm -rf $tmpdir/system
+				swu_files="$swu_files system.squashfs"
+				swu_file_attributes="$swu_file_attributes system.squashfs;path=\"/dev/null\""
 				;;
 			*)
 				bbwarn "Skip unsupported '$p' in SWU_RSYNC_PART_UPDATE!"
 				;;
 			esac
 		done
-		copy_part_content "${SWU_FILES}" ./
 	fi
 
 	# If necessary create a sw-description file
