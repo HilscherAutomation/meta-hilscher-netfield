@@ -53,6 +53,8 @@ do_install() {
 do_sign[depends] += "file-signature-native:do_populate_sysroot"
 do_sign[vardeps] += "PLATFORM_SIGN PLATFORM_KEYDIR PLATFORM_KEYNAME"
 do_sign() {
+	setup_sign_wrapper_env "${PLATFORM_KEYNAME}"
+
 	openssl_sign_wrapper "${PLATFORM_KEYNAME}" "sha512" "${WORKDIR}/${PN}" "merge"
 }
 addtask sign after do_compile

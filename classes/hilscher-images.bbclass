@@ -72,11 +72,13 @@ netfield_create_recovery_swu() {
   export PHYSICAL_SYSTEM_DEVICE="${PHYSICAL_SYSTEM_DEVICE}"
   export FIRMWARE_VERSION="${FULL_FW_VERSION}"
 
-  setup_swtpm_env
-  if [ "x${SIGN_WRAPPER_USES_SWTPM}" != "x" ]; then
-    engine_params="-e ${SIGN_WRAPPER_ENGINE}"
-  fi
-  ${NETFIELD_BASE}/scripts/deploy/create_firmware_api_file.sh ${engine_params} -a ${image_wic} -k ${PLATFORM_KEYDIR}/${PLATFORM_KEYNAME}.key -s ${NETFIELD_BASE}/scripts/deploy/_firmware -v
+  setup_sign_wrapper_env "${PLATFORM_KEYNAME}"
+  local signing_key=$(setup_sign_wrapper_env "${PLATFORM_KEYNAME}")
+  case "${SIGN_WRAPPER_MODE}" in
+    swtpm) engine_params="-e tpm2tss" ;;
+    pkcs11) engine_params="-e pkcs11" ;;
+  esac
+  ${NETFIELD_BASE}/scripts/deploy/create_firmware_api_file.sh ${engine_params} -a ${image_wic} -k "$signing_key" -s ${NETFIELD_BASE}/scripts/deploy/_firmware -v
   cd ..
   tmpdir=$(mktemp -d)
 
@@ -121,15 +123,17 @@ netfield_create_recovery_zip() {
   export DEPLOY_DIR_IMAGE="${DEPLOY_DIR_IMAGE}"
   export FIRMWARE_VERSION="${FULL_FW_VERSION}"
 
-  setup_swtpm_env
-  if [ "x${SIGN_WRAPPER_USES_SWTPM}" != "x" ]; then
-    engine_params="-e ${SIGN_WRAPPER_ENGINE}"
-  fi
+  setup_sign_wrapper_env "${PLATFORM_KEYNAME}"
+  local signing_key=$(setup_sign_wrapper_env "${PLATFORM_KEYNAME}")
+  case "${SIGN_WRAPPER_MODE}" in
+    swtpm) engine_params="-e tpm2tss" ;;
+    pkcs11) engine_params="-e pkcs11" ;;
+  esac
 
   ${NETFIELD_BASE}/scripts/deploy/create_dist_archive.sh ${engine_params} \
     -o "${image_zip}" \
     -i ${image_wic} \
-    -k ${PLATFORM_KEYDIR}/${PLATFORM_KEYNAME}.key \
+    -k "$signing_key" \
     -c ${BSP_DEPLOYSCRIPT_DIR} -t $type \
     ${HILSCHER_EXTRA_ZIP_OPTIONS}
 

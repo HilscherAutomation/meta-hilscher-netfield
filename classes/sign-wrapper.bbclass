@@ -2,13 +2,18 @@
 #
 # Description:
 # ******************************************************************************************************
-# The class enables the use of a software TPM, by abstracting OpenSSL and TPM2 tools. It provides signing
+# The class enables the use of a software TPM, by abstracting OpenSSL and TPM2 tools, as well as HSM
+# modules via OpenSSL and pcks11 engine. It provides signing
 # and public key extraction. The correct methods/tools will be automatically chosen by the given key.
 # The class will update the inheriting recipe's DEPENDS accordingly.
 #
 # Usage: Inherit class. $PLATFORM_SIGN!=0 enables signing/public key extraction. By default the public key
-#        of $PLATFORM_KEYNAME is populated under $SIGN_WRAPPER_KEY_DST after the configure step. To enable
-#        the software TPM support set $SIGN_WRAPPER_SWTPM != 0.
+#        of $PLATFORM_KEYNAME is populated under $SIGN_WRAPPER_KEY_DST after the configure step.
+#        To use one of the abstractions set SIGN_WRAPPER_MODE as follows:
+#          * file   : Local files are present
+#          * swtpm  : Use swtpm
+#          * pkcs11 : Use a HSM oder softHSM
+#
 #        Use openssl_sign_wrapper() for signing. For custom usage see the following lines.
 #        merge_signature() will merge a given file with its signature including a section header.
 #
@@ -26,16 +31,18 @@
 #        SIGN_WRAPPER_KEY_SRC="swtpm:host=127.0.0.1,port=2321"
 #        SIGN_WRAPPER_KEY="0x80000005"
 #
-# NOTE: If $PLATFORM_SIGN is disabled class will result to void. To use the functions anyway use $FORCE_SIGNGING.
+# NOTE: If $PLATFORM_SIGN is disabled class will result to void. To use the functions anyway use $FORCE_SIGNING.
 #
 # ******************************************************************************************************
 # Required parameter: ([default value])
 # ******************************************************************************************************
-# PLATFORM_SIGN       = [-] : By default if $PLATFORM_SIGN is disabled the class results to void.
-#                             To use the class's functions anyway use $FORCE_SIGNING locally.
-# SIGN_WRAPPER_SWTPM  = [0] : Enables support of signing via software TPM. If enabled set at least
-#                             $TPMSERVER_IP accordingly ($TPMSERVER_PORT, $TPM2TSSENGINE_TCTI and
-#                             $TPM2TOOLS_TCTI is optional).
+# PLATFORM_SIGN       = [-]    : By default if $PLATFORM_SIGN is disabled the class results to void.
+#                                To use the class's functions anyway use $FORCE_SIGNING locally.
+# SIGN_WRAPPER_MODE   = [file] : Enables support of signing via software TPM / HSM.
+#                                 file   : Local/unprotected key files must be available
+#                                 swtpm  : Requires $TPMSERVER_IP accordingly ($TPMSERVER_PORT, $TPM2TSSENGINE_TCTI and
+#                                         $TPM2TOOLS_TCTI is optional).
+#                                 pkcs11 : Optional $TPMSERVER_IP for remote signing via libpkcs11-proxy
 #
 # ******************************************************************************************************
 # Optional parameter: ([default value])
@@ -69,23 +76,41 @@ SIGN_WRAPPER_KEY     ?= "${PLATFORM_KEYNAME}"
 SIGN_WRAPPER_KEY_SRC ?= "${PLATFORM_KEYDIR}"
 SIGN_WRAPPER_KEY_DST ?= "${DEPLOY_DIR_IMAGE}/key_store/"
 
+SIGN_WRAPPER_MODE    ?= "file"
+SIGN_WRAPPER_OPENSSL_PARAMS     ?= ""
+
 # SWTPM
-# if $SIGN_WRAPPER_TPMSERVER_IP is not set build should fail!
 SIGN_WRAPPER_TPMSERVER_IP       ?= ""
 SIGN_WRAPPER_TPMSERVER_PORT     ?= "2321"
 SIGN_WRAPPER_TPM2TSSENGINE_TCTI ?= "swtpm:host=${SIGN_WRAPPER_TPMSERVER},port=${SIGN_WRAPPER_TPMSERVER_PORT}"
 SIGN_WRAPPER_TPM2TOOLS_TCTI     ?= "swtpm:host=${SIGN_WRAPPER_TPMSERVER},port=${SIGN_WRAPPER_TPMSERVER_PORT}"
-SIGN_WRAPPER_OPENSSL_PARAMS     ?= ""
-SIGN_WRAPPER_ENGINE             ?= "tpm2tss"
-swtpm_params                     = "-engine ${SIGN_WRAPPER_ENGINE} -keyform engine"
-#priv_key_ref                  = ""
 
-# package depends
-#tpm2-tss
-SIGN_DEPENDS_   = "${@bb.utils.contains('SWTPM_SUPPORT', '1', 'tpm2-tools tpm2-tools-native openssl-native tpm2-tss-engine-native openssl', 'openssl', d)}"
-SIGN_DEPENDS    = "${@bb.utils.contains('FORCE_SIGNING', '1', "${SIGN_DEPENDS_}", '', d)}"
-SIGN_DEPENDS   += "${@bb.utils.contains('PLATFORM_SIGN', '1', "${SIGN_DEPENDS_}", '', d)}"
-DEPENDS_append += "${SIGN_DEPENDS}"
+# PKCS11
+SIGN_WRAPPER_PKCS11_REMOTE      ?= ""
+SIGN_WRAPPER_PKCS11_PIN         ?= ""
+
+python () {
+    mode = d.getVar('SIGN_WRAPPER_MODE', True)
+
+    if mode not in ['file', 'swtpm', 'pkcs11']:
+        bb.fatal("Invalid signing mode %r selected" % mode)
+    if mode == 'swtpm' and d.getVar('SIGN_WRAPPER_TPMSERVER_IP', True) is None:
+        bb.fatal("Signing via SWTPM requires a destination server ip")
+
+    signing_required = d.getVar('PLATFORM_SIGN', True) == '1' or d.getVar('FORCE_SIGNING', True) == '1'
+
+    if signing_required:
+        if mode == 'swtpm':
+            d.appendVar('DEPENDS', ' tpm2-tools tpm2-tools-native openssl-native tpm2-tss-engine-native openssl')
+        elif mode == 'pkcs11':
+            d.appendVar('DEPENDS', ' gnutls-native libp11-native openssl-native')
+            d.appendVarFlag('do_kernel_configme', 'depends', ' gnutls-native:do_populate_sysroot')
+            if d.getVar('SIGN_WRAPPER_PKCS11_REMOTE', True) != "":
+                d.appendVar('DEPENDS', ' pkcs11-proxy-native')
+                d.appendVarFlag('do_kernel_configme', 'depends', ' pkcs11-proxy-native:do_populate_sysroot')
+        else:
+            d.appendVar('DEPENDS', ' openssl')
+}
 
 ################################################################################################
 #
@@ -105,7 +130,7 @@ DEPENDS_append += "${SIGN_DEPENDS}"
 #
 ################################################################################################
 openssl_sign_wrapper() {
-	if [ "${SIGN_DEPENDS}" != "" ]; then
+	if [ "${PLATFORM_SIGN}" = "1" ] || [ "${FORCE_SIGNING}" = "1" ]; then
 		key_name=$1
 		hash=$2
 		sign_file=$3
@@ -113,19 +138,24 @@ openssl_sign_wrapper() {
 			merge=$4
 		fi
 
-		setup_swtpm_env "${key_name}"
+		setup_sign_wrapper_env "${key_name}"
 
 		priv_key_ref="${SIGN_WRAPPER_KEY_SRC}/${key_name}.key"
-		priv_key_ref=$(setup_swtpm_env "${key_name}")
+		priv_key_ref=$(setup_sign_wrapper_env "${key_name}")
 
-		if [ "${SIGN_WRAPPER_USES_SWTPM}" = "1" ]; then
-			if [ "${@bb.utils.contains('SIGN_WRAPPER_OPENSSL_PARAMS', '', '', '0', d)}" = "0" ]; then
-				SIGN_WRAPPER_OPENSSL_PARAMS_="${swtpm_params}"
-			fi
-		fi
+		case "${SIGN_WRAPPER_MODE}" in
+		file)
+			openssl dgst "-${hash}" -sign "${priv_key_ref}" ${OPENSSL_SIGN_WRAPPER_ADD_OPTIONS} ${sign_file} > ${sign_file}.sig
+		;;
 
-		# sign the given file
-		openssl dgst ${SIGN_WRAPPER_OPENSSL_PARAMS_} "-${hash}" -sign "${priv_key_ref}" ${sign_file} > ${sign_file}.sig
+		swtpm)
+			openssl dgst -engine tpm2tss -keyform engine "-${hash}" -sign "${priv_key_ref}" ${OPENSSL_SIGN_WRAPPER_ADD_OPTIONS} ${sign_file} > ${sign_file}.sig
+		;;
+
+		pkcs11)
+			openssl dgst -engine pkcs11 -keyform engine "-${hash}" -sign "${priv_key_ref}" ${OPENSSL_SIGN_WRAPPER_ADD_OPTIONS} ${sign_file} > ${sign_file}.sig
+		;;
+		esac
 
 		# create a file with appended signature
 		if [ "${merge:=0}" != "0" ]; then
@@ -150,26 +180,37 @@ openssl_sign_wrapper() {
 #
 ################################################################################################
 populate_public_key () {
-	if [ "${SIGN_DEPENDS}" != "" ]; then
+	if [ "${PLATFORM_SIGN}" = "1" ] || [ "${FORCE_SIGNING}" = "1" ]; then
 		key_name=$1
 
 		# we have to call it twice: 1. to setup the variables 2. to get the key reference
 		# the 2. call with the assignment does not set the variables correctly to be accessbile
-		setup_swtpm_env "${key_name}"
+		setup_sign_wrapper_env "${key_name}"
 
 		pub_key_ref="${SIGN_WRAPPER_KEY_DST}/${key_name}/${key_name}.pub"
-		priv_key_ref=$(setup_swtpm_env "${key_name}")
+		priv_key_ref=$(setup_sign_wrapper_env "${key_name}")
 
 		# if public key is already populated we have nothing to do
 		if [ ! -e "${pub_key_ref}" ]; then
-			# if public key is not populated retrieve it from private key
 			mkdir -p "${SIGN_WRAPPER_KEY_DST}/${key_name}"
 
-			if [ "${SIGN_WRAPPER_USES_SWTPM}" = "1" ]; then
-				tpm2_readpublic -c $priv_key_ref -o "${pub_key_ref}" -f PEM
-			else
-				openssl rsa -in $priv_key_ref -pubout > "${pub_key_ref}"
-			fi
+			case "${SIGN_WRAPPER_MODE}" in
+				file)
+					# if public key is not populated retrieve it from private key
+					openssl rsa -in $priv_key_ref -pubout > "${pub_key_ref}"
+				;;
+
+				swtpm)
+					tpm2_readpublic -c $priv_key_ref -o "${pub_key_ref}" -f PEM
+				;;
+
+				pkcs11)
+					if [ -n "${SIGN_WRAPPER_PKCS11_REMOTE}" ]; then
+						proxy_options="--provider=${STAGING_LIBDIR_NATIVE}/libpkcs11-proxy.so"
+					fi
+					p11tool --login --export-pubkey "${priv_key_ref};type=private" --outfile "${pub_key_ref}" --set-pin "${SIGN_WRAPPER_PKCS11_PIN}" "$proxy_options"
+				;;
+			esac
 		fi
 	fi
 }
@@ -210,33 +251,71 @@ merge_signature() {
 # key [-] = name of private key
 # 
 ################################################################################################
-setup_swtpm_env() {
-	# maybe return handle (function could be used to extract handle from file names)
+setup_sign_wrapper_env() {
 	local key=$1
-	local keypath="${SIGN_WRAPPER_KEY_SRC}/${key}.key"
+	local keypath=""
+	case "${SIGN_WRAPPER_MODE}" in
+		file)
+			keypath="${SIGN_WRAPPER_KEY_SRC}/${key}.key"
+			if [ ! -e ${keypath} ]; then
+				bbfatal "Signing key ${keypath} not found"
+			fi
+		;;
 
-	if [ ! -e "$keypath" ]; then
-		if [ "${@bb.utils.contains('SWTPM_SUPPORT', '1', '1', '', d)}" = "1" ]; then
-
-			# set this to allow recipes to check if swtpm is used (e.g. what engine is used).
-			export SIGN_WRAPPER_USES_SWTPM="1"
-
+		swtpm)
 			# variable is required, that libsl is able to find the software TPM
 			# engine tpm2tss. Since the path lookup is strange we have to set it
 			# here explicitely.
+			keypath="${key}"
+			export OPENSSL_ENGINES="${RECIPE_SYSROOT_NATIVE}/usr/lib/engines-1.1/"
+			export TPM2TSSENGINE_TCTI="${SIGN_WRAPPER_KEY_SRC}"
+			export TPM2TOOLS_TCTI="${SIGN_WRAPPER_KEY_SRC}"
+		;;
+
+		pkcs11)
 			export OPENSSL_ENGINES="${RECIPE_SYSROOT_NATIVE}/usr/lib/engines-1.1/"
 
-			keypath="${key}"
-			if [ ! -z "${SIGN_WRAPPER_KEY_SRC}" ]; then
-				export TPM2TSSENGINE_TCTI="${SIGN_WRAPPER_KEY_SRC}"
-				export TPM2TOOLS_TCTI="${SIGN_WRAPPER_KEY_SRC}"
+			if [ -n "${SIGN_WRAPPER_PKCS11_REMOTE}" ]; then
+				export PKCS11_PROXY_SOCKET="${SIGN_WRAPPER_PKCS11_REMOTE}"
+				export PKCS11_MODULE_PATH="${STAGING_LIBDIR_NATIVE}/libpkcs11-proxy.so"
 			fi
-		else
-			bbfatal "Signing key ${keypath} not found"
-		fi
-	fi
+
+			keypath="${SIGN_WRAPPER_KEY_SRC};type=private;pin-value=${SIGN_WRAPPER_PKCS11_PIN}"
+		;;
+	esac
+
 	export priv_key_ref="${keypath}"
 	echo "${priv_key_ref}"
+}
+
+################################################################################################
+# Function to provide an existing certficate
+################################################################################################
+sign_wrapper_copy_certificate() {
+	local dst="$1"
+	local fmt="${2:-der}"
+
+	setup_sign_wrapper_env "${PLATFORM_KEYNAME}"
+
+	case "${SIGN_WRAPPER_MODE}" in
+	file|swtpm)
+		if [ "$fmt" = "der" ]; then
+			cp "${KEYS_IMAGE_SIGN_CERT_DER}" "$dst"
+		else
+			cp "${KEYS_IMAGE_SIGN_CERT}" "$dst"
+		fi
+	;;
+
+	pkcs11)
+		if [ -n "${SIGN_WRAPPER_PKCS11_REMOTE}" ]; then
+			proxy_options="--provider=${STAGING_LIBDIR_NATIVE}/libpkcs11-proxy.so"
+		fi
+		if [ "$fmt" = "der" ]; then
+			add_fmt="--outder"
+		fi
+		p11tool --login --export-stapled $add_fmt "${priv_key_ref};type=cert" --outfile "$dst" --set-pin "${SIGN_WRAPPER_PKCS11_PIN}" "$proxy_options"
+	;;
+	esac
 }
 
 ################################################################################################
@@ -244,7 +323,7 @@ setup_swtpm_env() {
 ################################################################################################
 do_install_prepend() {
 	# in case swtpm is used we need to setup the engine path via environment variable here to be able to sign the modules in the install step
-	setup_swtpm_env ${PLATFORM_KEYNAME}
+	setup_sign_wrapper_env "${PLATFORM_KEYNAME}"
 }
 do_install[vardeps] += "PLATFORM_SIGN SIGN_WRAPPER_KEY SIGN_WRAPPER_KEY_SRC SIGN_WRAPPER_KEY_DST"
 

@@ -25,6 +25,9 @@ IMAGE_INSTALL += "zsh docker-ce-cli-zsh-completion systemd-zsh-completion"
 # AppArmor
 IMAGE_INSTALL += "${@bb.utils.contains('DISTRO_FEATURES', 'apparmor', 'apparmor', '', d)}"
 
+# Auditing
+IMAGE_INSTALL += "auditd"
+
 # TPM
 IMAGE_INSTALL += "${@bb.utils.contains('MACHINE_FEATURES', 'tpm', 'tpm-tools trousers', '', d)}"
 IMAGE_INSTALL += "${@bb.utils.contains('MACHINE_FEATURES', 'tpm2', 'packagegroup-security-tpm2', '', d)}"

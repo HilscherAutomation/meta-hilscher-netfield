@@ -104,10 +104,10 @@ if [ -e "${fw_image}" ]; then
   else
     cp ${fw_image} _firmware_api/firmware
 
-    if [ -n ${engine} ];
+    if [ -n ${engine} ]; then
       swtpm_param="-engine ${engine} -keyform engine"
     fi
-    openssl dgst $swtpm_param -sha512 -sign ${priv_key} -out _firmware_api/firmware/$(basename $fw_image).sig ${fw_image}
+    openssl dgst $swtpm_param -sha512 -sign "${priv_key}" -out _firmware_api/firmware/$(basename $fw_image).sig ${fw_image}
   fi
 fi
 [ $? -eq 0 ] && vmsg "done" || vmsg_errout "failed!"
@@ -137,9 +137,10 @@ sed -i 's/bash/sh/' _firmware_api/deploy.sh
 chmod 775 _firmware_api/*.sh
 
 #
+[ -n "${engine}" ] && engine_param="-e $engine"
 vmsg -n "- Create an initrd_api file and sign it (firmware.${DATE}.signed) ... "
 tar czfC firmware.${DATE} _firmware_api ./ &&
-${SCRIPTDIR}/sign_api_file.sh -f firmware.${DATE} -k ${priv_key}
+${SCRIPTDIR}/sign_api_file.sh -f firmware.${DATE} -k "${priv_key}" $engine_param
 [ $? -eq 0 ] && vmsg "done" || vmsg_errout "failed!"
 
 #

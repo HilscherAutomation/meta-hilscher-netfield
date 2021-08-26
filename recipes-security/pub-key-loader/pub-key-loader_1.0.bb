@@ -21,7 +21,8 @@ DEPENDS += "elfutils elfutils-native"
 inherit module sign-wrapper
 
 do_compile_prepend() {
-	CERT="${KEYS_IMAGE_SIGN_CERT}"
+	CERT="${B}/tpmcert"
+	sign_wrapper_copy_certificate "${CERT}" "pem"
 	rm -f cert.h
 
 	printf "static char s_abCert[]=" > cert.h

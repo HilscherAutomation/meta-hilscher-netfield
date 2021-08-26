@@ -78,7 +78,7 @@ if [ -n "${engine}" ]; then
 	swtpm_params="-engine ${engine} -keyform engine"
 fi
 
-openssl ${swtpm_params} dgst -sha512 -sign ${priv_key} -out ${api_file}.signature ${api_file} &&
+openssl dgst ${swtpm_params} -sha512 -sign "${priv_key}" -out ${api_file}.signature ${api_file} &&
 echo "== SIGNATURE START ==" > ${api_file}.signed &&
 cat ${api_file}.signature >> ${api_file}.signed &&
 rm ${api_file}.signature &&
