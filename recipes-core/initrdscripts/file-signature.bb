@@ -4,7 +4,9 @@ HOMEPAGE = "http://www.hilscher.com"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384361b4de20420"
 
-inherit allarch sign-wrapper
+inherit sign-wrapper
+# As this package contains a platform specific public key, it must be machine specific
+PACKAGE_ARCH="${MACHINE_ARCH}"
 
 SRC_URI = " \
 	file://verify_file \
