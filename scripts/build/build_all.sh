@@ -102,7 +102,8 @@ fi
 SSTATE_DIR=$(pwd)/sstate-cache
 DL_DIR=$(pwd)/downloads
 if [ -d "/opt/shared/yocto" ]; then
-	SSTATE_DIR=/opt/shared/yocto/sstate-cache/netiot/2.0
+	distro_version=$(grep "DISTRO_VERSION" meta-hilscher-netfield/conf/distro/netiot.conf | cut -d '=' -f2 | tr -d '" ')
+	SSTATE_DIR=/opt/shared/yocto/sstate-cache/netiot/${distro_version}
 	DL_DIR=/opt/shared/yocto/downloads
 fi
 
