@@ -33,6 +33,10 @@ do_configure[noexec] = "1"
 
 do_compile() {
     export GOARCH="${TARGET_GOARCH}"
+    # Prevent following error:
+    #  |  go: cannot find main module, but found vendor.conf in ...
+    # See https://www.linuxquestions.org/questions/slackware-14/help-to-install-docker%5Berror-says-go-mod-not-found-4175693908/
+    export GO111MODULE="auto"
 
     # link fixups for compilation
     rm -f ${S}/src/import/vendor/src

@@ -62,6 +62,10 @@ inherit go
 inherit pkgconfig
 
 export GOARCH="${TARGET_GOARCH}"
+# Prevent following error:
+#  | no required module provides package github.com/docker/docker/cmd/dockerd: go.mod file not found in current directory or any parent directory; see 'go help modules' 
+# See https://www.linuxquestions.org/questions/slackware-14/help-to-install-docker%5Berror-says-go-mod-not-found-4175693908/
+export GO111MODULE="auto"
 
 do_compile() {
 	cd ${S}
