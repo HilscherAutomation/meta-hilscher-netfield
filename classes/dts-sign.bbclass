@@ -63,7 +63,7 @@ python do_apply_verification_keys() {
         };
     };
 };
-""" % ( d.getVar("DTS_SIGN_KEY_NAME"),
+""" % ( d.getVar("UBOOT_SIGN_KEYNAME"),
         dtc_modulus, int(exponent),
         N0inv, keylen, rr)
 
