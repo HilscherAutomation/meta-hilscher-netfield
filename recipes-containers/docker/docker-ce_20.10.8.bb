@@ -24,9 +24,9 @@ SRC_URI = "\
 	file://hi.Dockerfile \
 	"
 
-SRCREV="363e9a88a11be517d9e8c65c998ff56f774eb4dc"
+SRCREV="75249d88bc107a122b503f6a50e89c994331867c"
 
-LIBNETWORK_COMMIT="fa125a3512ee0f6187721c88582bf8c4378bd4d7"
+LIBNETWORK_COMMIT="64b7a4574d1426139437d20e81c0b6d391130ec8"
 require libnetwork.inc
 
 # CGO does not play well with thumb -> https://patches.openembedded.org/patch/144011/
@@ -62,6 +62,10 @@ inherit go
 inherit pkgconfig
 
 export GOARCH="${TARGET_GOARCH}"
+# Prevent following error:
+#  | no required module provides package github.com/docker/docker/cmd/dockerd: go.mod file not found in current directory or any parent directory; see 'go help modules' 
+# See https://www.linuxquestions.org/questions/slackware-14/help-to-install-docker%5Berror-says-go-mod-not-found-4175693908/
+export GO111MODULE="auto"
 
 do_compile() {
 	cd ${S}
