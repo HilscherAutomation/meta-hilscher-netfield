@@ -22,7 +22,7 @@ FILESEXTRAPATHS_append := "${THISDIR}/..:"
 
 SVN_MODULE="tags/V${PV}"
 SRCREV="r13413"
-SRC_URI = "svn://subversion01/svn/EmbeddedOS/Drivers/cifX/Linux;module=${SVN_MODULE};protocol=https;user=${HILSCHER_SVN_USER};pswd=${HILSCHER_SVN_PSWD} \
+SRC_URI = "svn://subversion01.hilscher.local/svn/EmbeddedOS/Drivers/cifX/Linux;module=${SVN_MODULE};protocol=https;user=${HILSCHER_SVN_USER};pswd=${HILSCHER_SVN_PSWD};externals=allowed \
            file://80-hilscher-netx.rules \
            file://80-hilscher-cifxeth.rules \
            file://cifxeth \
