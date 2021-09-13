@@ -6,7 +6,7 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=c85113d9fb28eb2a1504e899037c915d"
 
 inherit module
 
-SRC_URI = "svn://subversion01.hilscher.local/svn/EmbeddedOS/Drivers/netANALYZER/Linux/tags/;module=V${PV};protocol=https;user=${HILSCHER_SVN_USER};pswd=${HILSCHER_SVN_PSWD} \
+SRC_URI = "svn://subversion01.hilscher.local/svn/EmbeddedOS/Drivers/netANALYZER/Linux/tags/;module=V${PV};protocol=https;user=${HILSCHER_SVN_USER};pswd=${HILSCHER_SVN_PSWD};externals=allowed \
            file://flash_based_support.patch \
            file://fix_module_unload_of.patch \
            file://fix_compile_errors.patch \

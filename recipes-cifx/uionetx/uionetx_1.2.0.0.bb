@@ -8,7 +8,7 @@ FILESEXTRAPATHS_append := "${THISDIR}/.."
 
 SVN_MODULE="tags/V${PV}"
 SRCREV="r12735"
-SRC_URI = "svn://subversion01/svn/EmbeddedOS/Drivers/cifX/Linux;module=${SVN_MODULE};protocol=https;user=${HILSCHER_SVN_USER};pswd=${HILSCHER_SVN_PSWD}"
+SRC_URI = "svn://subversion01.hilscher.local/svn/EmbeddedOS/Drivers/cifX/Linux;module=${SVN_MODULE};protocol=https;user=${HILSCHER_SVN_USER};pswd=${HILSCHER_SVN_PSWD};externals=allowed"
 
 SRC_URI += " \
 	file://0001-Bugfix-in-driver-unloading-function.patch \
