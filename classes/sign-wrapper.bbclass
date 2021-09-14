@@ -104,6 +104,7 @@ python () {
             d.appendVar('DEPENDS', ' tpm2-tools tpm2-tools-native openssl-native tpm2-tss-engine-native openssl')
         elif mode == 'pkcs11':
             d.appendVar('DEPENDS', ' gnutls-native libp11-native openssl-native')
+            d.appendVarFlag('do_shared_workdir', 'depends', ' gnutls-native:do_populate_sysroot')
             d.appendVarFlag('do_kernel_configme', 'depends', ' gnutls-native:do_populate_sysroot')
             if d.getVar('SIGN_WRAPPER_PKCS11_REMOTE', True) != "":
                 d.appendVar('DEPENDS', ' pkcs11-proxy-native')

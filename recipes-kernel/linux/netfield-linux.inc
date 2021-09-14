@@ -150,3 +150,7 @@ do_assemble_fitimage_prepend() {
 	# for debugging puposes uncomment the following line
 	#export TSS2_LOG="all+TRACE"
 }
+
+do_shared_workdir_prepend() {
+	setup_sign_wrapper_env "${PLATFORM_KEYNAME}"
+}
