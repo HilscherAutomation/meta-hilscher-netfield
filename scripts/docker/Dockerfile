@@ -6,6 +6,9 @@ RUN apt-get update && \
     apt-get install -y libssl-dev zip subversion ncurses-dev python3-pexpect && \
     apt-get clean
 
+# To allow the testability, add a jenkins user for our build server.
+RUN useradd jenkins-host --home-dir /var/jenkins_home --uid 10000 --shell /bin/bash
+
 USER yoctouser
 
 ENV LANG=en_US.UTF-8
