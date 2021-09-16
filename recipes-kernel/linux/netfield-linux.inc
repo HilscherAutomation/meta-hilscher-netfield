@@ -134,7 +134,7 @@ CVE_CHECK_WHITELIST_append += "CVE-2015-7312 CVE-2016-2853 CVE-2016-2854"
 # CVE-2017-5897 is fixed since 4.10 (we are using 4.14+)
 CVE_CHECK_WHITELIST_append += "CVE-2017-5897"
 
-do_assemble_fitimage_prepend() {
+kernel_sign_wrapper_init() {
 	setup_sign_wrapper_env "${PLATFORM_KEYNAME}"
 	sign_key=$(setup_sign_wrapper_env "${PLATFORM_KEYNAME}")
 
@@ -149,6 +149,14 @@ do_assemble_fitimage_prepend() {
 
 	# for debugging puposes uncomment the following line
 	#export TSS2_LOG="all+TRACE"
+}
+
+do_assemble_fitimage_prepend() {
+	kernel_sign_wrapper_init
+}
+
+do_assemble_fitimage_initramfs_prepend() {
+	kernel_sign_wrapper_init
 }
 
 do_shared_workdir_prepend() {
