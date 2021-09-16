@@ -4,6 +4,8 @@ require fragattack.inc
 
 inherit sign-wrapper
 
+DEPENDS += " u-boot-tools-native "
+
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
 # 3G
@@ -157,6 +159,19 @@ do_assemble_fitimage_prepend() {
 
 do_assemble_fitimage_initramfs_prepend() {
 	kernel_sign_wrapper_init
+}
+
+# verify if fitimage is correctly signed, use public key located in device tree
+do_assemble_fitimage_append() {
+	echo "Check signature of fitimage..."
+	pubkey_dtb=$(ls -1 ${DEPLOY_DIR_IMAGE}/devicetree/*.dtb)
+	fit_check_sign -f "${B}/arch/${ARCH}/boot/fitImage" -k "$pubkey_dtb"
+}
+
+do_assemble_fitimage_initramfs_append() {
+	echo "Check signature of fitimage-initramfs..."
+	pubkey_dtb=$(ls -1 ${DEPLOY_DIR_IMAGE}/devicetree/*.dtb)
+	fit_check_sign -f "${B}/arch/${ARCH}/boot/fitImage-core-image-minimal-initramfs" -k "$pubkey_dtb"
 }
 
 do_shared_workdir_prepend() {
