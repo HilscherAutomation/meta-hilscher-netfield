@@ -1,4 +1,4 @@
-inherit sign-wrapper
+inherit sign-wrapper hilscher-image-check
 
 NETFIELD_IMAGES ??= "recovery.zip recovery.swu"
 HILSCHER_EXTRA_ZIP_OPTIONS ??= ""
