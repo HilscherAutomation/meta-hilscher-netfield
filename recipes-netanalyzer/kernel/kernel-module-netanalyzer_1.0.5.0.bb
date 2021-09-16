@@ -4,7 +4,7 @@ LICENSE = "GPLv2"
 
 LIC_FILES_CHKSUM = "file://LICENSE;md5=c85113d9fb28eb2a1504e899037c915d"
 
-inherit module
+inherit module sign-wrapper
 
 SRC_URI = "svn://subversion01.hilscher.local/svn/EmbeddedOS/Drivers/netANALYZER/Linux/tags/;module=V${PV};protocol=https;user=${HILSCHER_SVN_USER};pswd=${HILSCHER_SVN_PSWD};externals=allowed \
            file://flash_based_support.patch \
