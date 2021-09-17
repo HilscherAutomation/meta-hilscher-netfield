@@ -12,6 +12,7 @@ INITRAMFS_SCRIPTS = " \
 	initramfs-framework-platform-init \
 	initramfs-framework-fieldbus-detection \
 	initramfs-framework-fscheck \
+	initramfs-framework-factory-reset \
 	initramfs-framework-restore-backup \
 	initramfs-module-lvm \
 	initramfs-module-udev \
