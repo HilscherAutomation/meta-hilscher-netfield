@@ -6,15 +6,12 @@ LIC_FILES_CHKSUM="file://LICENSE;md5=4f9c2c296f77b3096b6c11a16fa7c66e"
 DEPENDS_append += "libstd-rs openssl"
 
 inherit systemd
-SYSTEMD_AUTO_ENABLE = "disable"
+SYSTEMD_AUTO_ENABLE = "enable"
+# NOTE: We are only selecting the socket services to auto-enable them, so they can be socket-activated by aziot-edged
 SYSTEMD_SERVICE_${PN} = " \
-    aziot-certd.service \
     aziot-certd.socket \
-    aziot-identityd.service \
     aziot-identityd.socket \
-    aziot-keyd.service \
     aziot-keyd.socket \
-    aziot-tpmd.service \
     aziot-tpmd.socket \
 "
 
