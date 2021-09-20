@@ -11,6 +11,11 @@ updateiotedge_postoverlay() {
 	if [ -e "${ROOTFS_DIR}/etc/iotedge/config.yaml" ]; then
 		sed -i -e 's@/var/run/@/run/@g' ${ROOTFS_DIR}/etc/iotedge/config.yaml
 
+		# Move cockpit onboarding json to new location
+		if [ -e "${ROOTFS_DIR}/etc/iotedge/onboard.json" ]; then
+			mv "${ROOTFS_DIR}/etc/iotedge/onboard.json" "${ROOTFS_DIR}/etc/aziot/onboard.json"
+		fi
+
 		# Check if iotedge service is available and active
 		if [ -e "${ROOTFS_DIR}/etc/systemd/system/multi-user.target.wants/iotedge.service" ]; then
 			rm ${ROOTFS_DIR}/etc/systemd/system/multi-user.target.wants/iotedge.service
