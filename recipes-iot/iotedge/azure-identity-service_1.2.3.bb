@@ -8,7 +8,7 @@ inherit cargo
 # how to get iotedged could be as easy as but default to a git checkout:
 # SRC_URI += "crate://crates.io/iotedged/0.1.0"
 SRC_URI += "gitsm://github.com/Azure/iot-identity-service;protocol=https;nobranch=1"
-SRCREV = "15f59c8bd33b1fd8581a74ae6e5ea145c8cb1b9b"
+SRCREV = "55434733d5d3a73f67b9e70998c38da5b7190901"
 S = "${WORKDIR}/git"
 CARGO_SRC_DIR = "."
 PV_append = ".AUTOINC+15f59c8bd3"
