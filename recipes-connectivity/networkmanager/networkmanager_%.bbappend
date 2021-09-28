@@ -2,7 +2,10 @@ FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
 SRC_URI_append += "file://networkmanager_readline5.patch \
                    file://balena-client-id.patch \
-                   file://remove_cifx_tun_persistance.patch"
+                   file://remove_cifx_tun_persistance.patch \
+                   file://CVE-2021-20297.patch"
+
+CVE_CHECK_WHITELIST_append += "CVE-2011-1943"
 
 RDEPENDS_${PN}_append += "networkmanager-conf"
 
