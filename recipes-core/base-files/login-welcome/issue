@@ -1,8 +1,8 @@
 ------------------------------------------------------------------------------
 
-Welcome to netFIELD OS version @VERSION@
+Welcome to netFIELD OS version \F
 
-Model Name : @MACHINE@
+Model Name : \P
 Hardware ID: \I
 Host Name  : \n
 
