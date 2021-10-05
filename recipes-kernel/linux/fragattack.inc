@@ -2,7 +2,7 @@
 FILESEXTRAPATHS_prepend := "${THISDIR}/linux-${@'.'.join(d.getVar('LINUX_VERSION', d).split('.')[:2])}:"
 
 # Apply patches against fragattack from https://lore.kernel.org/linux-wireless/20210511180259.159598-1-johannes@sipsolutions.net/
-SRC_URI_append += "file://fragattack/0001-mac80211-assure-all-fragments-are-encrypted.patch \
+FRAGATTACK_PATCHES = "file://fragattack/0001-mac80211-assure-all-fragments-are-encrypted.patch \
     file://fragattack/0002-mac80211-prevent-mixed-key-and-fragment-cache-attack.patch \
     file://fragattack/0003-mac80211-properly-handle-A-MSDUs-that-start-with-an-.patch \
     file://fragattack/0004-cfg80211-mitigate-A-MSDU-aggregation-attacks.patch \
@@ -20,6 +20,10 @@ SRC_URI_append += "file://fragattack/0001-mac80211-assure-all-fragments-are-encr
     file://fragattack/0016-ath10k-Validate-first-subframe-of-A-MSDU-before-proc.patch \
 "
 
-CVE_CHECK_WHITELIST_append += "CVE-2020-24586 CVE-2020-24587 CVE-2020-24588 \
+FRAGATTACK_CVE_NUMBERS = "CVE-2020-24586 CVE-2020-24587 CVE-2020-24588 \
     CVE-2020-26139 CVE-2020-26140 CVE-2020-26141 CVE-2020-26142 CVE-2020-26143 \
     CVE-2020-26144 CVE-2020-26145 CVE-2020-26146 CVE-2020-26147"
+
+SRC_URI_append += "${@oe.utils.version_less_or_equal('LINUX_VERSION', '5.4.123', '${FRAGATTACK_PATCHES}', '', d)}"
+CVE_CHECK_WHITELIST_append += "${@oe.utils.version_less_or_equal('LINUX_VERSION', '5.4.123', '${FRAGATTACK_CVE_NUMBERS}', '', d)}"
+
