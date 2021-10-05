@@ -1,7 +1,7 @@
 diff -aurN a/term-utils/agetty.c b/term-utils/agetty.c
---- a/term-utils/agetty.c	2020-04-06 07:22:54.991092299 +0200
-+++ b/term-utils/agetty.c	2020-04-06 10:04:34.774816205 +0200
-@@ -1542,6 +1542,35 @@
+--- a/term-utils/agetty.c	2019-12-20 15:04:38.781912418 +0100
++++ b/term-utils/agetty.c	2021-09-29 08:10:20.375941518 +0200
+@@ -1580,6 +1580,35 @@
  	return ret;
  }
  
@@ -37,10 +37,19 @@ diff -aurN a/term-utils/agetty.c b/term-utils/agetty.c
  #ifdef AGETTY_RELOAD
  static void open_netlink(void)
  {
-@@ -2583,6 +2612,31 @@
+@@ -2757,6 +2786,49 @@
  		}
  		break;
  	}
++	case 'F': /* print firmware version */
++	{
++		char* version = read_text_file("/firmware.version");
++
++		fprintf(ie->output, "%s", version);
++
++		free(version);
++		break;
++	}
 +	case 'I': /* print hardware ID */
 +	{
 +		const int MAX_SN_LEN=12, MAX_PN_LEN=12;
@@ -64,6 +73,15 @@ diff -aurN a/term-utils/agetty.c b/term-utils/agetty.c
 +
 +		free(product_number);
 +		free(serial_number);
++		break;
++	}
++	case 'P': /* print product name */
++	{
++		char* model = read_text_file("/var/platform/device_data/product_name");
++
++		fprintf(ie->output, "%s", model);
++
++		free(model);
 +		break;
 +	}
  	case 'S':
