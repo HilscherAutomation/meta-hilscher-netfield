@@ -77,9 +77,17 @@ function mount_standby_system()
 	os.execute("mkdir -p /media/system")
 	if currBootMode == osRescueMode then
 		swupdate.info("Rescue-Boot-Mode:\n")
+
+		-- Due to a problem during production we may need to resize system partition
+		os.execute("resize2fs /dev/disk/by-bootmode/standby-0")
+
 		os.execute("mount -o nodelalloc /dev/disk/by-bootmode/standby-0 /media/system")
 	elseif currBootMode == osSingleBootMode then
 		swupdate.info("Single-Boot-Mode:\n")
+
+		-- Due to a problem during production we may need to resize system partition
+		os.execute("resize2fs /dev/disk/by-bootmode/active")
+
 		-- Check if system partition is read-only (default) If this fails directly mount it rw
 		if os.execute("mount -o ro /dev/disk/by-bootmode/active /media/system") == true then
 			os.execute("mount -o remount,rw,nodelalloc /media/system")

@@ -48,10 +48,16 @@ end
 function mount_system()
 	os.execute("mkdir -p /run/.system_part")
 	if os.execute("test -b /dev/disk/by-bootmode/active") == true then
+		-- Due to a problem during production we may need to resize system partition
+		os.execute("resize2fs /dev/disk/by-bootmode/active")
+
 		-- We are in active mode with running firmware
 		os.execute("mount -o ro /dev/disk/by-bootmode/active /run/.system_part")
 		os.execute("mount -o remount,rw,nodelalloc /run/.system_part")
 	else
+		-- Due to a problem during production we may need to resize system partition
+		os.execute("resize2fs /dev/disk/by-bootmode/standby-0")
+
 		-- We are in rescue mode, so standby-0 should be our target to update
 		os.execute("mount -o rw,nodelalloc /dev/disk/by-bootmode/standby-0 /run/.system_part")
 	end
