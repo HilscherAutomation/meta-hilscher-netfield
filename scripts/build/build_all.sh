@@ -142,6 +142,8 @@ for machine in $PLATFORMS; do
 		machine="$(grep "MACHINE *=" $mcconf | cut -d\" -f2)"
 		image="$MCIMAGE"
 		target="mc:$mcmachine:$image"
+	else
+		mcmachine=""
 	fi
 
 	# Initialize build directory
@@ -205,7 +207,8 @@ for machine in $PLATFORMS; do
 			image="$vendor-$image"
 			cve_file=$(readlink -f "tmp-oem/machines/$machine/deploy/images/$machine/netfield-image-oem-$machine.cve")
 		else
-			cve_file=$(readlink -f "${tmpdir:=tmp}/deploy/images/$machine/$image-$machine.cve")
+			image="$target"
+			cve_file=$(readlink -f "tmp/deploy/images/$machine/$image-$machine.cve")
 		fi
 
 		cp $cve_file $DEPLOY_DIR/$machine/$image/$FW_VERSION/
