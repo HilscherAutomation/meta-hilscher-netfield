@@ -1,3 +1,5 @@
+inherit sign-wrapper hilscher-image-check
+
 NETFIELD_IMAGES ??= "recovery.zip recovery.swu"
 HILSCHER_EXTRA_ZIP_OPTIONS ??= ""
 
@@ -69,7 +71,14 @@ netfield_create_recovery_swu() {
   # create firmware file with runscript (see deploy/_firmware) and wic-image
   export PHYSICAL_SYSTEM_DEVICE="${PHYSICAL_SYSTEM_DEVICE}"
   export FIRMWARE_VERSION="${FULL_FW_VERSION}"
-  ${NETFIELD_BASE}/scripts/deploy/create_firmware_api_file.sh -a ${image_wic} -k ${KEYS_IMAGE_SIGN_PRIV} -s ${NETFIELD_BASE}/scripts/deploy/_firmware -v
+
+  setup_sign_wrapper_env "${PLATFORM_KEYNAME}"
+  local signing_key=$(setup_sign_wrapper_env "${PLATFORM_KEYNAME}")
+  case "${SIGN_WRAPPER_MODE}" in
+    swtpm) engine_params="-e tpm2tss" ;;
+    pkcs11) engine_params="-e pkcs11" ;;
+  esac
+  ${NETFIELD_BASE}/scripts/deploy/create_firmware_api_file.sh ${engine_params} -a ${image_wic} -k "$signing_key" -s ${NETFIELD_BASE}/scripts/deploy/_firmware -v
   cd ..
   tmpdir=$(mktemp -d)
 
@@ -82,7 +91,7 @@ netfield_create_recovery_swu() {
   __generate_swu > ${tmpdir}/sw-description
 
   # Sign sw-description file
-  openssl dgst -sha256 -sign ${KEYS_IMAGE_SIGN_PRIV} ${tmpdir}/sw-description > ${tmpdir}/sw-description.sig
+  openssl_sign_wrapper "${PLATFORM_KEYNAME}" "sha256" "${tmpdir}/sw-description"
 
   # Create swu-image file with the same name as the zip archive
   cd ${tmpdir}
@@ -113,9 +122,18 @@ netfield_create_recovery_zip() {
   export PHYSICAL_SYSTEM_DEVICE="${PHYSICAL_SYSTEM_DEVICE}"
   export DEPLOY_DIR_IMAGE="${DEPLOY_DIR_IMAGE}"
   export FIRMWARE_VERSION="${FULL_FW_VERSION}"
-  ${NETFIELD_BASE}/scripts/deploy/create_dist_archive.sh -o "${image_zip}" \
+
+  setup_sign_wrapper_env "${PLATFORM_KEYNAME}"
+  local signing_key=$(setup_sign_wrapper_env "${PLATFORM_KEYNAME}")
+  case "${SIGN_WRAPPER_MODE}" in
+    swtpm) engine_params="-e tpm2tss" ;;
+    pkcs11) engine_params="-e pkcs11" ;;
+  esac
+
+  ${NETFIELD_BASE}/scripts/deploy/create_dist_archive.sh ${engine_params} \
+    -o "${image_zip}" \
     -i ${image_wic} \
-    -k ${KEYS_IMAGE_SIGN_PRIV} \
+    -k "$signing_key" \
     -c ${BSP_DEPLOYSCRIPT_DIR} -t $type \
     ${HILSCHER_EXTRA_ZIP_OPTIONS}
 

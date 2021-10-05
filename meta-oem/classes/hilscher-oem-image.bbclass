@@ -8,7 +8,7 @@ PACKAGE_INSTALL = "${OEM_IMAGE_INSTALL}"
 IMAGE_BASENAME =. "${VENDOR_ID}-"
 SWU_OEM_NAME = "${IMAGE_BASENAME}"
 
-inherit image hilscher_image_types
+inherit image hilscher_image_types sign-wrapper
 
 # Creates an image without the rootfs stuff.
 do_cleanup[depends] += "empty-image:do_rootfs"
@@ -215,7 +215,8 @@ create_swu() {
 	fileList="sw-description"
 	[ "${SWUPDATE_SIGN_ENFORCE}" != "0" ] && {
 		# If necessary sign sw-description file
-		openssl dgst -sha256 -sign ${SWUPDATE_KEYDIR}/${SWUPDATE_KEYNAME}.key sw-description > sw-description.sig
+		SIGN_WRAPPER_KEY_SRC="${SWUPDATE_KEYDIR}"
+		openssl_sign_wrapper ${SWUPDATE_KEYNAME} "sha256" sw-description
 		fileList="$fileList sw-description.sig"
 	}
 	for file in $(find ./ -type f ! -name 'sw-description*'); do

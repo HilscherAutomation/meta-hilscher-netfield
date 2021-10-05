@@ -1,6 +1,7 @@
 DESCRIPTION = "Hilscher rescue image."
 
 require recipes-core/images/core-image-minimal.bb
+inherit hilscher-image-check
 
 IMAGE_FEATURES += "ssh-server-openssh"
 

@@ -18,29 +18,14 @@ EXTRA_OEMAKE   += "INSTALL_MOD_STRIP=1"
 # libelf is required for CONFIG_STACK_VALIDATION=y
 DEPENDS += "elfutils elfutils-native"
 
-inherit module
+inherit module sign-wrapper
 
-do_make_scripts() {
-        unset CFLAGS CPPFLAGS CXXFLAGS LDFLAGS
-        make CC="${KERNEL_CC}" LD="${KERNEL_LD}" AR="${KERNEL_AR}" \
-                   -C ${STAGING_KERNEL_DIR} ${EXTRA_OEMAKE} scripts
-}
+do_compile_prepend() {
+	CERT="${B}/tpmcert"
+	sign_wrapper_copy_certificate "${CERT}" "pem"
+	rm -f cert.h
 
-do_compile() {
-  CERT="${KEYS_IMAGE_SIGN_CERT}"
-  rm -f cert.h
-
-  printf "static char s_abCert[]=" > cert.h
-  sed -e 's/^\(.*\)$/\"\1\\n\"/' ${CERT} >> cert.h
-  echo ";" >> cert.h
-
-  unset CFLAGS CPPFLAGS CXXFLAGS LDFLAGS
-  oe_runmake KDIR="${STAGING_KERNEL_DIR}"
-}
-
-do_install() {
-  oe_runmake DEPMOD=echo INSTALL_MOD_PATH="${D}" \
-                   KDIR=${STAGING_KERNEL_DIR} \
-                   CC="${KERNEL_CC}" LD="${KERNEL_LD}" \
-                   modules_install
+	printf "static char s_abCert[]=" > cert.h
+	sed -e 's/^\(.*\)$/\"\1\\n\"/' ${CERT} >> cert.h
+	echo ";" >> cert.h
 }

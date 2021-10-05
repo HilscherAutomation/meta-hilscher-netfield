@@ -1,5 +1,7 @@
 DEPENDS_append += "openssl-native"
 
+inherit sign-wrapper
+
 python do_apply_verification_keys() {
   import subprocess
   import sys
@@ -23,10 +25,10 @@ python do_apply_verification_keys() {
       else:
           return x % m
 
-  key_file=os.path.join(d.getVar("DTS_SIGN_KEY_DIR"), d.getVar("DTS_SIGN_KEY_NAME") + ".key")
+  pub_key=os.path.join(d.getVar("SIGN_WRAPPER_KEY_DST"), d.getVar("DTS_SIGN_KEY_NAME"), d.getVar("DTS_SIGN_KEY_NAME") + ".pub")
 
   # Extract modulus and N0inv
-  modulus = subprocess.check_output(["openssl", "rsa", "-in", key_file, "-modulus", "-noout"])
+  modulus = subprocess.check_output(["openssl", "rsa", "-pubin", "-in", pub_key, "-modulus", "-noout"])
   modulus = re.sub(b'Modulus=', b'', modulus).rstrip()
   N       = int(modulus, 16)
   keylen  = N.bit_length()
@@ -35,8 +37,8 @@ python do_apply_verification_keys() {
   N0inv = B - modinv(N, B)
 
   # Extract public exponent (defaults to 0x100001)
-  exponent = subprocess.check_output(["openssl", "rsa", "-in", key_file, "-text", "-noout"])
-  exponent = int(re.search(b'publicExponent: ([0-9]+)', exponent).group(1))
+  exponent = subprocess.check_output(["openssl", "rsa", "-pubin", "-in", pub_key, "-text", "-noout"])
+  exponent = int(re.search(b'Exponent: ([0-9]+)', exponent).group(1))
 
   str_modulus=modulus.decode("utf-8").lower()
   dtc_modulus=["0x" + str_modulus[i:i+8] for i in range(0, len(str_modulus), 8)]
@@ -61,7 +63,7 @@ python do_apply_verification_keys() {
         };
     };
 };
-""" % ( d.getVar("DTS_SIGN_KEY_NAME"),
+""" % ( d.getVar("UBOOT_SIGN_KEYNAME"),
         dtc_modulus, int(exponent),
         N0inv, keylen, rr)
 

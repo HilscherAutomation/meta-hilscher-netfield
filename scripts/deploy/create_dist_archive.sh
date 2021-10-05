@@ -43,6 +43,9 @@ while [ "$1" != "" ]; do
         -t | --image-type )     shift
                                 image_type=$1
                                 ;;
+        -e | --engine )         shift
+                                ssl_engine=$1
+                                ;;
         -v | --verbose )        debug="1"
                                 ;;
         -h | --help )           usage
@@ -73,12 +76,17 @@ if [ -z "$custom_scripts" ]; then
    echo "Missing scripts directory. Please provide -c <dir>"
    exit 1
 fi
+if [ -n ${ssl_engine} ]; then
+	script_engine_params="-e ${ssl_engine}"
+	engine_params="-engine ${ssl_engine} -keyform engine"
+else
+	signing_key=`realpath ${signing_key}`
+	[ ! -e "$signing_key" ] && echo "Signing key ${signing_key} cannot be found" && exit 1
+fi
 
 input_image=`realpath ${input_image}`
-signing_key=`realpath ${signing_key}`
 
 [ ! -e "$input_image" ] && echo "Input image ${input_image} cannot be found" && exit 1
-[ ! -e "$signing_key" ] && echo "Signing key ${signing_key} cannot be found" && exit 1
 
 if [ -z "$image_type" ]; then
     echo "Missing image type. Please provide -t <type>"
@@ -114,7 +122,7 @@ elif [ "${image_type}" == "update" ] ; then
 fi
 
 firmware_api_file="${SCRIPTDIR}/create_firmware_api_file.sh"
-${firmware_api_file} ${add_image_params} -k ${signing_key} ${user_script_arg} ${update_param} -v || exit 1
+${firmware_api_file} ${script_engine_params} ${add_image_params} -k "${signing_key}" ${user_script_arg} ${update_param} -v || exit 1
 rm -rf _firmware_api tmp_repo
 if [ -e "firmware.signed" ]; then
   realfirmware=$(basename $(readlink firmware.signed))
