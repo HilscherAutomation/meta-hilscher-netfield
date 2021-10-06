@@ -4,6 +4,7 @@ USER root
 
 RUN apt-get update && \
     apt-get install -y libssl-dev zip subversion ncurses-dev python3-pexpect && \
+    apt-get install -y ca-certificates && \
     apt-get clean
 
 # To allow the testability, add a jenkins user for our build server.
