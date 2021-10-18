@@ -1,0 +1,2 @@
+-w /etc -p wa -k system-configuration
+-w /var/secrets -p wa -k system-secrets

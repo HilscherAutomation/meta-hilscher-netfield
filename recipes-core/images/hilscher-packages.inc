@@ -110,4 +110,21 @@ do_create_homes() {
   chmod 0600 ${IMAGE_ROOTFS}/home/admin/.zshrc
 }
 
-ROOTFS_POSTUNINSTALL_COMMAND_append += "do_create_homes ; do_force_admin_pw_change ;"
+do_create_audit_privileged_rules() {
+  rule_file="${IMAGE_ROOTFS}/${datadir}/audit/sample-rules/31-privileged.rules"
+
+  rm $rule_file
+  for priv_dir in /bin /sbin /usr/bin /usr/sbin; do
+    find ${IMAGE_ROOTFS}$priv_dir -type f -perm -04000 2>/dev/null | \
+        sed "s@${IMAGE_ROOTFS}@@" | \
+        awk '{ printf "-a always,exit -F path=%s -F perm=x -F auid>=1000 -F auid!=unset -F key=privileged\n", $1 }' >> $rule_file
+  done
+
+  for priv_dir in /bin /sbin /usr/bin /usr/sbin; do
+    filecap ${IMAGE_ROOTFS}$priv_dir 2>/dev/null | \
+        sed '1d' | sed "s@${IMAGE_ROOTFS}@@" | \
+        awk '{ printf "-a always,exit -F path=%s -F perm=x -F auid>=1000 -F auid!=unset -F key=privileged\n", $2 }' >> $rule_file
+  done
+}
+
+ROOTFS_POSTUNINSTALL_COMMAND_append += "do_create_homes ; do_force_admin_pw_change ; do_create_audit_privileged_rules ;"
