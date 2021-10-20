@@ -76,7 +76,7 @@ if [ -z "$custom_scripts" ]; then
    echo "Missing scripts directory. Please provide -c <dir>"
    exit 1
 fi
-if [ -n ${ssl_engine} ]; then
+if [ -n "${ssl_engine}" ]; then
 	script_engine_params="-e ${ssl_engine}"
 	engine_params="-engine ${ssl_engine} -keyform engine"
 else

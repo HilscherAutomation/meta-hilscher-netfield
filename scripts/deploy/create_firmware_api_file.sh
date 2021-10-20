@@ -104,7 +104,7 @@ if [ -e "${fw_image}" ]; then
   else
     cp ${fw_image} _firmware_api/firmware
 
-    if [ -n ${engine} ]; then
+    if [ -n "${engine}" ]; then
       swtpm_param="-engine ${engine} -keyform engine"
     fi
     openssl dgst $swtpm_param -sha512 -sign "${priv_key}" -out _firmware_api/firmware/$(basename $fw_image).sig ${fw_image}
