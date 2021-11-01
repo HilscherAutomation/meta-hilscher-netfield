@@ -14,7 +14,7 @@ SWUPDATE_KEYDIR ??= "${PLATFORM_KEYDIR}"
 SWUPDATE_KEYNAME ??= "${PLATFORM_KEYNAME}"
 
 SRC_URI_append += " \
-	${@bb.utils.contains('SWUPDATE_SIGN', '1', 'file://enable_signed_images.cfg', '', d)} \
+	${@bb.utils.contains('SWUPDATE_SIGN', '1', 'file://enable_signed_images.cfg', 'file://enable_hashed_images.cfg', d)} \
 	file://enable_download.cfg \
 	file://swupdate-args.sh \
 	${@bb.utils.contains('SWUPDATE_SIGN', '1', 'file://public-key.sh', '', d)} \

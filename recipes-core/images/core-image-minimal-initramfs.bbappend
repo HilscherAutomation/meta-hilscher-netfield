@@ -8,7 +8,7 @@ INITRAMFS_SCRIPTS = " \
 	initramfs-framework-initrd-api \
 	initramfs-framework-device-data \
 	initramfs-framework-provisioning \
-	initramfs-framework-owner-cert \
+	${@bb.utils.contains('PLATFORM_SIGN', '1', 'initramfs-framework-owner-cert', '', d)} \
 	initramfs-framework-platform-init \
 	initramfs-framework-fieldbus-detection \
 	initramfs-framework-fscheck \

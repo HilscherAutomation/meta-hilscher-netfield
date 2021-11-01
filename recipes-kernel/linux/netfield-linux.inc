@@ -62,55 +62,61 @@ SRC_URI_append += "file://enable_devmapper.cfg"
 SRC_URI_append += "file://enable_iscsi.cfg"
 
 # Kernel module signing
-SRC_URI_append += "file://enable_signed_modules.cfg"
-SRC_URI_append += "file://0001-Add-support-for-module-signing-via-swtpm.patch"
+SRC_URI_append += "${@bb.utils.contains('PLATFORM_SIGN', '1', 'file://enable_signed_modules.cfg', '', d)}"
+SRC_URI_append += "${@bb.utils.contains('PLATFORM_SIGN', '1', 'file://0001-Add-support-for-module-signing-via-swtpm.patch', '', d)}"
 
 INHIBIT_PACKAGE_STRIP="1"
 EXTRA_OEMAKE_append += " INSTALL_MOD_STRIP=1 "
 do_kernel_configme_append() {
-	setup_sign_wrapper_env ${PLATFORM_KEYNAME}
+	if [ "${PLATFORM_SIGN}" = "1" ]; then
+		setup_sign_wrapper_env ${PLATFORM_KEYNAME}
 
-	mkdir -p ${B}/certs
-	if [ "${SIGN_WRAPPER_MODE}" = "file" ]; then
-		cat ${PLATFORM_KEYDIR}/${PLATFORM_KEYNAME}.key > ${B}/certs/iotgw_signing_key.pem
-		cat ${KEYS_IMAGE_SIGN_CERT} >> ${B}/certs/iotgw_signing_key.pem
+		mkdir -p ${B}/certs
+		if [ "${SIGN_WRAPPER_MODE}" = "file" ]; then
+			cat ${PLATFORM_KEYDIR}/${PLATFORM_KEYNAME}.key > ${B}/certs/iotgw_signing_key.pem
+			cat ${KEYS_IMAGE_SIGN_CERT} >> ${B}/certs/iotgw_signing_key.pem
+		fi
+
+		sign_wrapper_copy_certificate "${B}/certs/signing_key.x509"
 	fi
-
-	sign_wrapper_copy_certificate "${B}/certs/signing_key.x509"
 }
 do_kernel_configme[vardeps] += "PLATFORM_SIGN PLATFORM_KEYDIR PLATFORM_KEYNAME"
 
 do_compile_prepend() {
-	local signing_key=$(setup_sign_wrapper_env ${PLATFORM_KEYNAME})
+	if [ "${PLATFORM_SIGN}" = "1" ]; then
+		local signing_key=$(setup_sign_wrapper_env ${PLATFORM_KEYNAME})
 
-	case "${SIGN_WRAPPER_MODE}" in
-	file)
-		sed -i 's/CONFIG_MODULE_SIG_KEY=.*/CONFIG_MODULE_SIG_KEY="certs\/iotgw_signing_key.pem"/g' ${B}/.config
-		sed -i 's/CONFIG_MODULE_SIG_ENGINE=.*/CONFIG_MODULE_SIG_ENGINE=""/g' ${B}/.config
-	;;
-	swtpm)
-		#'"${PLATFORM_KEYNAME}"'
-		sed -i 's/CONFIG_MODULE_SIG_KEY=.*/CONFIG_MODULE_SIG_KEY="'"$signing_key"'"/g' ${B}/.config
-		sed -i 's/CONFIG_MODULE_SIG_ENGINE=.*/CONFIG_MODULE_SIG_ENGINE="tpm2tss"/g' ${B}/.config
-	;;
-	pkcs11)
-		#'"${PLATFORM_KEYNAME}"'
-		sed -i 's@CONFIG_MODULE_SIG_KEY=.*@CONFIG_MODULE_SIG_KEY="'"$signing_key"'"@g' ${B}/.config
-		sed -i 's@CONFIG_MODULE_SIG_ENGINE=.*@CONFIG_MODULE_SIG_ENGINE="pkcs11"@g' ${B}/.config
-	;;
-	esac
+		case "${SIGN_WRAPPER_MODE}" in
+		file)
+			sed -i 's/CONFIG_MODULE_SIG_KEY=.*/CONFIG_MODULE_SIG_KEY="certs\/iotgw_signing_key.pem"/g' ${B}/.config
+			sed -i 's/CONFIG_MODULE_SIG_ENGINE=.*/CONFIG_MODULE_SIG_ENGINE=""/g' ${B}/.config
+		;;
+		swtpm)
+			#'"${PLATFORM_KEYNAME}"'
+			sed -i 's/CONFIG_MODULE_SIG_KEY=.*/CONFIG_MODULE_SIG_KEY="'"$signing_key"'"/g' ${B}/.config
+			sed -i 's/CONFIG_MODULE_SIG_ENGINE=.*/CONFIG_MODULE_SIG_ENGINE="tpm2tss"/g' ${B}/.config
+		;;
+		pkcs11)
+			#'"${PLATFORM_KEYNAME}"'
+			sed -i 's@CONFIG_MODULE_SIG_KEY=.*@CONFIG_MODULE_SIG_KEY="'"$signing_key"'"@g' ${B}/.config
+			sed -i 's@CONFIG_MODULE_SIG_ENGINE=.*@CONFIG_MODULE_SIG_ENGINE="pkcs11"@g' ${B}/.config
+		;;
+		esac
+	fi
 }
 
 do_shared_workdir_append() {
-	setup_sign_wrapper_env ${PLATFORM_KEYNAME}
+	if [ "${PLATFORM_SIGN}" = "1" ]; then
+		setup_sign_wrapper_env ${PLATFORM_KEYNAME}
 
-	if [ "${SIGN_WRAPPER_MODE}" = "file" ]; then
-		kerneldir=${STAGING_KERNEL_BUILDDIR}
-		mkdir -p $kerneldir/certs
-		cp ${KEYS_IMAGE_SIGN_PRIV} $kerneldir/certs/iotgw_signing_key.pem
+		if [ "${SIGN_WRAPPER_MODE}" = "file" ]; then
+			kerneldir=${STAGING_KERNEL_BUILDDIR}
+			mkdir -p $kerneldir/certs
+			cp ${KEYS_IMAGE_SIGN_PRIV} $kerneldir/certs/iotgw_signing_key.pem
+		fi
+
+		sign_wrapper_copy_certificate "$kerneldir/certs/signing_key.x509"
 	fi
-
-	sign_wrapper_copy_certificate "$kerneldir/certs/signing_key.x509"
 }
 
 # Misc
@@ -163,15 +169,19 @@ do_assemble_fitimage_initramfs_prepend() {
 
 # verify if fitimage is correctly signed, use public key located in device tree
 do_assemble_fitimage_append() {
-	echo "Check signature of fitimage..."
-	pubkey_dtb=$(ls -1 ${DEPLOY_DIR_IMAGE}/devicetree/*.dtb)
-	fit_check_sign -f "${B}/arch/${ARCH}/boot/fitImage" -k "$pubkey_dtb"
+	if [ "${PLATFORM_SIGN}" = "1" ]; then
+		echo "Check signature of fitimage..."
+		pubkey_dtb=$(ls -1 ${DEPLOY_DIR_IMAGE}/devicetree/*.dtb)
+		fit_check_sign -f "${B}/arch/${ARCH}/boot/fitImage" -k "$pubkey_dtb"
+	fi
 }
 
 do_assemble_fitimage_initramfs_append() {
-	echo "Check signature of fitimage-initramfs..."
-	pubkey_dtb=$(ls -1 ${DEPLOY_DIR_IMAGE}/devicetree/*.dtb)
-	fit_check_sign -f "${B}/arch/${ARCH}/boot/fitImage-core-image-minimal-initramfs" -k "$pubkey_dtb"
+	if [ "${PLATFORM_SIGN}" = "1" ]; then
+		echo "Check signature of fitimage-initramfs..."
+		pubkey_dtb=$(ls -1 ${DEPLOY_DIR_IMAGE}/devicetree/*.dtb)
+		fit_check_sign -f "${B}/arch/${ARCH}/boot/fitImage-core-image-minimal-initramfs" -k "$pubkey_dtb"
+	fi
 }
 
 do_shared_workdir_prepend() {

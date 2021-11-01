@@ -11,6 +11,7 @@ function usage() {
   echo "-o --out <img.tar.bz2>   Output tarball name (supported extensions: tar, tar.gz, tgz, tar.bz2, zip)"
   echo "-i --image <imgname>     Input image name (default: hilscher-iotgw-image)"
   echo "-k --keys <key>          Signing key (default: db.key)"
+  echo "-u --unsigned            Don't sign files, but only use a sha256 hash"
   echo "-c --custom_scripts      path to user defined scripts (create_boot_part)"
   echo "-t --image_type          Valid types are 'production', 'production_scan', 'recovery' and 'update'"
 }
@@ -22,6 +23,7 @@ echo " Application: ${MYNAME} (${MYVERSION})"
 echo "==========================================================="
 
 # Default values
+sign_image="1"
 signing_key="db.key"
 input_image="hilscher-iotgw-image"
 debug=0
@@ -36,6 +38,8 @@ while [ "$1" != "" ]; do
                                 ;;
         -k | --keys )           shift
                                 signing_key=$1
+                                ;;
+        -u | --unsigned )       sign_image="0"
                                 ;;
         -c | --custom-scripts ) shift
                                 custom_scripts=$1
@@ -67,7 +71,7 @@ if [ -z "$input_image" ]; then
     exit 1
 fi
 
-if [ -z "$signing_key" ]; then
+if [ -z "$signing_key" ] && [ "${sign_image}" = "1" ]; then
     echo "Missing signing key. Please provide -k <key>"
     exit 1
 fi
@@ -76,12 +80,15 @@ if [ -z "$custom_scripts" ]; then
    echo "Missing scripts directory. Please provide -c <dir>"
    exit 1
 fi
-if [ -n "${ssl_engine}" ]; then
-	script_engine_params="-e ${ssl_engine}"
-	engine_params="-engine ${ssl_engine} -keyform engine"
-else
-	signing_key=`realpath ${signing_key}`
-	[ ! -e "$signing_key" ] && echo "Signing key ${signing_key} cannot be found" && exit 1
+
+if [ "${sign_image}" = "1" ]; then
+  if [ -n ${ssl_engine} ]; then
+    script_engine_params="-e ${ssl_engine}"
+    engine_params="-engine ${ssl_engine} -keyform engine"
+  else
+    signing_key=`realpath ${signing_key}`
+    [ ! -e "$signing_key" ] && echo "Signing key ${signing_key} cannot be found" && exit 1
+  fi
 fi
 
 input_image=`realpath ${input_image}`
@@ -122,7 +129,13 @@ elif [ "${image_type}" == "update" ] ; then
 fi
 
 firmware_api_file="${SCRIPTDIR}/create_firmware_api_file.sh"
-${firmware_api_file} ${script_engine_params} ${add_image_params} -k "${signing_key}" ${user_script_arg} ${update_param} -v || exit 1
+if [ "${sign_image}" = "1" ]; then
+  sign_param="-k \"${signing_key}\""
+else
+  sign_param="-u"
+fi
+
+${firmware_api_file} ${script_engine_params} ${add_image_params} ${sign_param} ${user_script_arg} ${update_param} -v || exit 1
 rm -rf _firmware_api tmp_repo
 if [ -e "firmware.signed" ]; then
   realfirmware=$(basename $(readlink firmware.signed))

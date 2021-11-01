@@ -28,6 +28,8 @@ Usage: $MYNAME options
  -k private-key-file
     e.g. : ./key.pem
 
+ -u don't sign image
+
  -v
     Enable verbose mode.
 
@@ -46,9 +48,10 @@ EOF
 
 MYNAME=$(basename ${0})
 MYVERSION="20160404"
+sign_image="1"
 
 # Parse Options
-while getopts "f:k:e:vh" opt ; do
+while getopts "f:k:e:vuh" opt ; do
 	echo "${OPTARG}" | grep -q "^-.*" && {
 		vmsg_errout "option -${opt} requires an argument!"
 	}
@@ -56,6 +59,7 @@ while getopts "f:k:e:vh" opt ; do
 		f) api_file=$OPTARG;;
 		k) priv_key=${OPTARG};;
 		e) engine=${OPTARG};;
+		u) sign_image="0";;
 		v) verbose=1;;
 		h) show_help && exit 0;;
 		?) show_help && exit 1;;
@@ -68,7 +72,11 @@ vmsg "==========================================================="
 vmsg " Application: ${MYNAME} (${MYVERSION})"
 vmsg "==========================================================="
 
-if [ -z "${api_file}" -o -z "${priv_key}" ]; then 
+if [ -z "${api_file}" ]; then
+	vmsg_errout "Invalid or missing arguments.";
+fi
+
+if [-z "${priv_key}" ] && [ "${sign_image}" = "1" ]; then
 	vmsg_errout "Invalid or missing arguments.";
 fi
 
@@ -78,7 +86,12 @@ if [ -n "${engine}" ]; then
 	swtpm_params="-engine ${engine} -keyform engine"
 fi
 
-openssl dgst ${swtpm_params} -sha512 -sign "${priv_key}" -out ${api_file}.signature ${api_file} &&
+if [ "${sign_image}" = "1" ]; then
+	openssl dgst ${swtpm_params} -sha512 -sign "${priv_key}" -out ${api_file}.signature ${api_file}
+else
+	sha256sum ${api_file} | cut -d' ' -f1 | tr -d '\n' > ${api_file}.signature
+fi
+
 echo "== SIGNATURE START ==" > ${api_file}.signed &&
 cat ${api_file}.signature >> ${api_file}.signed &&
 rm ${api_file}.signature &&

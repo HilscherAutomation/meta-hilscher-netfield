@@ -78,7 +78,13 @@ netfield_create_recovery_swu() {
     swtpm) engine_params="-e tpm2tss" ;;
     pkcs11) engine_params="-e pkcs11" ;;
   esac
-  ${NETFIELD_BASE}/scripts/deploy/create_firmware_api_file.sh ${engine_params} -a ${image_wic} -k "$signing_key" -s ${NETFIELD_BASE}/scripts/deploy/_firmware -v
+  if [ "${PLATFORM_SIGN}" = "1" ]; then
+    sign_params="-k \"$signing_key\""
+  else
+    sign_params="-u"
+  fi
+
+  ${NETFIELD_BASE}/scripts/deploy/create_firmware_api_file.sh ${engine_params} -a ${image_wic} ${sign_params} -s ${NETFIELD_BASE}/scripts/deploy/_firmware -v
   cd ..
   tmpdir=$(mktemp -d)
 
@@ -130,10 +136,16 @@ netfield_create_recovery_zip() {
     pkcs11) engine_params="-e pkcs11" ;;
   esac
 
+  if [ "${PLATFORM_SIGN}" = "1" ]; then
+    sign_param="-k \"$signing_key\""
+  else
+    sign_param="-u"
+  fi
+
   ${NETFIELD_BASE}/scripts/deploy/create_dist_archive.sh ${engine_params} \
     -o "${image_zip}" \
     -i ${image_wic} \
-    -k "$signing_key" \
+    ${sign_param} \
     -c ${BSP_DEPLOYSCRIPT_DIR} -t $type \
     ${HILSCHER_EXTRA_ZIP_OPTIONS}
 
