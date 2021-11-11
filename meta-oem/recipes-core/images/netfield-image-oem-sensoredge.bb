@@ -13,11 +13,4 @@ OEM_IMAGE_INSTALL += " \
     cockpit-oem-ovl-remove-terminal \
 "
 
-do_oem_ovl_postinstall() {
-	if [ -e "${IMAGE_ROOTFS}${nonarch_libdir}/os-release" ]; then
-		# Remove old VARIANT_ID and append the new one
-		sed -i "/^VARIANT_ID=/,1d" ${IMAGE_ROOTFS}${nonarch_libdir}/os-release
-		echo "VARIANT_ID=\"sensoredge\"" >> ${IMAGE_ROOTFS}${nonarch_libdir}/os-release
-	fi
-}
-ROOTFS_POSTPROCESS_COMMAND_append += "do_oem_ovl_postinstall;"
+VENDOR_VARIANT_ID="sensoredge"

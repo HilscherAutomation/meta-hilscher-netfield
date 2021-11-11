@@ -12,18 +12,18 @@ By default, a default image will be build for a predefined list of machines(plat
   -D                          Build a debug image
   -e <extra_image_features>   Add extra image features
   -f <fw_version>             Firmware version (default: "2.3.0.0")
-  -i <image>                  Image name to build (default: "netfield-image", default(mc): "netfield-image-oem-all")
+  -i <image>                  Image name to build (default: "netfield-image" or "netfield-image-oem-all" on oem capable machines)
   -p <extra_image_packages>   Add extra image packages
   -P <machine[0..n]>          Space seperated list of machines/platforms to build
   -s <fw_suffix>              Suffix used for firmware version
   -t                          Enable testability
 
   Examples:
-    PLATFORMS="niot-e-tijcx-gb hilscher-netfield-iolink-edge-gw-rev2" $0 -t -D
-    $0 -t -D -P "niot-e-tijcx-gb hilscher-netfield-iolink-edge-gw-rev2"
+    PLATFORMS="niot-e-tijcx-gb netfield-iolink-edge-gw-rev2" $0 -t -D
+    $0 -t -D -P "niot-e-tijcx-gb netfield-iolink-edge-gw-rev2"
 
   Note:
-    Each machine declaration may optionally contain an IP address of DUT (e.g."hilscher-netfield-iolink-edge-gw-rev2:10.13.4.248").
+    Each machine declaration may optionally contain an IP address of DUT (e.g."netfield-iolink-edge-gw-rev2:10.13.4.248").
     These addresses will be ignored by build process.
 
 EOF
@@ -80,7 +80,6 @@ FW_VERSION="$FW_VERSION${fw_suffix:+".$fw_suffix"}"
 BUILD_DIR="${build_dir:-"build"}"
 DEPLOY_DIR="${deploy_dir:-"dist"}"
 IMAGE="${image:-"netfield-image"}"
-MCIMAGE="${image:-"netfield-image-oem-all"}"
 EXTRA_IMAGE_FEATURES="${debug_enable:+"empty-root-password allow-empty-password debug-tweaks"}"
 EXTRA_IMAGE_FEATURES="$EXTRA_IMAGE_FEATURES${extra_image_features:+" $extra_image_features"}"
 EXTRA_IMAGE_PACKAGES="$EXTRA_IMAGE_PACKAGES${extra_image_packages:+" $extra_image_packages"}"
@@ -95,7 +94,7 @@ if [ -z "${PLATFORMS}" ]; then
 	# Default machines to build: Raspberry
 	PLATFORMS="$PLATFORMS niot-e-tpi51-en-re"
 	# Default machines to build: imx8
-	PLATFORMS="$PLATFORMS hilscher-netfield-iolink-edge-gw-rev2"
+	PLATFORMS="$PLATFORMS netfield-iolink-edge-gw-rev2"
 fi
 
 # Make sure to share as much as possible between builds
@@ -124,12 +123,6 @@ for machine in $PLATFORMS; do
 
 	# Search machine/multiconfig configuration
 	mconf="$(find meta-hilscher-netfield-*/conf/machine -name $machine.conf)"
-	mcconf="$(find meta-hilscher-netfield-*/conf/multiconfig -name $machine.conf)"
-	case $(echo $mcconf | wc -w) in
-		0|1) ;;
-		*) echo "Error: multiconfig: Multiple $mcmachine.conf files found!"; exit 1;;
-	esac
-	[ -z "$mconf" ] && mconf="$mcconf"
 	[ -z "$mconf" ] && { echo "ERROR: $machine.conf not found! "; exit 1; }
 
 	# Set machine meta layer
@@ -137,13 +130,8 @@ for machine in $PLATFORMS; do
 
 	# Set image name and bitbake target
 	target="$IMAGE"
-	if echo $mconf | grep -q "conf/multiconfig/"; then
-		mcmachine="$machine"
-		machine="$(grep "MACHINE *=" $mcconf | cut -d\" -f2)"
-		image="$MCIMAGE"
-		target="mc:$mcmachine:$image"
-	else
-		mcmachine=""
+	if grep -q "^OEM_BRANDING_IMAGES" $mconf; then
+		target="$target-oem-all"
 	fi
 
 	# Initialize build directory
@@ -201,15 +189,8 @@ for machine in $PLATFORMS; do
 
 	# Run CVE check
 	if [ "$cve_check_enabled" = "1" ]; then
-		if [ -n "$mcmachine" ]; then
-			# Dist directory prepends vendor to IMAGE name
-			vendor=$(echo $mcmachine | cut -d '-' -f1)
-			image="$vendor-$image"
-			cve_file=$(readlink -f "tmp-oem/machines/$machine/deploy/images/$machine/netfield-image-oem-$machine.cve")
-		else
-			image="$target"
-			cve_file=$(readlink -f "tmp/deploy/images/$machine/$image-$machine.cve")
-		fi
+		image="$target"
+		cve_file=$(readlink -f "tmp/deploy/images/$machine/$image-$machine.cve")
 
 		cp $cve_file $DEPLOY_DIR/$machine/$image/$FW_VERSION/
 		ln -sf $(basename $cve_file) $DEPLOY_DIR/$machine/$image/$FW_VERSION/$image-$machine.cve

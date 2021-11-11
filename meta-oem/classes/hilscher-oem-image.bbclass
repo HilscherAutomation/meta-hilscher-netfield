@@ -1,7 +1,7 @@
 # This class can be used to create vendor specific rootfs overlays for OEM base images.
 
-IMAGE_FSTYPES = "squashfs_signed swu"
-DEPLOY_EXT_LIST = "squashfs squashfs.sig swu"
+IMAGE_FSTYPES = "squashfs_signed swu wic.bz2 ${@'fastboot' if d.getVar('FASTBOOT_SUPPORT')=='1' else ''}"
+DEPLOY_EXT_LIST = "squashfs squashfs.sig swu wic.bz2 ${@'fastboot' if d.getVar('FASTBOOT_SUPPORT')=='1' else ''} ${@bb.utils.contains('NETFIELD_IMAGES', 'recovery.zip', 'zip', '', d)}"
 
 IMAGE_LINGUAS = ""
 PACKAGE_INSTALL = "${OEM_IMAGE_INSTALL}"
@@ -67,7 +67,7 @@ IMAGE_CMD_swu() {
 	fi
 
 	# Use base image as reference
-	swu_src_link="${TOPDIR}/tmp-oem/machines/${MACHINE}/deploy/images/${MACHINE}/${BASE_IMAGE}-${MACHINE}.update.swu"
+	swu_src_link="${DEPLOY_DIR_IMAGE}/${BASE_IMAGE}-${MACHINE}.update.swu"
 
 	if [ "${OEM_BRANDING_MERGE}" = "1" ]; then
 		# Merged vendor/machine specific swu-images (and set unknown section, if requested)
@@ -122,7 +122,7 @@ create_swu() {
 	brandings_to_include=$2 # list of image names which should be included
 	default_link=$3 # if configured, the resulting image can be used for (re)branding
 
-	[ -z "$swu_file" -o ! -e $swu_file ] && bberr "Invalid or missing SWU source image!"
+	[ -z "$swu_file" -o ! -e $swu_file ] && bberror "Invalid or missing SWU source image ($swu_file)!"
 
 	swu_file="$(readlink -f $swu_file)"
 	swu_type="$(echo $swu_file | rev | cut -d. -f-2 | rev)"

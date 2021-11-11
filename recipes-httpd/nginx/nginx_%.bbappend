@@ -29,6 +29,10 @@ do_install_append() {
   done
 }
 
+PACKAGES =+ "${PN}-conf"
+RDEPENDS_${PN}_append += "${PN}-conf"
+FILES_${PN}-conf += "${sysconfdir}/nginx/nginx.conf"
+
 #FILES_${PN} += "/var/lib/nginx"
 #FILES_${PN} += "${sysconfdir}/nginx/*"
 #FILES_${PN} += "${sysconfdir}/default/volatiles/*"

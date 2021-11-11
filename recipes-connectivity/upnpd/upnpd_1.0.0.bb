@@ -47,10 +47,13 @@ do_install() {
   echo '# -1 = use https port of nginx' >> ${D}${sysconfdir}/default/upnpd
   echo 'UPNPD_PRESENTATION_PORT="-1"' >> ${D}${sysconfdir}/default/upnpd
 }
+PACKAGES =+ "${PN}-conf"
+RDEPENDS_${PN} += "${PN}-conf"
 
+FILES_${PN}-conf = "/opt/upnpd/netiotdevicedesc.xml"
 FILES_${PN}     += "/opt/upnpd/upnpd /opt/upnpd/upnpd.sh"
 FILES_${PN}     += "/opt/upnpd/init-desc"
-FILES_${PN}     += "/opt/upnpd/netiotdevicedesc.xml /opt/upnpd/desc"
+FILES_${PN}     += "/opt/upnpd/desc"
 FILES_${PN}     += "${sysconfdir}"
 FILES_${PN}-dbg += "/opt/upnpd/.debug"
 
