@@ -1,13 +1,14 @@
-diff -aurN a/Makefile b/Makefile
---- a/Makefile	2021-04-12 14:58:03.435726701 +0200
-+++ b/Makefile	2021-04-13 16:42:40.462437238 +0200
+diff --git a/Makefile b/Makefile
+index 9141611..f70dadc 100644
+--- a/Makefile
++++ b/Makefile
 @@ -1,4 +1,5 @@
  CARGO = cargo
 +CARGO_TARGET ?= x86_64-unknown-linux-gnu
  
  # Installed via `cargo install`. See /ci/install-build-deps.sh for exact command and versions.
  BINDGEN = bindgen
-@@ -32,18 +33,6 @@
+@@ -32,18 +33,6 @@ else
  	CARGO_PROFILE_DIRECTORY = release
  endif
  

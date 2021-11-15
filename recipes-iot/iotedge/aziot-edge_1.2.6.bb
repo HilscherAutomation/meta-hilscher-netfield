@@ -8,7 +8,7 @@ inherit cargo
 # how to get iotedge could be as easy as but default to a git checkout:
 # SRC_URI += "crate://crates.io/iotedge/0.1.0"
 SRC_URI += "git://github.com/azure/iotedge;protocol=https;nobranch=1"
-SRCREV = "2054afeb870eac647a009f181edb390b4eee681d"
+SRCREV = "e15b86b2783d64b6136b15fcd09e3584269c3be1"
 S = "${WORKDIR}/git/edgelet"
 CARGO_SRC_DIR = "."
 
@@ -50,7 +50,6 @@ SRC_URI += " \
     crate://crates.io/cloudabi/0.0.3 \
     crate://crates.io/config/0.9.3 \
     crate://crates.io/consistenttime/0.2.0 \
-    crate://crates.io/constant_time_eq/0.1.5 \
     crate://crates.io/core-foundation-sys/0.7.0 \
     crate://crates.io/core-foundation/0.7.0 \
     crate://crates.io/crc32fast/1.2.0 \
@@ -61,7 +60,9 @@ SRC_URI += " \
     crate://crates.io/crossbeam-queue/0.2.3 \
     crate://crates.io/crossbeam-utils/0.6.6 \
     crate://crates.io/crossbeam-utils/0.7.2 \
-    crate://crates.io/crypto-mac/0.5.2 \
+    crate://crates.io/darling/0.13.0 \
+    crate://crates.io/darling_core/0.13.0 \
+    crate://crates.io/darling_macro/0.13.0 \
     crate://crates.io/digest/0.7.6 \
     crate://crates.io/doc-comment/0.3.3 \
     crate://crates.io/dtoa/0.4.6 \
@@ -91,7 +92,6 @@ SRC_URI += " \
     crate://crates.io/hermit-abi/0.1.15 \
     crate://crates.io/hex/0.3.2 \
     crate://crates.io/hex/0.4.2 \
-    crate://crates.io/hmac/0.5.0 \
     crate://crates.io/http-body/0.1.0 \
     crate://crates.io/http/0.1.21 \
     crate://crates.io/http/0.2.1 \
@@ -102,6 +102,7 @@ SRC_URI += " \
     crate://crates.io/hyper-tls/0.3.2 \
     crate://crates.io/hyper/0.12.36 \
     crate://crates.io/hyperlocal/0.6.0 \
+    crate://crates.io/ident_case/1.0.1 \
     crate://crates.io/idna/0.1.5 \
     crate://crates.io/idna/0.2.0 \
     crate://crates.io/indexmap/1.6.0 \
@@ -174,24 +175,27 @@ SRC_URI += " \
     crate://crates.io/remove_dir_all/0.5.3 \
     crate://crates.io/rustc-demangle/0.1.16 \
     crate://crates.io/rustc_version/0.2.3 \
+    crate://crates.io/rustversion/1.0.5 \
     crate://crates.io/ryu/1.0.5 \
     crate://crates.io/safemem/0.3.3 \
     crate://crates.io/schannel/0.1.19 \
-    crate://crates.io/scopeguard/0.3.3 \
     crate://crates.io/scopeguard/1.1.0 \
     crate://crates.io/security-framework-sys/0.4.3 \
     crate://crates.io/security-framework/0.4.4 \
     crate://crates.io/semver-parser/0.7.0 \
     crate://crates.io/semver/0.9.0 \
-    crate://crates.io/serde/1.0.115 \
-    crate://crates.io/serde_derive/1.0.115 \
+    crate://crates.io/serde/1.0.130 \
+    crate://crates.io/serde_derive/1.0.130 \
     crate://crates.io/serde_json/1.0.60 \
+    crate://crates.io/serde_with/1.11.0 \
+    crate://crates.io/serde_with_macros/1.5.1 \
     crate://crates.io/serde_yaml/0.8.14 \
     crate://crates.io/sha2/0.7.1 \
     crate://crates.io/signal-hook-registry/1.2.1 \
     crate://crates.io/slab/0.4.2 \
     crate://crates.io/smallvec/0.6.14 \
     crate://crates.io/string/0.2.1 \
+    crate://crates.io/strsim/0.10.0 \
     crate://crates.io/strsim/0.8.0 \
     crate://crates.io/syn/1.0.74 \
     crate://crates.io/synstructure/0.12.4 \

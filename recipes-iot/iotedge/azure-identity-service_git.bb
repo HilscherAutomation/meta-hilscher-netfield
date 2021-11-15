@@ -8,10 +8,10 @@ inherit cargo
 # how to get iotedged could be as easy as but default to a git checkout:
 # SRC_URI += "crate://crates.io/iotedged/0.1.0"
 SRC_URI += "gitsm://github.com/Azure/iot-identity-service;protocol=https;nobranch=1"
-SRCREV = "55434733d5d3a73f67b9e70998c38da5b7190901"
+SRCREV = "8fc413a9910588b2949eca8ad1ea28246c066f08"
 S = "${WORKDIR}/git"
 CARGO_SRC_DIR = "."
-PV_append = ".AUTOINC+15f59c8bd3"
+PV_append = ".AUTOINC+8fc413a991"
 
 # please note if you have entries that do not begin with crate://
 # you must change them to how that package can be fetched
@@ -50,6 +50,9 @@ SRC_URI += " \
     crate://crates.io/crossbeam-epoch/0.9.1 \
     crate://crates.io/crossbeam-utils/0.8.1 \
     crate://crates.io/crypto-mac/0.8.0 \
+    crate://crates.io/darling/0.12.4 \
+    crate://crates.io/darling_core/0.12.4 \
+    crate://crates.io/darling_macro/0.12.4 \
     crate://crates.io/digest/0.8.1 \
     crate://crates.io/digest/0.9.0 \
     crate://crates.io/doc-comment/0.3.3 \
@@ -95,6 +98,7 @@ SRC_URI += " \
     crate://crates.io/hyper-openssl/0.9.1 \
     crate://crates.io/hyper-proxy/0.9.0 \
     crate://crates.io/hyper/0.14.4 \
+    crate://crates.io/ident_case/1.0.1 \
     crate://crates.io/idna/0.2.1 \
     crate://crates.io/indexmap/1.6.2 \
     crate://crates.io/inotify-sys/0.1.5 \
@@ -161,17 +165,21 @@ SRC_URI += " \
     crate://crates.io/regex-syntax/0.6.22 \
     crate://crates.io/regex/1.4.3 \
     crate://crates.io/rustc-demangle/0.1.18 \
+    crate://crates.io/rustversion/1.0.5 \
     crate://crates.io/ryu/1.0.5 \
     crate://crates.io/same-file/1.0.6 \
     crate://crates.io/scopeguard/1.1.0 \
     crate://crates.io/serde/1.0.123 \
     crate://crates.io/serde_derive/1.0.123 \
     crate://crates.io/serde_json/1.0.62 \
+    crate://crates.io/serde_with/1.9.1 \
+    crate://crates.io/serde_with_macros/1.4.1 \
     crate://crates.io/sha-1/0.8.2 \
     crate://crates.io/sha2/0.9.3 \
     crate://crates.io/slab/0.4.2 \
     crate://crates.io/smallvec/1.6.1 \
     crate://crates.io/socket2/0.3.19 \
+    crate://crates.io/strsim/0.10.0 \
     crate://crates.io/strsim/0.8.0 \
     crate://crates.io/structopt-derive/0.4.14 \
     crate://crates.io/structopt/0.3.21 \

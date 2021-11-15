@@ -1,11 +1,10 @@
-diff -aurN a/Makefile b/Makefile
---- a/Makefile	2021-04-13 19:30:13.748440002 +0200
-+++ b/Makefile	2021-04-13 19:30:30.696755488 +0200
-@@ -294,7 +294,6 @@
+diff --git a/Makefile b/Makefile
+@@ -330,7 +319,7 @@ INSTALL_PROGRAM = $(INSTALL)
  INSTALL_DATA = $(INSTALL) -m 644
  
- # Do not invoke directly; this is invoked by `rpmbuild` or `dpkg-buildpackage`. Use `make centos` or `make deb` instead.
+ # Do not invoke directly; this is invoked by `dpkg-buildpackage` or `rpmbuild`. Use `make deb` or `make rpm` instead.
 -install-common: default
++install-common:
  install-common:
  	# Ref: https://www.gnu.org/software/make/manual/html_node/DESTDIR.html
  
