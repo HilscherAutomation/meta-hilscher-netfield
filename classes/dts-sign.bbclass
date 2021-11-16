@@ -47,6 +47,7 @@ python do_apply_verification_keys() {
   R = pow(2, keylen)
   RR = pow(R, 2, int(modulus, 16))
   str_RR=hex(RR)[2:]
+  str_RR=str_RR.rjust(int(keylen / 4), '0')
   rr=["0x" + str_RR[i:i+8] for i in range(0, len(str_RR), 8)]
   rr=" ".join(rr)
 
