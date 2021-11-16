@@ -10,7 +10,7 @@ S = "${WORKDIR}"
 
 do_install () {
   install -d ${D}${sysconfdir}/update-hooks.d
-  install -m 500 ${S}/updateuser ${D}${sysconfdir}/update-hooks.d/
+  install -m 500 ${S}/updateuser ${D}${sysconfdir}/update-hooks.d/1-updateuser
 }
 
 FILES_${PN} = "${sysconfdir}/update-hooks.d"
