@@ -27,6 +27,8 @@ Usage: $MYNAME options
  -k private-key-file
     e.g. : ./key.pem
 
+ -u don't sign image
+
  -v
     Enable verbose mode.
 
@@ -48,9 +50,10 @@ MYVERSION="20160404"
 
 DATE=`date +%Y%m%d%H%M%S`
 SCRIPTDIR=$(dirname "$0")
+sign_image="1"
 
 # Parse Options
-while getopts "a:k:s:p:e:vh" opt ; do
+while getopts "a:k:s:p:e:vuh" opt ; do
 	echo "${OPTARG}" | grep -q "^-.*" && {
 		echo "option -${opt} requires an argument!"
     exit 1
@@ -58,6 +61,7 @@ while getopts "a:k:s:p:e:vh" opt ; do
 	case ${opt} in
 		a) fw_image=$OPTARG;;
 		k) priv_key=${OPTARG};;
+		u) sign_image="0";;
 		s) user_script_dir=${OPTARG};;
 		e) engine=${OPTARG};;
 		v) verbose=1;;
@@ -72,7 +76,7 @@ vmsg "==========================================================="
 vmsg " Application: ${MYNAME} (${MYVERSION})"
 vmsg "==========================================================="
 
-if [ -z "${priv_key}" ]; then
+if [ -z "${priv_key}" ] && [ "${sign_image}" = "1" ]; then
   echo "Invalid or missing arguments."
   exit 1
 fi
@@ -107,7 +111,11 @@ if [ -e "${fw_image}" ]; then
     if [ -n "${engine}" ]; then
       swtpm_param="-engine ${engine} -keyform engine"
     fi
-    openssl dgst $swtpm_param -sha512 -sign "${priv_key}" -out _firmware_api/firmware/$(basename $fw_image).sig ${fw_image}
+    if [ "${sign_image}" = "1" ]; then
+      openssl dgst $swtpm_param -sha512 -sign "${priv_key}" -out _firmware_api/firmware/$(basename $fw_image).sig ${fw_image}
+    else
+      sha256sum ${fw_image} | cut -d' ' -f1 | tr -d '\n' > _firmware_api/firmware/$(basename $fw_image).sig
+    fi
   fi
 fi
 [ $? -eq 0 ] && vmsg "done" || vmsg_errout "failed!"
@@ -140,7 +148,12 @@ chmod 775 _firmware_api/*.sh
 [ -n "${engine}" ] && engine_param="-e $engine"
 vmsg -n "- Create an initrd_api file and sign it (firmware.${DATE}.signed) ... "
 tar czfC firmware.${DATE} _firmware_api ./ &&
-${SCRIPTDIR}/sign_api_file.sh -f firmware.${DATE} -k "${priv_key}" $engine_param
+if [ "${sign_image}" = "1" ]; then
+  sign_params="-k \"${priv_key}\" $engine_param"
+else
+  sign_params="-u"
+fi
+${SCRIPTDIR}/sign_api_file.sh -f firmware.${DATE} ${sign_params}
 [ $? -eq 0 ] && vmsg "done" || vmsg_errout "failed!"
 
 #

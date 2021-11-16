@@ -131,13 +131,13 @@ python () {
 #
 ################################################################################################
 openssl_sign_wrapper() {
+	key_name=$1
+	hash=$2
+	sign_file=$3
+	if [ $# -gt "3" ]; then
+		merge=$4
+	fi
 	if [ "${PLATFORM_SIGN}" = "1" ] || [ "${FORCE_SIGNING}" = "1" ]; then
-		key_name=$1
-		hash=$2
-		sign_file=$3
-		if [ $# -gt "3" ]; then
-			merge=$4
-		fi
 
 		setup_sign_wrapper_env "${key_name}"
 
@@ -157,11 +157,14 @@ openssl_sign_wrapper() {
 			openssl dgst -engine pkcs11 -keyform engine "-${hash}" -sign "${priv_key_ref}" ${OPENSSL_SIGN_WRAPPER_ADD_OPTIONS} ${sign_file} > ${sign_file}.sig
 		;;
 		esac
+	else
+		echo "Using sha256sum"
+		sha256sum ${sign_file} | cut -d' ' -f1 | tr -d '\n' > ${sign_file}.sig
+	fi
 
-		# create a file with appended signature
-		if [ "${merge:=0}" != "0" ]; then
-			merge_signature ${sign_file}
-		fi
+	# create a file with appended signature
+	if [ "${merge:=0}" != "0" ]; then
+		merge_signature ${sign_file}
 	fi
 }
 
@@ -253,70 +256,75 @@ merge_signature() {
 # 
 ################################################################################################
 setup_sign_wrapper_env() {
-	local key=$1
-	local keypath=""
-	case "${SIGN_WRAPPER_MODE}" in
-		file)
-			keypath="${SIGN_WRAPPER_KEY_SRC}/${key}.key"
-			if [ ! -e ${keypath} ]; then
-				bbfatal "Signing key ${keypath} not found"
-			fi
-		;;
+	if [ "${PLATFORM_SIGN}" = "1" ] || [ "${FORCE_SIGNING}" = "1" ]; then
+		local key=$1
+		local keypath=""
+		case "${SIGN_WRAPPER_MODE}" in
+			file)
+				keypath="${SIGN_WRAPPER_KEY_SRC}/${key}.key"
+				if [ ! -e ${keypath} ]; then
+					bbfatal "Signing key ${keypath} not found"
+				fi
+			;;
 
-		swtpm)
-			# variable is required, that libsl is able to find the software TPM
-			# engine tpm2tss. Since the path lookup is strange we have to set it
-			# here explicitely.
-			keypath="${key}"
-			export OPENSSL_ENGINES="${RECIPE_SYSROOT_NATIVE}/usr/lib/engines-1.1/"
-			export TPM2TSSENGINE_TCTI="${SIGN_WRAPPER_KEY_SRC}"
-			export TPM2TOOLS_TCTI="${SIGN_WRAPPER_KEY_SRC}"
-		;;
+			swtpm)
+				# variable is required, that libsl is able to find the software TPM
+				# engine tpm2tss. Since the path lookup is strange we have to set it
+				# here explicitely.
+				keypath="${key}"
+				export OPENSSL_ENGINES="${RECIPE_SYSROOT_NATIVE}/usr/lib/engines-1.1/"
+				export TPM2TSSENGINE_TCTI="${SIGN_WRAPPER_KEY_SRC}"
+				export TPM2TOOLS_TCTI="${SIGN_WRAPPER_KEY_SRC}"
+			;;
 
-		pkcs11)
-			export OPENSSL_ENGINES="${RECIPE_SYSROOT_NATIVE}/usr/lib/engines-1.1/"
+			pkcs11)
+				export OPENSSL_ENGINES="${RECIPE_SYSROOT_NATIVE}/usr/lib/engines-1.1/"
 
-			if [ -n "${SIGN_WRAPPER_PKCS11_REMOTE}" ]; then
-				export PKCS11_PROXY_SOCKET="${SIGN_WRAPPER_PKCS11_REMOTE}"
-				export PKCS11_MODULE_PATH="${STAGING_LIBDIR_NATIVE}/libpkcs11-proxy.so"
-			fi
+				if [ -n "${SIGN_WRAPPER_PKCS11_REMOTE}" ]; then
+					export PKCS11_PROXY_SOCKET="${SIGN_WRAPPER_PKCS11_REMOTE}"
+					export PKCS11_MODULE_PATH="${STAGING_LIBDIR_NATIVE}/libpkcs11-proxy.so"
+				fi
 
-			keypath="${SIGN_WRAPPER_KEY_SRC};type=private;pin-value=${SIGN_WRAPPER_PKCS11_PIN}"
-		;;
-	esac
+				keypath="${SIGN_WRAPPER_KEY_SRC};type=private;pin-value=${SIGN_WRAPPER_PKCS11_PIN}"
+			;;
+		esac
 
-	export priv_key_ref="${keypath}"
-	echo "${priv_key_ref}"
+		export priv_key_ref="${keypath}"
+		echo "${priv_key_ref}"
+	fi
 }
 
 ################################################################################################
 # Function to provide an existing certficate
 ################################################################################################
 sign_wrapper_copy_certificate() {
-	local dst="$1"
-	local fmt="${2:-der}"
+	if [ "${PLATFORM_SIGN}" = "1" ] || [ "${FORCE_SIGNING}" = "1" ]; then
 
-	setup_sign_wrapper_env "${PLATFORM_KEYNAME}"
+		local dst="$1"
+		local fmt="${2:-der}"
 
-	case "${SIGN_WRAPPER_MODE}" in
-	file|swtpm)
-		if [ "$fmt" = "der" ]; then
-			cp "${KEYS_IMAGE_SIGN_CERT_DER}" "$dst"
-		else
-			cp "${KEYS_IMAGE_SIGN_CERT}" "$dst"
-		fi
-	;;
+		setup_sign_wrapper_env "${PLATFORM_KEYNAME}"
 
-	pkcs11)
-		if [ -n "${SIGN_WRAPPER_PKCS11_REMOTE}" ]; then
-			proxy_options="--provider=${STAGING_LIBDIR_NATIVE}/libpkcs11-proxy.so"
-		fi
-		if [ "$fmt" = "der" ]; then
-			add_fmt="--outder"
-		fi
-		p11tool --login --export-stapled $add_fmt "${priv_key_ref};type=cert" --outfile "$dst" --set-pin "${SIGN_WRAPPER_PKCS11_PIN}" "$proxy_options"
-	;;
-	esac
+		case "${SIGN_WRAPPER_MODE}" in
+		file|swtpm)
+			if [ "$fmt" = "der" ]; then
+				cp "${KEYS_IMAGE_SIGN_CERT_DER}" "$dst"
+			else
+				cp "${KEYS_IMAGE_SIGN_CERT}" "$dst"
+			fi
+		;;
+
+		pkcs11)
+			if [ -n "${SIGN_WRAPPER_PKCS11_REMOTE}" ]; then
+				proxy_options="--provider=${STAGING_LIBDIR_NATIVE}/libpkcs11-proxy.so"
+			fi
+			if [ "$fmt" = "der" ]; then
+				add_fmt="--outder"
+			fi
+			p11tool --login --export-stapled $add_fmt "${priv_key_ref};type=cert" --outfile "$dst" --set-pin "${SIGN_WRAPPER_PKCS11_PIN}" "$proxy_options"
+		;;
+		esac
+	fi
 }
 
 ################################################################################################

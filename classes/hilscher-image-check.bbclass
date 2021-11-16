@@ -9,4 +9,4 @@ do_check_module_signature() {
     fi
 }
 
-ROOTFS_POSTPROCESS_COMMAND_append += "do_check_module_signature ;"
+ROOTFS_POSTPROCESS_COMMAND_append += "${@bb.utils.contains('PLATFORM_SIGN', '1', 'do_check_module_signature ;', '', d)}"
