@@ -110,7 +110,7 @@ python () {
                 d.appendVar('DEPENDS', ' pkcs11-proxy-native')
                 d.appendVarFlag('do_kernel_configme', 'depends', ' pkcs11-proxy-native:do_populate_sysroot')
         else:
-            d.appendVar('DEPENDS', ' openssl')
+            d.appendVar('DEPENDS', ' openssl-native')
 }
 
 ################################################################################################
