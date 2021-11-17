@@ -155,10 +155,10 @@ for machine in $PLATFORMS; do
 	for f in $(find $(cat conf/templateconf.cfg) -name *.sample$!); do
 		[ $(basename $f) == "bblayers.conf.sample" ] && continue # already done by poky/oe-init-build-env
 		[ $(basename $f) == "local.conf.sample" ] && continue # already done by poky/oe-init-build-env
-		[ -e conf/$(basename ${f%.*}) ] && diff -ua $f conf/$(basename ${f%.*}) || cp -i $f conf/$(basename ${f%.*})
+		[ -e conf/$(basename ${f%.*}) ] && diff -ua conf/$(basename ${f%.*}) $f || cp -i $f conf/$(basename ${f%.*})
 	done
 	if [ -e ../site.conf ]; then
-		[ -e conf/site.conf ] && diff -ua ../site.conf conf/site.conf || cp -i ../site.conf conf/site.conf
+		[ -e conf/site.conf ] && diff -ua conf/site.conf ../site.conf || cp -i ../site.conf conf/site.conf
 	fi
 
 	# Set build parameters
