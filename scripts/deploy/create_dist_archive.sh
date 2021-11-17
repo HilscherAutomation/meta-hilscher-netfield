@@ -130,7 +130,7 @@ fi
 
 firmware_api_file="${SCRIPTDIR}/create_firmware_api_file.sh"
 if [ "${sign_image}" = "1" ]; then
-  sign_param="-k \"${signing_key}\""
+  sign_param="-k ${signing_key}"
 else
   sign_param="-u"
 fi
