@@ -171,7 +171,11 @@ do_assemble_fitimage_initramfs_prepend() {
 do_assemble_fitimage_append() {
 	if [ "${PLATFORM_SIGN}" = "1" ]; then
 		echo "Check signature of fitimage..."
-		pubkey_dtb=$(ls -1 ${DEPLOY_DIR_IMAGE}/devicetree/*.dtb)
+		if [ -n "${EXTERNAL_KERNEL_DEVICETREE}" ]; then
+			pubkey_dtb=$(ls -1 ${EXTERNAL_KERNEL_DEVICETREE}/*.dtb)
+		else
+			pubkey_dtb=$(ls -1 ${DEPLOY_DIR_IMAGE}/devicetree/*.dtb)
+		fi
 		fit_check_sign -f "${B}/arch/${ARCH}/boot/fitImage" -k "$pubkey_dtb"
 	fi
 }
@@ -179,7 +183,11 @@ do_assemble_fitimage_append() {
 do_assemble_fitimage_initramfs_append() {
 	if [ "${PLATFORM_SIGN}" = "1" ]; then
 		echo "Check signature of fitimage-initramfs..."
-		pubkey_dtb=$(ls -1 ${DEPLOY_DIR_IMAGE}/devicetree/*.dtb)
+		if [ -n "${EXTERNAL_KERNEL_DEVICETREE}" ]; then
+			pubkey_dtb=$(ls -1 ${EXTERNAL_KERNEL_DEVICETREE}/*.dtb)
+		else
+			pubkey_dtb=$(ls -1 ${DEPLOY_DIR_IMAGE}/devicetree/*.dtb)
+		fi
 		fit_check_sign -f "${B}/arch/${ARCH}/boot/fitImage-core-image-minimal-initramfs" -k "$pubkey_dtb"
 	fi
 }
