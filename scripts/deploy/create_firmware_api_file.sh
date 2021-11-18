@@ -149,7 +149,7 @@ chmod 775 _firmware_api/*.sh
 vmsg -n "- Create an initrd_api file and sign it (firmware.${DATE}.signed) ... "
 tar czfC firmware.${DATE} _firmware_api ./ &&
 if [ "${sign_image}" = "1" ]; then
-  sign_params="-k \"${priv_key}\" $engine_param"
+  sign_params="-k ${priv_key} $engine_param"
 else
   sign_params="-u"
 fi

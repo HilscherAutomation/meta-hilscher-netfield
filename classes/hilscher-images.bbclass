@@ -79,7 +79,7 @@ netfield_create_recovery_swu() {
     pkcs11) engine_params="-e pkcs11" ;;
   esac
   if [ "${PLATFORM_SIGN}" = "1" ]; then
-    sign_params="-k \"$signing_key\""
+    sign_params="-k $signing_key"
   else
     sign_params="-u"
   fi
@@ -137,7 +137,7 @@ netfield_create_recovery_zip() {
   esac
 
   if [ "${PLATFORM_SIGN}" = "1" ]; then
-    sign_param="-k \"$signing_key\""
+    sign_param="-k $signing_key"
   else
     sign_param="-u"
   fi
