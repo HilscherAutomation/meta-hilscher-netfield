@@ -11,5 +11,6 @@ do_install_basefilesissue () {
     # Symlink /etc/issue to /usr/lib/issue to make sure the read only variant
     # is used which contains the real distro name and firmware version
     ln -s ${libdir}/issue ${D}${sysconfdir}/issue
-    ln -s ${libdir}/issue ${D}${sysconfdir}/issue.net
+    touch ${D}${sysconfdir}/issue.net
+    chmod 0644 ${D}${sysconfdir}/issue.net
 }
