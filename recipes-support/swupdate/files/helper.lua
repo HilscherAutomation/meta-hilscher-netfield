@@ -184,6 +184,11 @@ function check_version()
 		return false
 	end
 
+	if newVersion < curVersion then
+		swupdate.error("Invalid firmware version found ("..newVersion.." < "..curVersion..")!")
+		return false
+	end
+
 	swupdate.info("Valid firmware image found ("..newVersion.." > "..curVersion..").\n")
 	return true
 end
