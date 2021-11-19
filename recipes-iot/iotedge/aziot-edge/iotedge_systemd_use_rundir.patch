@@ -1,0 +1,44 @@
+diff -aurN a/contrib/config/linux/default.toml b/contrib/config/linux/default.toml
+--- a/contrib/config/linux/default.toml	2021-04-12 12:01:54.115145015 +0200
++++ b/contrib/config/linux/default.toml	2021-04-12 12:37:25.738071446 +0200
+@@ -22,5 +22,5 @@
+ management_uri = "@listen_management_uri@"
+ 
+ [moby_runtime]
+-uri = "unix:///var/run/docker.sock"
++uri = "unix:///run/docker.sock"
+ network = "azure-iot-edge"
+diff -aurN a/contrib/config/linux/template.toml b/contrib/config/linux/template.toml
+--- a/contrib/config/linux/template.toml	2021-04-12 12:01:54.115145015 +0200
++++ b/contrib/config/linux/template.toml	2021-04-12 12:37:33.274214705 +0200
+@@ -295,5 +295,5 @@
+ # uncomment this section and replace the values in this section with your own.
+ 
+ # [moby_runtime]
+-# uri = "unix:///var/run/docker.sock"
++# uri = "unix:///run/docker.sock"
+ # network = "azure-iot-edge"
+diff -aurN a/contrib/systemd/debian/aziot-edged.mgmt.socket b/contrib/systemd/debian/aziot-edged.mgmt.socket
+--- a/contrib/systemd/debian/aziot-edged.mgmt.socket	2021-04-12 12:01:54.115145015 +0200
++++ b/contrib/systemd/debian/aziot-edged.mgmt.socket	2021-04-12 12:36:37.145150847 +0200
+@@ -4,7 +4,7 @@
+ PartOf=aziot-edged.service
+ 
+ [Socket]
+-ListenStream=/var/run/iotedge/mgmt.sock
++ListenStream=/run/iotedge/mgmt.sock
+ SocketMode=0660
+ DirectoryMode=0755
+ SocketUser=iotedge
+diff -aurN a/contrib/systemd/debian/aziot-edged.workload.socket b/contrib/systemd/debian/aziot-edged.workload.socket
+--- a/contrib/systemd/debian/aziot-edged.workload.socket	2021-04-12 12:01:54.115145015 +0200
++++ b/contrib/systemd/debian/aziot-edged.workload.socket	2021-04-12 12:36:43.333267769 +0200
+@@ -4,7 +4,7 @@
+ PartOf=aziot-edged.service
+ 
+ [Socket]
+-ListenStream=/var/run/iotedge/workload.sock
++ListenStream=/run/iotedge/workload.sock
+ SocketMode=0666
+ DirectoryMode=0755
+ SocketUser=iotedge

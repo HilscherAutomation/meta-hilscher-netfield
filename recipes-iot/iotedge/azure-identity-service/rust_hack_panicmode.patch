@@ -1,0 +1,15 @@
+For some reason rust throws error "error: the crate `panic_abort` does not have the panic strategy `abort`"
+when linking. Currently I don't know of any other way, besides hacking it to unwind
+diff -aurN a/Cargo.toml b/Cargo.toml
+--- a/Cargo.toml	2021-04-13 17:04:18.739023346 +0200
++++ b/Cargo.toml	2021-04-13 17:24:01.573956384 +0200
+@@ -56,7 +56,7 @@
+ # Don't let panics from callbacks cross FFI boundary
+ 
+ [profile.dev]
+-panic = "abort"
++panic = "unwind"
+ 
+ [profile.release]
+-panic = "abort"
++panic = "unwind"
