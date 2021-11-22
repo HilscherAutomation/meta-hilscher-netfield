@@ -119,7 +119,9 @@ FILES_${PN} += "${systemd_unitdir} \
 		${datadir}/polkit-1 \
                 ${datadir}/cockpit/shell/ \
                 ${libdir} \
-                /lib/security"
+                /lib/security \
+                ${datadir}/common-licenses/cockpit/cockpit-netiot-third-party-web-licenses.json \
+"
 
 INHIBIT_PACKAGE_DEBUG_SPLIT="1"
 PACKAGE_NO_LOCALE="1"
