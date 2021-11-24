@@ -5,6 +5,15 @@ from oeqa.runtime.decorator.package import OEHasPackage
 class Base(OERuntimeTestCase):
 
     ''' ======================================== '''
+    dev_list_netfield_compact_x8m_revX = (
+        'gpio@30200000', 'gpio@30210000', 'gpio@30220000', 'gpio@30230000', 'gpio@30240000',
+        '@30860000', 'serial@30880000', 'serial@30890000',
+        'i2c@30a20000', 'i2c@30a30000', 'i2c@30a50000' ,
+        'spi@30820000', 'spi@30840000',
+        'usb@32e50000',
+        'ethernet@30be0000',
+        'pinctrl@30330000',
+    )
     dev_list_niot_e_nfl90_q2n16_n_revX = (
         'gpio@30200000', 'gpio@30210000', 'gpio@30220000', 'gpio@30230000', 'gpio@30240000',
         'serial@30860000', 'serial@30880000', 'serial@30890000',
@@ -33,6 +42,7 @@ class Base(OERuntimeTestCase):
     )
 
     machine_dev_list = {
+        'netfield-compact-x8m-rev1': dev_list_netfield_compact_x8m_revX,
         'niot-e-nfl90-q2n16-n-rev1': dev_list_niot_e_nfl90_q2n16_n_revX,
         'netfield-iolink-edge-gw-rev1': dev_list_netfield_iolink_edge_gw_revX,
         'netfield-iolink-edge-gw-rev2': dev_list_netfield_iolink_edge_gw_revX,
@@ -55,6 +65,9 @@ class Base(OERuntimeTestCase):
         self.assertEqual(errors, 0, 'Invalid or missing device(s): test_proc_iomem_entries failed!\n')
 
     ''' ======================================== '''
+    led_list_netfield_compact_x8m_revX = (
+        'edge_green', 'edge_yellow',
+    )
     led_list_niot_e_nfl90_q2n16_n_revX = (
         'act_green', 'act_red', 'apl_green', 'apl_red',
         'bt_blue', 'bt_red', 'led1_green', 'led1_red',
@@ -74,6 +87,7 @@ class Base(OERuntimeTestCase):
     )
 
     machine_led_list = {
+        'netfield-compact-x8m-rev1': led_list_netfield_compact_x8m_revX,
         'niot-e-nfl90-q2n16-n-rev1': led_list_niot_e_nfl90_q2n16_n_revX,
         'netfield-iolink-edge-gw-rev1': led_list_netfield_iolink_edge_gw_rev1,
         'netfield-iolink-edge-gw-rev2': led_list_netfield_iolink_edge_gw_rev2,
@@ -96,6 +110,10 @@ class Base(OERuntimeTestCase):
         self.assertEqual(errors, 0, 'Invalid or missing device(s): test_sys_class_leds_files failed!\n')
 
     ''' ======================================== '''
+    gpio_list_netfield_compact_x8m_revX = (
+        'gpiochip0', 'gpiochip32', 'gpiochip64', 'gpiochip96', 'gpiochip128', 'gpiochip494', 'gpiochip496',
+        'gpio496', 'gpio497', 'gpio498', 'gpio499', 'gpio500', 'gpio501', 'gpio502', 'gpio503', 'gpio504',
+    )
     gpio_list_niot_e_nfl90_q2n16_n_revX = (
         'gpiochip0', 'gpiochip32', 'gpiochip64', 'gpiochip96', 'gpiochip128',
         'gpio1', 'gpio3', 'gpio5', 'gpio6', 'gpio8', 'gpio11', 'gpio71', 'gpio73', 'gpio116', 'gpio147', 'gpio149',
@@ -114,6 +132,7 @@ class Base(OERuntimeTestCase):
     )
 
     machine_gpio_list = {
+        'netfield-compact-x8m-rev1': gpio_list_netfield_compact_x8m_revX,
         'niot-e-nfl90-q2n16-n-rev1': gpio_list_niot_e_nfl90_q2n16_n_revX,
         'netfield-iolink-edge-gw-rev1': gpio_list_netfield_iolink_edge_gw_revX,
         'netfield-iolink-edge-gw-rev2': gpio_list_netfield_iolink_edge_gw_revX,
