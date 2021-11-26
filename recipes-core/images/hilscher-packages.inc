@@ -51,6 +51,9 @@ IMAGE_INSTALL += "dosfstools e2fsprogs e2fsprogs-resize2fs btrfs-tools lvm2 iscs
 IMAGE_INSTALL += "fsarchiver fsarchiver-helpers"
 IMAGE_INSTALL += "initial-machine-setup"
 
+# 3G
+IMAGE_INSTALL += "${@bb.utils.contains('MACHINE_FEATURES', '3g', 'modemmanager mobile-broadband-provider-info', '', d)}"
+
 # Parallel bzip2 support for faster backup, requires "real" tar (busybox does not work)
 IMAGE_INSTALL += "pbzip2 tar"
 
