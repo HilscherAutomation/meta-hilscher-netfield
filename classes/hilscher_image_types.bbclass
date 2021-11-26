@@ -83,7 +83,7 @@ create_boot_cfg_file() {
 
 	# Query for real image name of kernel and rootfs
 	kernel=$(ls $dir | grep -E "fitImage|Image$")
-	root=$(ls $dir | grep ".squashfs$")
+	root=$(ls $dir | grep -E ".squashfs($|.xz$|.lz4$|.lzo$)")
 
 	# Create boot configuration
 	echo "description='$(echo $root | sed 's/-${MACHINE}-/ /' | cut -d' ' -f1) - ${FULL_FW_VERSION}'" > $dst
@@ -166,25 +166,25 @@ IMAGE_CMD_squashfs_signed () {
 	sign_squashfs_image squashfs
 }
 
-IMAGE_TYPEDEP_squashfs_xz_signed += "squashfs_xz"
+IMAGE_TYPEDEP_squashfs_xz_signed += "squashfs-xz"
 do_image_squashfs_signed_xz[depends] += "file-signature-native:do_populate_sysroot"
 do_image_squashfs_signed_xz[vardeps] += "PLATFORM_SIGN PLATFORM_KEYDIR PLATFORM_KEYNAME"
 IMAGE_CMD_squashfs_xz_signed () {
-	sign_squashfs_image squashfs_xz
+	sign_squashfs_image squashfs-xz
 }
 
-IMAGE_TYPEDEP_squashfs_lzo_signed += "squashfs_lzo"
+IMAGE_TYPEDEP_squashfs_lzo_signed += "squashfs-lzo"
 do_image_squashfs_signed_lzo[depends] += "file-signature-native:do_populate_sysroot"
 do_image_squashfs_signed_lzo[vardeps] += "PLATFORM_SIGN PLATFORM_KEYDIR PLATFORM_KEYNAME"
 IMAGE_CMD_squashfs_lzo_signed () {
-	sign_squashfs_image squashfs_lzo
+	sign_squashfs_image squashfs-lzo
 }
 
-IMAGE_TYPEDEP_squashfs_lz4_signed += "squashfs_lz4"
+IMAGE_TYPEDEP_squashfs_lz4_signed += "squashfs-lz4"
 do_image_squashfs_signed_lz4[depends] += "file-signature-native:do_populate_sysroot"
 do_image_squashfs_signed_lz4[vardeps] += "PLATFORM_SIGN PLATFORM_KEYDIR PLATFORM_KEYNAME"
 IMAGE_CMD_squashfs_lz4_signed () {
-	sign_squashfs_image squashfs_lz4
+	sign_squashfs_image squashfs-lz4
 }
 
 ########################################
