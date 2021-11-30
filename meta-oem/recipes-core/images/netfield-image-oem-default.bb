@@ -23,3 +23,26 @@ require oem-hilscher.inc
 require oem.inc
 
 WIC_SYSTEM_PART_CONTENT ?= "${BASE_IMAGE}-${MACHINE}.squashfs ${IMAGE_LINK_NAME}.squashfs;oem/${IMAGE_LINK_NAME}.data-oem.squashfs boot.cfg fitImage"
+
+# Make sure to no pull in base-passwd and shadow
+EXTRA_USERS_PARAMS=""
+do_force_admin_pw_change() {
+    :
+}
+
+do_create_homes() {
+    :
+}
+# Prevent adjustment of fstab in oem overlays
+do_adjust_fstab() {
+    :
+}
+
+do_create_platform_dir() {
+    :
+}
+
+# Prevent /fw_version symlink in overlay
+do_install_manifest() {
+    :
+}

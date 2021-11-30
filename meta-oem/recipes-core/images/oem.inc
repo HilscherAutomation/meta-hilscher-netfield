@@ -25,25 +25,3 @@ do_oem_base_definitions() {
 }
 
 ROOTFS_POSTUNINSTALL_COMMAND_append += " do_oem_base_definitions ;"
-# Make sure to no pull in base-passwd and shadow
-EXTRA_USERS_PARAMS=""
-do_force_admin_pw_change() {
-    :
-}
-
-do_create_homes() {
-    :
-}
-# Prevent adjustment of fstab in oem overlays
-do_adjust_fstab() {
-    :
-}
-
-do_create_platform_dir() {
-    :
-}
-
-# Prevent /fw_version symlink in overlay
-do_install_manifest() {
-    :
-}
