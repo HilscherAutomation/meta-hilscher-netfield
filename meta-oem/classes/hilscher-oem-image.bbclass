@@ -5,8 +5,6 @@ DEPLOY_EXT_LIST = "squashfs squashfs.sig swu wic.bz2 ${@'fastboot' if d.getVar('
 
 IMAGE_LINGUAS = ""
 PACKAGE_INSTALL = "${OEM_IMAGE_INSTALL}"
-IMAGE_BASENAME =. "${VENDOR_ID}-"
-SWU_OEM_NAME = "${IMAGE_BASENAME}"
 
 inherit image hilscher_image_types sign-wrapper
 
@@ -27,8 +25,7 @@ addtask do_cleanup after do_rootfs before do_image_qa
 
 # Install vendor_specific files
 do_install_vendor_specific_files() {
-	[ -z "${VENDOR_ID}" ] && bberror "Error: Invalid or missing VENDOR_ID"
-	echo "${SWU_OEM_NAME}" > ${IMAGE_ROOTFS}/firmware.vendor_id
+	echo "${IMAGE_BASENAME}" > ${IMAGE_ROOTFS}/firmware.vendor_id
 	echo "${IMAGE_NAME}" > ${IMAGE_ROOTFS}/firmware.vendor_image_name
 	chmod 0444 ${IMAGE_ROOTFS}/firmware.vendor_id ${IMAGE_ROOTFS}/firmware.vendor_image_name
 }
@@ -67,14 +64,11 @@ IMAGE_CMD_swu() {
 	fi
 
 	# Use base image as reference
-	swu_src_link="${DEPLOY_DIR_IMAGE}/${BASE_IMAGE}-${MACHINE}.update.swu"
+	swu_src_link="${DEPLOY_DIR_IMAGE}/${OEM_BASE_IMAGE}-${MACHINE}.update.swu"
 
 	if [ "${OEM_BRANDING_MERGE}" = "1" ]; then
 		# Merged vendor/machine specific swu-images (and set unknown section, if requested)
 		# =================================================================================
-
-		swu_src_file="$(readlink -f $swu_src_link)"
-		swu_dst_file="$(basename $swu_src_file | sed "s,\(.*\).update.swu,\1.${VENDOR_ID}.update.swu,")"
 
 		create_swu "$swu_src_link" "${OEM_BRANDING_IMAGES}"
 	else
@@ -150,11 +144,11 @@ create_swu() {
 	for tmp_brand in $brandings_to_include; do
 		tmp_file="$(readlink -f ${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.data-oem.squashfs)"
 		[ "${OEM_BRANDING_MERGE}" = "1" ] &&
-			tmp_file=$(find "${HILSCHER_DEPLOY_ROOT_DIR}/${MACHINE}" -type l -name "${VENDOR_ID}-$tmp_brand-*.data-oem.squashfs")
+			tmp_file=$(find "${HILSCHER_DEPLOY_ROOT_DIR}/${MACHINE}" -type l -name "$tmp_brand-*.data-oem.squashfs")
 		if [ ! -r "$tmp_file" ]; then
-			bbfatal "Missing branding file $tmp_file for $tmp_brand (using find \"${HILSCHER_DEPLOY_ROOT_DIR}\" -type l -name \"${VENDOR_ID}-$tmp_brand\")"
+			bbfatal "Missing branding file $tmp_file for $tmp_brand (using find \"${HILSCHER_DEPLOY_ROOT_DIR}\" -type l -name \"$tmp_brand\")"
 		fi
-		oem_ovl_images="$oem_ovl_images $tmp_file:${VENDOR_ID}-$tmp_brand"
+		oem_ovl_images="$oem_ovl_images $tmp_file:$tmp_brand"
 	done
 
 	# Create a working copy of sw-description file.
@@ -171,7 +165,7 @@ create_swu() {
 	# NOTE:
 	#   This enables a customization of unbranded OEM devices.
 	if [ -n "$default_link" ]; then
-		ls-config -f "$tmpdir/sw-description.new" -s "software.$board.ref" -p string -d "#./$board/oem/${VENDOR_ID}-${PN}"
+		ls-config -f "$tmpdir/sw-description.new" -s "software.$board.ref" -p string -d "#./$board/oem/${PN}"
 	fi
 
 	# OEM section

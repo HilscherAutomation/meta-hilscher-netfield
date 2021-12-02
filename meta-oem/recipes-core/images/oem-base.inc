@@ -1,3 +1,23 @@
+# ------------------------------------------------------------------------------
+# Preconfigured oem base defines
+VENDOR_NAME ??= "TBD-by-OEM"
+VENDOR_URL ??= "TBD-by-OEM"
+
+VENDOR_DEVICE_NAME ??= "TBD-by-OEM"
+VENDOR_DEVICE_DESC ??= "TBD-by-OEM"
+VENDOR_DEVICE_REV ?= "TBD-by-OEM"
+VENDOR_DEVICE_URL ??= "TBD-by-OEM"
+
+VENDOR_UPNP_DEVICE_TYPE ??= "TBD-by-OEM"
+
+VENDOR_OS_ID ??= "TBD-by-OEM"
+VENDOR_OS_NAME ??= "TBD-by-OEM"
+
+# NOTE: Currently unused
+VENDOR_OUI ??= "TBD-by-OEM"
+VENDOR_DEVICE_PN ??= "TBD-by-OEM"
+# ------------------------------------------------------------------------------
+
 do_oem_base_definitions() {
     # login screen
     sed -e "s,netFIELD OS,${VENDOR_OS_NAME},g" \
