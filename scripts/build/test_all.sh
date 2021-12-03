@@ -5,15 +5,15 @@ cat <<EOF 1>&2
 Usage: $0 [OPTION] ..."
 
   -b <build_dir>              Basename of build directory which will be extended by parts of machine layer. (default: "build")
-  -i <image>                  Image name to test (default: "netfield-image", default(mc): "netfield-image-oem")
+  -i <image>                  Image name to test (default: "netfield-image" or "netfield-image-oem" on oem capable machines)
   -P <machine[0..n]>          Space seperated list of machines/platforms to test
 
   Examples:
-    PLATFORMS="niot-e-tijcx-gb:10.13.4.246 hilscher-netfield-iolink-edge-gw-rev2:10.13.4.248" $0
-    $0 -P "niot-e-tijcx-gb:10.13.4.246 hilscher-netfield-iolink-edge-gw-rev2:10.13.4.248"
+    PLATFORMS="niot-e-tijcx-gb:10.13.4.246 netfield-iolink-edge-gw-rev2:10.13.4.248" $0
+    $0 -P "niot-e-tijcx-gb:10.13.4.246 netfield-iolink-edge-gw-rev2:10.13.4.248"
 
   Note:
-    Each machine declaration must contain an IP address of DUT (e.g."hilscher-netfield-iolink-edge-gw-rev2:10.13.4.248").
+    Each machine declaration must contain an IP address of DUT (e.g."netfield-iolink-edge-gw-rev2:10.13.4.248").
 
 EOF
 	exit 1
@@ -40,7 +40,6 @@ shift $((OPTIND-1))
 # Set default values
 BUILD_DIR="${build_dir:-"build"}"
 IMAGE="${image:-"netfield-image"}"
-MCIMAGE="${image:-"netfield-image-oem"}" # oem base-image
 
 # Use PLATFORMS from command argument (preferred) or from environment variable.
 PLATFORMS="${platforms:-$PLATFORMS}"
@@ -51,12 +50,12 @@ if [ -z "${PLATFORMS}" ]; then
 	# Default machines to build: Raspberry
 	PLATFORMS="$PLATFORMS niot-e-tpi51-en-re"
 	# Default machines to build: imx8
-	PLATFORMS="$PLATFORMS hilscher-netfield-iolink-edge-gw-rev2"
+	PLATFORMS="$PLATFORMS netfield-iolink-edge-gw-rev2 netfield-compact-x8m-rev1"
 fi
 
 for machine in $PLATFORMS; do
 	# NOTE:
-	# The machine format (machine="hilscher-netfield-iolink-edge-gw-rev2[:nt0001c027d617.local])
+	# The machine format (machine="netfield-iolink-edge-gw-rev2[:nt0001c027d617.local])
 	# may contain an optional IP address of a DUT. Therefore the machine name must be
 	# split from the address.
 	dut="$(echo $machine: | cut -d: -f2)"
@@ -64,26 +63,17 @@ for machine in $PLATFORMS; do
 
 	[ -z "$dut" ] && continue
 
-	# Search machine/multiconfig configuration
+	# Search machine configuration
 	mconf="$(find meta-hilscher-netfield-*/conf/machine -name $machine.conf)"
-	mcconf="$(find meta-hilscher-netfield-*/conf/multiconfig -name $machine.conf)"
-	case $(echo $mcconf | wc -w) in
-		0|1) ;;
-		*) echo "Error: multiconfig: Multiple $mcmachine.conf files found!"; exit 1;;
-	esac
-	[ -z "$mconf" ] && mconf="$mcconf"
 	[ -z "$mconf" ] && { echo "ERROR: $machine.conf not found! "; exit 1; }
 
 	# Set machine meta layer
 	mlayer=${mconf%%/*}
 
-	# Set image name and bitbake target
+	# Expanding image-name/bitbake-target for OEM capable machines.
 	target="$IMAGE"
-	if echo $mconf | grep -q "conf/multiconfig/"; then
-		mcmachine="$machine"
-		machine="$(grep "MACHINE *=" $mcconf | cut -d\" -f2)"
-		image="$MCIMAGE"
-		target="mc:$machine:$image"
+	if grep -q "^OEM_BRANDING_IMAGES" $mconf; then
+		target="$target-oem"
 	fi
 
 	# Initialize build directory
