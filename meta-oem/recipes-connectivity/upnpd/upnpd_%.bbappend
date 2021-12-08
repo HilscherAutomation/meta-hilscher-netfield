@@ -1,15 +1,20 @@
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
-do_install_prepend_oem() {
-	sed -i "s,\(<deviceType>\).*\(</deviceType>\),\1${VENDOR_UPNP_DEVICE_TYPE}\2," ${WORKDIR}/netiotdevicedesc.xml
+SRC_URI_append += "file://oem-logo.png file://netfield-logo.png"
 
-	sed -i "s,\(<manufacturer>\).*\(</manufacturer>\),\1${VENDOR_NAME}\2," ${WORKDIR}/netiotdevicedesc.xml
-	sed -i "s,\(<manufacturerURL>\).*\(</manufacturerURL>\),\1${VENDOR_URL}\2," ${WORKDIR}/netiotdevicedesc.xml
-	sed -i "s,\(<modelDescription>\).*\(</modelDescription>\),\1${VENDOR_DEVICE_DESC}\2," ${WORKDIR}/netiotdevicedesc.xml
-	sed -i "s,\(<modelName>\).*\(</modelName>\),\1${VENDOR_DEVICE_NAME}\2," ${WORKDIR}/netiotdevicedesc.xml
-	sed -i "s,\(<modelNumber>\).*\(</modelNumber>\),\1${VENDOR_DEVICE_REV}\2," ${WORKDIR}/netiotdevicedesc.xml
-	sed -i "s,\(<modelURL>\).*\(</modelURL\),\1${VENDOR_DEVICE_URL}\2," ${WORKDIR}/netiotdevicedesc.xml
+do_install_append() {
+    install -m 0644 ${WORKDIR}/oem-logo.png ${D}/opt/upnpd/desc/
+    install -m 0644 ${WORKDIR}/netfield-logo.png ${D}/opt/upnpd/desc/
 }
 
-PACKAGES_prepend_oem-ovl += "${PN}-oem-ovl "
-FILES_${PN}-oem-ovl_oem-ovl = "/opt/upnpd/netiotdevicedesc.xml /opt/upnpd/desc"
+pkg_postinst_${PN}-oem () {
+    mv $D/opt/upnpd/desc/oem-logo.png $D/opt/upnpd/desc/logo.png
+}
+
+pkg_postinst_${PN}-oem-hilscher () {
+    mv $D/opt/upnpd/desc/netfield-logo.png $D/opt/upnpd/desc/logo.png
+}
+
+PACKAGES =+ "${PN}-oem ${PN}-oem-hilscher"
+FILES_${PN}-oem = "/opt/upnpd/desc/oem-logo.png"
+FILES_${PN}-oem-hilscher = "/opt/upnpd/desc/netfield-logo.png"
