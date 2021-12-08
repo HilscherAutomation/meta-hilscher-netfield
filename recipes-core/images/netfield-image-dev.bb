@@ -14,3 +14,6 @@ IMAGE_INSTALL += "python3-psutil"
 IMAGE_INSTALL += "subversion"
 
 IMAGE_FEATURES += "tools-debug tools-profile"
+# Install compiler environment and dev-packages
+IMAGE_FEATURES += "dev-pkgs tools-sdk"
+IMAGE_INSTALL  += "cmake nodejs"
