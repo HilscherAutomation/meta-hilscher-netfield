@@ -24,6 +24,8 @@ VENDOR_DEVICE_PN = "TBD"
 
 # NOTE: VENDOR_ID is still required by netfield-image-oem-default-ovl.bb
 VENDOR_ID = "hilscher"
+
+# NOTE: Used by cockpit for cloud connecting.
 VENDOR_VARIANT_ID="netfield"
 
 # Additional packages

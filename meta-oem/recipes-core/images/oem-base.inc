@@ -28,6 +28,9 @@ do_oem_base_definitions() {
     sed -e 's@^ID.*@ID="${VENDOR_OS_ID}"@g' \
         -e 's@^NAME.*@NAME="${VENDOR_OS_NAME}"@g' \
         -i ${IMAGE_ROOTFS}${libdir}/os-release
+    # Remove old VARIANT_ID anmd append the new one
+    sed '/^VARIANT_ID/,1d' -i ${IMAGE_ROOTFS}${libdir}/os-release
+    echo "VARIANT_ID=\"${VENDOR_VARIANT_ID}\"" >> ${IMAGE_ROOTFS}${libdir}/os-release
 
     # upnp
     sed -e "s,\(<deviceType>\).*\(</deviceType>\),\1${VENDOR_UPNP_DEVICE_TYPE}\2," \
