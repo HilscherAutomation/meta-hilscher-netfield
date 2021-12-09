@@ -97,6 +97,11 @@ EXTRA_USERS_PARAMS += "usermod -s /sbin/nologin root;"
 EXTRA_USERS_PARAMS += "groupadd -g 1000 admin;"
 EXTRA_USERS_PARAMS += "useradd -c 'System Administrator' -u 1000 -P admin -G sudo,docker -s /bin/zsh admin;"
 
+# Make sure to not set PermitEmptyPasswords in sshd_config, which does not work with pam_abl
+ssh_allow_empty_password () {
+  :
+}
+
 do_force_admin_pw_change() {
   tmp1=$(cat ${IMAGE_ROOTFS}${sysconfdir}/shadow | grep "^admin" | cut -d ':' -f1-2)
   tmp2=$(cat ${IMAGE_ROOTFS}${sysconfdir}/shadow | grep "^admin" | cut -d ':' -f4-)

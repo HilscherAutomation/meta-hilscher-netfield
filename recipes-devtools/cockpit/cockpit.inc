@@ -18,7 +18,7 @@ DEPENDS="json-glib krb5 polkit systemd"
 DEPENDS+="intltool-native glib-2.0-native coreutils-native nodejs-native \
           libxslt-native xmlto-native"
 
-RDEPENDS_${PN} = "glib-networking openssh-misc bash libpwquality"
+RDEPENDS_${PN} = "glib-networking openssh-misc bash libpwquality libpam"
 RDEPENDS_${PN}-storaged = ""
 # TODO: storaged requires udisks2, but this requires GPLv3 components
 #RDEPENDS_${PN}-storaged = "udisks2 e2fsprogs dosfstools lvm2"
