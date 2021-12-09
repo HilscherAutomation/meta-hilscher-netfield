@@ -20,7 +20,7 @@ do_configure_prepend() {
   git submodule init
   git submodule update --recursive
 
-  node ${S}/dev-scripts/yarn-1.21.1.js install --offline --frozen-lockfile
+  sh autogen.sh ${CONFIGUREOPTS} ${EXTRA_OECONF} $@
 }
 
 require cockpit.inc
