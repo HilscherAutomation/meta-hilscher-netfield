@@ -5,11 +5,22 @@ After=local-fs.target
 Conflicts=shutdown.target
 Before=sysinit.target shutdown.target
 After=systemd-tmpfiles-setup.service
+RefuseManualStop=yes
 
 [Service]
-ExecStart=/sbin/auditd -n
+Type=forking
+ExecStart=/sbin/auditd
 ExecStartPost=-/sbin/augenrules --load
-ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartPreventExitStatus=2 4 6
+
+### Security Settings ###
+MemoryDenyWriteExecute=true
+LockPersonality=true
+ProtectControlGroups=true
+ProtectKernelModules=true
+ProtectHome=true
+RestrictRealtime=true
 
 [Install]
 WantedBy=multi-user.target

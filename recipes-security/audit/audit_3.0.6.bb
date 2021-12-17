@@ -12,7 +12,7 @@ SRC_URI = "http://people.redhat.com/sgrubb/${BPN}/${BPN}-${PV}.tar.gz \
            file://auditd.service \
            file://audit-volatile.conf \
 "
-SRC_URI[sha256sum] = "0e5d4103646e00f8d1981e1cd2faea7a2ae28e854c31a803e907a383c5e2ecb7"
+SRC_URI[sha256sum] = "c3e44d77513a42401d417dd0ceb203cf23886cb89402dea7b9494faa3f4fcc5e"
 
 inherit autotools python3native update-rc.d systemd
 
@@ -23,13 +23,15 @@ INITSCRIPT_PARAMS = "defaults"
 SYSTEMD_PACKAGES = "auditd"
 SYSTEMD_SERVICE_auditd = "auditd.service"
 
-DEPENDS += "python3 tcp-wrappers libcap-ng linux-libc-headers (>= 2.6.30) swig-native"
+DEPENDS += "tcp-wrappers libcap-ng linux-libc-headers (>= 2.6.30)"
 
-EXTRA_OECONF += "--without-prelude \
+PACKAGECONFIG ??= "python"
+PACKAGECONFIG[python] = "--with-python3=yes,--with-python3=no,python3 swig-native"
+
+EXTRA_OECONF += " \
 	--with-libwrap \
 	--enable-gssapi-krb5=no \
 	--with-libcap-ng=yes \
-	--with-python3=yes \
 	--libdir=${libdir} \
 	--sbindir=${base_sbindir} \
 	--without-python \
@@ -53,7 +55,7 @@ PACKAGES =+ "audispd-plugins"
 PACKAGES =+ "auditd ${PN}-python"
 
 FILES_${PN} = "${sysconfdir}/libaudit.conf ${libdir}/libaudit.so.1* ${libdir}/libauparse.so.*"
-FILES_auditd += "${bindir}/* ${base_sbindir}/* ${sysconfdir}/* ${systemd_unitdir}/system"
+FILES_auditd += "${bindir}/* ${base_sbindir}/* ${sysconfdir}/* ${systemd_unitdir}/system ${datadir}/audit"
 FILES_audispd-plugins += "${sysconfdir}/audisp/audisp-remote.conf \
 	${sysconfdir}/audisp/plugins.d/au-remote.conf \
 	${sbindir}/audisp-remote ${localstatedir}/spool/audit \
@@ -81,6 +83,13 @@ do_install_append() {
 	if ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'true', 'false', d)}; then
 		install -d ${D}${sysconfdir}/tmpfiles.d/
 		install -m 0644 ${WORKDIR}/audit-volatile.conf ${D}${sysconfdir}/tmpfiles.d/
+		rm -rf ${D}${libexecdir}/initscripts
+	fi
+
+	if ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'true', 'false', d)}; then
+		:
+	else
+		sed -i '/selinux/d' ${D}${datadir}/audit/sample-rules/*
 	fi
 
 	# install systemd unit files
@@ -89,13 +98,13 @@ do_install_append() {
 
 	# audit-2.5 doesn't install any rules by default, so we do that here
 	mkdir -p ${D}/etc/audit ${D}/etc/audit/rules.d
-	cp ${S}/rules/10-base-config.rules ${D}/etc/audit/rules.d/audit.rules
+	ln -s ${datadir}/audit/sample-rules/10-base-config.rules ${D}/etc/audit/rules.d/
 
 	chmod 750 ${D}/etc/audit ${D}/etc/audit/rules.d
-	chmod 640 ${D}/etc/audit/auditd.conf ${D}/etc/audit/rules.d/audit.rules
+	chmod 640 ${D}/etc/audit/auditd.conf ${D}${datadir}/audit/sample-rules/*
 
 	# Based on the audit.spec "Copy default rules into place on new installation"
-	cp ${D}/etc/audit/rules.d/audit.rules ${D}/etc/audit/audit.rules
+	cp ${D}${datadir}/audit/sample-rules/10-base-config.rules ${D}/etc/audit/audit.rules
 
 	# Remove unsupported go stuff for now
 	rm -rf ${D}/${libdir}/golang
