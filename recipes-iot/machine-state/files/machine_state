@@ -135,11 +135,11 @@ while [ "${STATE}" -le "${STATE_WANTED}" ]; do
 			break
 		fi
 	;;
-	3) # check if iotedge service is running
-		service_state=$(systemctl is-active iotedge)
+	3) # check if aziot-edged service is running
+		service_state=$(systemctl is-active aziot-edged)
 		# shellcheck disable=SC2181
 		if [ "${?}" != "0" ] || [ "${service_state}" != "active" ]; then
-			# error iotedge is not active
+			# error aziot-edged is not active
 			break
 		fi
 	;;
