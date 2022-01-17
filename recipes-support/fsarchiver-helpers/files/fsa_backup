@@ -46,6 +46,14 @@ fi
 EXCLUDE_TARGETS="/etc/apparmor.d/cache.d,/etc/machine-id,/var/log,/var/lib/NetworkManager/*.lease,/var/lib/NetworkManager/secret_key,/var/lib/NetworkManager/timestamps,/etc/udev/hwdb.bin,/opt/containerd/,/opt/upnpd/,/lost+found"
 
 [ -e /dev/mapper/data-SNAPSHOT ] && lvremove -qf /dev/mapper/data-SNAPSHOT
-lvcreate -l100%FREE -s -n SNAPSHOT /dev/mapper/data-data
+if ! lvcreate -l100%FREE -s -n SNAPSHOT /dev/mapper/data-data; then
+    echo "Unable to create snapshot partition. Backup is not possible"
+    exit 1
+fi
+
 fsarchiver savefs $archive $backup_devs -o -e "${EXCLUDE_TARGETS}" $add_options -j "$(grep -c ^processor /proc/cpuinfo)"
+ret=$?
+
 lvremove -qf /dev/mapper/data-SNAPSHOT
+
+exit $ret
