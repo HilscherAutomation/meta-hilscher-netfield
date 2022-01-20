@@ -31,7 +31,7 @@ do_install_append() {
     install -d ${D}${sbindir}
     install ${WORKDIR}/iotedge_bridge.sh ${D}${sbindir}/iotedge_bridge
     install -d ${D}${sysconfdir}/default
-    install -m 0644 ${WORKDIR}/iotedge.default ${D}${sysconfdir}/default/${PN}
+    install -m 0644 ${WORKDIR}/iotedge.default ${D}${sysconfdir}/default/iotedge
 
     install -d ${D}${base_libdir}/udev/rules.d/
     install -m 0644 ${WORKDIR}/iotedge.rules ${D}${base_libdir}/udev/rules.d/80-iotedge.rules
