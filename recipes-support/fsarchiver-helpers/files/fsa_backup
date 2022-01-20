@@ -9,7 +9,7 @@ function help() {
 	echo " -p <password> : Password protect archive (6-64 chars)"
 	echo " -c <0-9>      : Compress archive with compression level 0..9 (default=3)"
 	echo ""
-	echo "  Example: $(basename ${0}) -c "My Comment" 20190724.fsa"
+	echo "  Example: $(basename ${0}) -l "My Comment" 20190724.fsa"
 }
 
 backup_devs="/dev/mapper/data-SNAPSHOT"
@@ -19,10 +19,18 @@ while getopts hfc:l:p: opt; do
        h) help; exit 0;;
        f) backup_devs="$backup_devs /dev/disk/by-bootmode/active";;
        c) add_options="${add_options} -z $OPTARG";;
-       l) add_options="${add_options} -L $OPTARG";;
+       l) comment="$OPTARG";;
        p) add_options="${add_options} -c $OPTARG";;
+       *) help; exit 1;;
    esac
 done
+
+DEVICE_DATA="machine=$(cat /etc/hwrevision | cut -d ' ' -f1)"
+DEVICE_DATA="$DEVICE_DATA;hwrev=$(cat /etc/hwrevision | cut -d ' ' -f2)"
+DEVICE_DATA="$DEVICE_DATA;firmware=$(cat /firmware.version)"
+DEVICE_DATA="$DEVICE_DATA;vendor=$(cat /firmware.vendor_id 2>/dev/null)"
+DEVICE_DATA="$DEVICE_DATA;comment=$comment"
+add_options="${add_options} -L $DEVICE_DATA"
 
 archive=${@:$OPTIND:1}
 
@@ -38,6 +46,14 @@ fi
 EXCLUDE_TARGETS="/etc/apparmor.d/cache.d,/etc/machine-id,/var/log,/var/lib/NetworkManager/*.lease,/var/lib/NetworkManager/secret_key,/var/lib/NetworkManager/timestamps,/etc/udev/hwdb.bin,/opt/containerd/,/opt/upnpd/,/lost+found"
 
 [ -e /dev/mapper/data-SNAPSHOT ] && lvremove -qf /dev/mapper/data-SNAPSHOT
-lvcreate -l100%FREE -s -n SNAPSHOT /dev/mapper/data-data
+if ! lvcreate -l100%FREE -s -n SNAPSHOT /dev/mapper/data-data; then
+    echo "Unable to create snapshot partition. Backup is not possible"
+    exit 1
+fi
+
 fsarchiver savefs $archive $backup_devs -o -e "${EXCLUDE_TARGETS}" $add_options -j "$(grep -c ^processor /proc/cpuinfo)"
+ret=$?
+
 lvremove -qf /dev/mapper/data-SNAPSHOT
+
+exit $ret

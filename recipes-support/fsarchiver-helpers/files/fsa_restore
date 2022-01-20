@@ -5,14 +5,21 @@ function help() {
 	echo ""
 	echo "Options:"
 	echo " -p <password> : Password protect archive (6-64 chars)"
+	echo " -f            : Force restore, even on machine mismatch"
 	echo ""
 	echo "  Example: $(basename ${0}) -p "password" 20190724.fsa"
 }
 
-while getopts hfc:l:p: opt; do
+function extract_fsa_key() {
+    echo "$1" | tr ';' '\n' | grep "^$2=" | cut -d '=' -f2
+}
+
+while getopts hfp: opt; do
    case $opt in
        h) help; exit 0;;
+       f) force="yes" ;;
        p) password="$OPTARG";;
+       *) help; exit 1;;
    esac
 done
 
@@ -32,10 +39,49 @@ fi
 [ -n "$password" ] && arg_password="-c $password"
 arch_content=$(fsarchiver archinfo /mnt/backup/$archive $arg_password 2>&1)
 if [ $? -ne 0 ]; then
-    echo "Error parsing archive $archive"
+    echo "Error parsing archive $archive (Invalid archive or wrong password)"
     echo "Output: $arch_content"
     exit 1
 fi
+
+# Test compatibility
+arch_label=$(echo "$arch_content" | grep 'Archive label:' | cut -d ":" -f2- | tr -d "\t ")
+backup_machine=$(extract_fsa_key "$arch_label" "machine")
+backup_hwrev=$(extract_fsa_key "$arch_label" "hwrev")
+backup_firmware=$(extract_fsa_key "$arch_label" "firmware")
+backup_vendor=$(extract_fsa_key "$arch_label" "vendor")
+current_machine=$(cat /etc/hwrevision | cut -d ' ' -f1)
+current_hwrev=$(cat /etc/hwrevision | cut -d ' ' -f2)
+current_firmware=$(cat /firmware.version)
+current_vendor=$(cat /firmware.vendor_id 2>/dev/null)
+
+machine_mismatch="no"
+if [ "$backup_machine" != "$current_machine" ]; then
+    echo "Machine mismatch detected. Backup is from '$backup_machine', trying to restore it on '$current_machine'"
+    machine_mismatch="yes"
+fi
+
+if [ "$backup_hwrev" != "$current_hwrev" ]; then
+    echo "Hardware revision mismatch detected. Backup is from hw revision '$backup_hwrev', trying to restore it on hw revision '$current_hwrev'"
+    machine_mismatch="yes"
+fi
+
+if [ "$backup_vendor" != "$current_vendor" ]; then
+    echo "Vendor/OEM mismatch detected. Backup is from '$backup_vendor', trying to restore it on '$current_vendor'"
+    machine_mismatch="yes"
+fi
+
+# Check if archive matches machine
+if [ "$machine_mismatch" = "yes" ]; then
+    if [ "$force" != "yes" ]; then
+        echo "Denying restore due to image mismatch"
+        exit 1
+    else
+        echo "!! Forced restoring of image $archive on invalid hardware!!"
+    fi
+fi
+
+# Execute restore
 fs_count=$(echo "$arch_content" | grep "Filesystems count" | cut -d ":" -f2- | tr -d "\t ")
 [ "$fs_count" = "2" ] && type="full" ||  type="data"
 
