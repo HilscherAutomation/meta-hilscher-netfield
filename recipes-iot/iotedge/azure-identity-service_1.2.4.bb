@@ -11,7 +11,7 @@ SRC_URI += "gitsm://github.com/Azure/iot-identity-service;protocol=https;nobranc
 SRCREV = "8fc413a9910588b2949eca8ad1ea28246c066f08"
 S = "${WORKDIR}/git"
 CARGO_SRC_DIR = "."
-PV_append = ".AUTOINC+8fc413a991"
+
 
 # please note if you have entries that do not begin with crate://
 # you must change them to how that package can be fetched
