@@ -8,6 +8,8 @@ DEPENDS += " u-boot-tools-native "
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
+SRC_URI_append += "${@oe.utils.version_less_or_equal('LINUX_VERSION', '5.4.172', 'file://CVE-2022-0185.patch', '', d)}"
+
 # 3G
 SRC_URI_append += "${@bb.utils.contains('MACHINE_FEATURES', '3g', 'file://3g.scc', '', d)}"
 KERNEL_MODULE_AUTOLOAD_append += "${@bb.utils.contains('MACHINE_FEATURES', '3g', 'usbserial usb_wwan option qmi_wwan cdc_mbim cdc-wdm', '', d)}"
