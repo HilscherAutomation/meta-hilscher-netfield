@@ -1,14 +1,13 @@
-diff --git a/Makefile b/Makefile
-index 9141611..f70dadc 100644
---- a/Makefile
-+++ b/Makefile
+diff -aurN a/Makefile b/Makefile
+--- a/Makefile	2022-01-28 08:26:37.718246931 +0100
++++ b/Makefile	2022-01-28 08:31:09.644953689 +0100
 @@ -1,4 +1,5 @@
  CARGO = cargo
 +CARGO_TARGET ?= x86_64-unknown-linux-gnu
  
  # Installed via `cargo install`. See /ci/install-build-deps.sh for exact command and versions.
  BINDGEN = bindgen
-@@ -32,18 +33,6 @@ else
+@@ -34,17 +35,6 @@
  	CARGO_PROFILE_DIRECTORY = release
  endif
  
@@ -22,7 +21,6 @@ index 9141611..f70dadc 100644
 -	CARGO_TARGET = x86_64-unknown-linux-gnu
 -	DPKG_ARCH_FLAGS =
 -endif
--
 -
  # Some of the targets use bash-isms like `set -o pipefail`
  SHELL := /bin/bash

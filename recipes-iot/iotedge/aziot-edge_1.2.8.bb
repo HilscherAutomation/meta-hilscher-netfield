@@ -8,7 +8,7 @@ inherit cargo
 # how to get iotedge could be as easy as but default to a git checkout:
 # SRC_URI += "crate://crates.io/iotedge/0.1.0"
 SRC_URI += "git://github.com/azure/iotedge;protocol=https;nobranch=1"
-SRCREV = "e15b86b2783d64b6136b15fcd09e3584269c3be1"
+SRCREV = "9a0b369e60ef4cc8716d5fa8659a6f9c327eb43a"
 S = "${WORKDIR}/git/edgelet"
 CARGO_SRC_DIR = "."
 
@@ -19,8 +19,7 @@ SRC_URI += " \
     crate://crates.io/addr2line/0.13.0 \
     crate://crates.io/adler/0.2.3 \
     crate://crates.io/adler32/1.2.0 \
-    crate://crates.io/aho-corasick/0.6.10 \
-    crate://crates.io/aho-corasick/0.7.13 \
+    crate://crates.io/aho-corasick/0.7.18 \
     crate://crates.io/ansi_term/0.11.0 \
     crate://crates.io/anyhow/1.0.38 \
     crate://crates.io/arc-swap/0.4.8 \
@@ -110,15 +109,16 @@ SRC_URI += " \
     crate://crates.io/itoa/0.4.6 \
     crate://crates.io/kernel32-sys/0.2.2 \
     crate://crates.io/lazy_static/1.4.0 \
-    crate://crates.io/libc/0.2.76 \
+    crate://crates.io/libc/0.2.112 \
     crate://crates.io/linked-hash-map/0.5.3 \
     crate://crates.io/lock_api/0.3.4 \
     crate://crates.io/log/0.4.11 \
     crate://crates.io/maplit/1.0.2 \
     crate://crates.io/matches/0.1.8 \
     crate://crates.io/maybe-uninit/2.0.0 \
-    crate://crates.io/memchr/2.3.3 \
+    crate://crates.io/memchr/2.4.1 \
     crate://crates.io/memoffset/0.5.5 \
+    crate://crates.io/memoffset/0.6.5 \
     crate://crates.io/mime/0.3.16 \
     crate://crates.io/miniz_oxide/0.3.7 \
     crate://crates.io/miniz_oxide/0.4.1 \
@@ -129,8 +129,7 @@ SRC_URI += " \
     crate://crates.io/miow/0.3.7 \
     crate://crates.io/native-tls/0.2.4 \
     crate://crates.io/net2/0.2.37 \
-    crate://crates.io/nix/0.14.1 \
-    crate://crates.io/nix/0.18.0 \
+    crate://crates.io/nix/0.23.1 \
     crate://crates.io/nom/4.2.3 \
     crate://crates.io/ntapi/0.3.4 \
     crate://crates.io/num-integer/0.1.43 \
@@ -168,10 +167,8 @@ SRC_URI += " \
     crate://crates.io/rayon/1.4.0 \
     crate://crates.io/rdrand/0.4.0 \
     crate://crates.io/redox_syscall/0.1.57 \
-    crate://crates.io/regex-syntax/0.5.6 \
-    crate://crates.io/regex-syntax/0.6.18 \
-    crate://crates.io/regex/0.2.11 \
-    crate://crates.io/regex/1.3.9 \
+    crate://crates.io/regex-syntax/0.6.25 \
+    crate://crates.io/regex/1.5.4 \
     crate://crates.io/remove_dir_all/0.5.3 \
     crate://crates.io/rustc-demangle/0.1.16 \
     crate://crates.io/rustc_version/0.2.3 \
@@ -209,8 +206,6 @@ SRC_URI += " \
     crate://crates.io/textwrap/0.11.0 \
     crate://crates.io/thiserror-impl/1.0.21 \
     crate://crates.io/thiserror/1.0.21 \
-    crate://crates.io/thread_local/0.3.6 \
-    crate://crates.io/thread_local/1.0.1 \
     crate://crates.io/time/0.1.44 \
     crate://crates.io/tinyvec/0.3.4 \
     crate://crates.io/tokio-buf/0.1.1 \
@@ -237,7 +232,6 @@ SRC_URI += " \
     crate://crates.io/try-lock/0.2.3 \
     crate://crates.io/typed-headers/0.1.1 \
     crate://crates.io/typenum/1.12.0 \
-    crate://crates.io/ucd-util/0.1.8 \
     crate://crates.io/unicode-bidi/0.3.4 \
     crate://crates.io/unicode-normalization/0.1.13 \
     crate://crates.io/unicode-width/0.1.8 \
@@ -245,12 +239,10 @@ SRC_URI += " \
     crate://crates.io/url/1.7.2 \
     crate://crates.io/url/2.1.1 \
     crate://crates.io/url_serde/0.2.0 \
-    crate://crates.io/utf8-ranges/1.0.4 \
     crate://crates.io/vcpkg/0.2.10 \
     crate://crates.io/vec_map/0.8.2 \
     crate://crates.io/version_check/0.1.5 \
     crate://crates.io/version_check/0.9.2 \
-    crate://crates.io/void/1.0.2 \
     crate://crates.io/want/0.2.0 \
     crate://crates.io/wasi/0.10.0+wasi-snapshot-preview1 \
     crate://crates.io/wasi/0.9.0+wasi-snapshot-preview1 \
@@ -287,64 +279,64 @@ SRC_URI += " \
 "
 
 SRCREV_FORMAT .= "_aziot-cert-common-http"
-SRCREV_aziot-cert-common-http = "8fc413a9910588b2949eca8ad1ea28246c066f08"
+SRCREV_aziot-cert-common-http = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/aziot-cert-common-http"
 SRCREV_FORMAT .= "_aziot-certd-config"
-SRCREV_aziot-certd-config = "8fc413a9910588b2949eca8ad1ea28246c066f08"
+SRCREV_aziot-certd-config = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/aziot-certd-config"
 SRCREV_FORMAT .= "_aziot-identity-common"
-SRCREV_aziot-identity-common = "8fc413a9910588b2949eca8ad1ea28246c066f08"
+SRCREV_aziot-identity-common = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/aziot-identity-common"
 SRCREV_FORMAT .= "_aziot-identity-common-http"
-SRCREV_aziot-identity-common-http = "8fc413a9910588b2949eca8ad1ea28246c066f08"
+SRCREV_aziot-identity-common-http = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/aziot-identity-common-http"
 SRCREV_FORMAT .= "_aziot-identityd-config"
-SRCREV_aziot-identityd-config = "8fc413a9910588b2949eca8ad1ea28246c066f08"
+SRCREV_aziot-identityd-config = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/aziot-identityd-config"
 SRCREV_FORMAT .= "_aziot-key-client"
-SRCREV_aziot-key-client = "8fc413a9910588b2949eca8ad1ea28246c066f08"
+SRCREV_aziot-key-client = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/aziot-key-client"
 SRCREV_FORMAT .= "_aziot-key-common"
-SRCREV_aziot-key-common = "8fc413a9910588b2949eca8ad1ea28246c066f08"
+SRCREV_aziot-key-common = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/aziot-key-common"
 SRCREV_FORMAT .= "_aziot-key-common-http"
-SRCREV_aziot-key-common-http = "8fc413a9910588b2949eca8ad1ea28246c066f08"
+SRCREV_aziot-key-common-http = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/aziot-key-common-http"
 SRCREV_FORMAT .= "_aziot-key-openssl-engine"
-SRCREV_aziot-key-openssl-engine = "8fc413a9910588b2949eca8ad1ea28246c066f08"
+SRCREV_aziot-key-openssl-engine = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/aziot-key-openssl-engine"
 SRCREV_FORMAT .= "_aziot-keyd-config"
-SRCREV_aziot-keyd-config = "8fc413a9910588b2949eca8ad1ea28246c066f08"
+SRCREV_aziot-keyd-config = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/aziot-keyd-config"
 SRCREV_FORMAT .= "_aziot-keys-common"
-SRCREV_aziot-keys-common = "8fc413a9910588b2949eca8ad1ea28246c066f08"
+SRCREV_aziot-keys-common = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/aziot-keys-common"
 SRCREV_FORMAT .= "_aziot-tpmd-config"
-SRCREV_aziot-tpmd-config = "8fc413a9910588b2949eca8ad1ea28246c066f08"
+SRCREV_aziot-tpmd-config = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/aziot-tpmd-config"
 SRCREV_FORMAT .= "_aziotctl-common"
-SRCREV_aziotctl-common = "8fc413a9910588b2949eca8ad1ea28246c066f08"
+SRCREV_aziotctl-common = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/aziotctl-common"
 SRCREV_FORMAT .= "_config-common"
-SRCREV_config-common = "8fc413a9910588b2949eca8ad1ea28246c066f08"
+SRCREV_config-common = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/config-common"
 SRCREV_FORMAT .= "_http-common"
-SRCREV_http-common = "8fc413a9910588b2949eca8ad1ea28246c066f08"
+SRCREV_http-common = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/http-common"
 SRCREV_FORMAT .= "_openssl-build"
-SRCREV_openssl-build = "8fc413a9910588b2949eca8ad1ea28246c066f08"
+SRCREV_openssl-build = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/openssl-build"
 SRCREV_FORMAT .= "_openssl-sys2"
-SRCREV_openssl-sys2 = "8fc413a9910588b2949eca8ad1ea28246c066f08"
+SRCREV_openssl-sys2 = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/openssl-sys2"
 SRCREV_FORMAT .= "_openssl2"
-SRCREV_openssl2 = "8fc413a9910588b2949eca8ad1ea28246c066f08"
+SRCREV_openssl2 = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/openssl2"
 SRCREV_FORMAT .= "_pkcs11"
-SRCREV_pkcs11 = "8fc413a9910588b2949eca8ad1ea28246c066f08"
+SRCREV_pkcs11 = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/pkcs11"
 SRCREV_FORMAT .= "_pkcs11-sys"
-SRCREV_pkcs11-sys = "8fc413a9910588b2949eca8ad1ea28246c066f08"
+SRCREV_pkcs11-sys = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/pkcs11-sys"
 
 require aziot-edge.inc
