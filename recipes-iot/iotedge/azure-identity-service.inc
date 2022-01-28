@@ -34,6 +34,7 @@ SRC_URI += " \
     file://makefile_install_without_build.patch \
     file://third_party_pass_platform.patch \
     file://third_party_skip_download.patch \
+    file://umock_use_sysroot_headers.patch \
     https://github.com/hannobraun/inotify/raw/52c18c527fe227b329f8428d73a1c732f2d56ce5/LICENSE;downloadfilename=inotify-LICENSE;name=inotifylicense \
     https://github.com/notify-rs/notify/raw/e0982ffc760bc0e34544d2a7c9d10cdba65183d9/LICENSE;downloadfilename=notify-LICENSE;name=notifylicense \
 "
