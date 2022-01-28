@@ -13,6 +13,7 @@ do_configure_prepend() {
 
   username=$(echo ${HILSCHER_BITBUCKET_USER} | cut -d ":" -f1)
   password=$(echo ${HILSCHER_BITBUCKET_USER} | cut -d ":" -f2)
+  password=$(python3 -c "import sys, urllib.parse as ul; print(ul.unquote_plus('$password'))")
   echo "machine bitbucket.hilscher.com login $username password $password" > $HOME/.netrc
 
   git submodule init
