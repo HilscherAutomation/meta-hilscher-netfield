@@ -1,6 +1,6 @@
 SRC_URI="git://bitbucket.hilscher.com/scm/ial/cockpit-netiot.git;user=${HILSCHER_BITBUCKET_USER};protocol=https;nobranch=1 \
          file://use_tarball_version_if_available.patch"
-SRCREV = "6e8decfb742d586c7b24b708832a1e0dea53c541"
+SRCREV = "416ac59dbf1e46b1e990d0675549666e3ab97df3"
 
 LIC_FILES_CHKSUM="file://COPYING;md5=4fbd65380cdd255951079008b364516c"
 
@@ -19,9 +19,9 @@ do_configure_prepend() {
   git submodule init
   git submodule update --recursive
 
-  npm install
-
   echo "${PV}" > ${S}/.tarball
+
+  sh autogen.sh ${CONFIGUREOPTS} ${EXTRA_OECONF} $@
 }
 
 require cockpit.inc
