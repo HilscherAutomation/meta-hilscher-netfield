@@ -98,16 +98,6 @@ do_firmware_recovery() {
   log "Firmware recovery successfully done!"
   log ""
 
-  # Copy logfile to new rootfs
-  mp=$(mktemp -d)
-  log "Trying to mount system device!"
-  mount $(blkid -L system) ${mp}
-  log "Trying to copy log file!"
-  cp ${logfile} ${mp}/last_update.log
-  log "Trying to unmount system device!"
-  umount ${mp}
-  rmdir ${mp}
-
   return 0
 }
 

@@ -76,7 +76,7 @@ if [ -z "${api_file}" ]; then
 	vmsg_errout "Invalid or missing arguments.";
 fi
 
-if [-z "${priv_key}" ] && [ "${sign_image}" = "1" ]; then
+if [ -z "${priv_key}" ] && [ "${sign_image}" = "1" ]; then
 	vmsg_errout "Invalid or missing arguments.";
 fi
 
