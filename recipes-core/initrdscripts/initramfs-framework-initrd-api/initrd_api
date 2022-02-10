@@ -5,7 +5,8 @@ do_initrd_api() {
 	cd /tmp/initrd-api
 
 	api_offset=$(verify_file $1) || {
-		fatal "Error: $1: Invalid or missing signature"
+		echo "Error: $1: Invalid or missing signature"
+		rm -f $1
 		return 1
 	}
 	msg "Info: $1: Successfully verified"

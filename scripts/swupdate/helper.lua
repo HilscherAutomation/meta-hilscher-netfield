@@ -45,7 +45,12 @@ function getCurVersion()
 	return version,err
 end
 
-function mount_system()
+function file_exists(name)
+	local f = io.open(name, "r")
+	return f ~= nil and io.close(f)
+end
+
+function mount_and_cleanup_system()
 	os.execute("mkdir -p /run/.system_part")
 	if os.execute("test -b /dev/disk/by-bootmode/active") == true then
 		-- Due to a problem during production we may need to resize system partition
@@ -60,6 +65,13 @@ function mount_system()
 
 		-- We are in rescue mode, so standby-0 should be our target to update
 		os.execute("mount -o rw,nodelalloc /dev/disk/by-bootmode/standby-0 /run/.system_part")
+	end
+
+	-- Delete alternative firmware to make sure we have enough diskspace. We are recovering anyway cleaning everything
+	if file_exists("/run/.system_part/aboot.cfg") then
+		os.execute("for file in $(find /run/.system_part/ -maxdepth 1 -name '*fitImage*'); do grep -q $(basename $file) /run/.system_part/aboot.cfg && rm $file*; done")
+		os.execute("for file in $(find /run/.system_part/ -maxdepth 1 -name '*.rootfs.squashfs'); do grep -q $(basename $file) /run/.system_part/aboot.cfg && rm $file*; done")
+		os.execute("rm -f /run/.system_part/aboot.cfg*")
 	end
 end
 
@@ -80,7 +92,7 @@ function preinst()
 	end
 
 	if  string.starts(curType, "debug") or string.starts(newType, "debug") then
-		mount_system()
+		mount_and_cleanup_system()
 		swupdate.info("You are on or installing a debug version: Skip firmware version verification ("..newVersion.."/"..curVersion..")")
 		return true
 	end
@@ -90,7 +102,7 @@ function preinst()
 		if string.starts(curType, "beta") then
 			-- beta -> rc and release is allowed
 			if string.starts(newType, "rc") or string.starts(newType, "release") then
-				mount_system()
+				mount_and_cleanup_system()
 				swupdate.info("Upgrading/Recovering from "..curVersion.."."..curType.." to "..newVersion.."."..newType.."!")
 				return true
 			end
@@ -100,7 +112,7 @@ function preinst()
 				cur_beta_idx = tonumber(split(curType, '-')[2])
 				new_beta_idx = tonumber(split(newType, '-')[2])
 				if new_beta_idx >= cur_beta_idx then
-					mount_system()
+					mount_and_cleanup_system()
 					swupdate.info("Upgrading/Recovering from "..curVersion.."."..curType.." to "..newVersion.."."..newType.."!")
 					return true
 				end
@@ -113,7 +125,7 @@ function preinst()
 		if string.starts(curType, "rc") then
 			-- rc -> release is allowed
 			if string.starts(newType, "release") then
-				mount_system()
+				mount_and_cleanup_system()
 				swupdate.info("Upgrading/Recovering from "..curVersion.."."..curType.." to "..newVersion.."."..newType.."!")
 				return true
 			end
@@ -123,7 +135,7 @@ function preinst()
 				cur_rc_idx = tonumber(split(curType, '-')[2])
 				new_rc_idx = tonumber(split(newType, '-')[2])
 				if new_rc_idx >= cur_rc_idx then
-					mount_system()
+					mount_and_cleanup_system()
 					swupdate.info("Upgrading/Recovering from "..curVersion.."."..curType.." to "..newVersion.."."..newType.."!")
 					return true
 				end
@@ -135,7 +147,7 @@ function preinst()
 
 		-- Allow factory default reset (same version and same type)
 		if newType == curType then
-			mount_system()
+			mount_and_cleanup_system()
 			swupdate.info("Upgrading/Recovering from "..curVersion.."."..curType.." to "..newVersion.."."..newType.."!")
 			return true
 		end
@@ -149,7 +161,8 @@ function preinst()
 		return false
 	end
 
-	mount_system()
+	mount_and_cleanup_system()
+
 	swupdate.info("Valid firmware image found ("..newVersion.." > "..curVersion..").")
 	return true
 end
