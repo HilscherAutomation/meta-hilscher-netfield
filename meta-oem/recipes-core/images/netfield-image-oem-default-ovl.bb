@@ -2,6 +2,9 @@ SUMMARY = "Default netfield OEM overlay image."
 
 inherit hilscher-oem-image
 
+# Inherits hilscher-images to create recovery.zip and/or recovery.swu.
+inherit hilscher-images
+
 # The OEM_BASE_IMAGE defines the base image for which the OEM overlay is intended.
 OEM_BASE_IMAGE="netfield-image-oem"
 OEM_IMAGE_INSTALL = " \
