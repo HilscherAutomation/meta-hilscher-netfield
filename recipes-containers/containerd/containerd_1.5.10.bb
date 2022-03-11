@@ -8,9 +8,9 @@ DESCRIPTION = "containerd is a daemon to control runC, built for performance and
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://src/import/LICENSE;md5=1269f40c0d099c21a871163984590d89"
 
-SRCREV = "7b11cfaabd73bb80907dd23182b9347b4245eb5d"
-SRC_URI = "git://github.com/containerd/containerd.git;protocol=https;branch=release/1.4 \
-           file://0001-build-use-oe-provided-GO-and-flags.patch"
+SRCREV = "2a1d4dbdb2a1030dc5b01e96fb110a9d9f150ecc"
+SRC_URI = "git://github.com/containerd/containerd.git;protocol=https;branch=release/1.5 \
+           file://0001-Makefile-allow-GO_BUILD_FLAGS-to-be-externally-speci.patch"
 S = "${WORKDIR}/git"
 
 PV .= "+git${SRCPV}"
@@ -33,36 +33,6 @@ do_configure[noexec] = "1"
 
 do_compile() {
     export GOARCH="${TARGET_GOARCH}"
-    # Prevent following error:
-    #  |  go: cannot find main module, but found vendor.conf in ...
-    # See https://www.linuxquestions.org/questions/slackware-14/help-to-install-docker%5Berror-says-go-mod-not-found-4175693908/
-    export GO111MODULE="auto"
-
-    # link fixups for compilation
-    rm -f ${S}/src/import/vendor/src
-    ln -sf ./ ${S}/src/import/vendor/src
-
-    mkdir -p ${S}/src/import/vendor/src/github.com/containerd/containerd/
-    mkdir -p ${S}/src/import/vendor/src/github.com/containerd/containerd/pkg/
-    mkdir -p ${S}/src/import/vendor/src/github.com/containerd/containerd/contrib/
-    # without this, the stress test parts of the build fail
-    cp ${S}/src/import/*.go ${S}/src/import/vendor/src/github.com/containerd/containerd
-
-    for c in content errdefs fs images mount snapshots linux api runtimes defaults progress \
-             protobuf reference diff platforms runtime remotes version archive dialer gc metadata \
-             metrics filters identifiers labels leases plugin server services \
-             cmd cio containers namespaces oci events log reaper sys rootfs nvidia seed apparmor seccomp \
-             timeout ttrpcutil process stdio oom; do
-        if [ -d ${S}/src/import/${c} ]; then
-            ln -sfn ${S}/src/import/${c} ${S}/src/import/vendor/github.com/containerd/containerd/${c}
-        fi
-        if [ -d ${S}/src/import/pkg/${c} ]; then
-            ln -sfn ${S}/src/import/pkg/${c} ${S}/src/import/vendor/github.com/containerd/containerd/pkg/${c}
-        fi
-        if [ -d ${S}/src/import/contrib/${c} ]; then
-            ln -sfn ${S}/src/import/contrib/${c} ${S}/src/import/vendor/github.com/containerd/containerd/contrib/${c}
-        fi
-    done
 
     export GOPATH="${S}/src/import/.gopath:${S}/src/import/vendor:${STAGING_DIR_TARGET}/${prefix}/local/go"
     export GOROOT="${STAGING_DIR_NATIVE}/${nonarch_libdir}/${HOST_SYS}/go"
@@ -75,6 +45,12 @@ do_compile() {
     export BUILDTAGS="${BUILDTAGS}"
     export CFLAGS="${CFLAGS}"
     export LDFLAGS="${LDFLAGS}"
+    export SHIM_CGO_ENABLED="${CGO_ENABLED}"
+    # fixes:
+    # cannot find package runtime/cgo (using -importcfg)
+    #        ... recipe-sysroot-native/usr/lib/aarch64-poky-linux/go/pkg/tool/linux_amd64/link:
+    #        cannot open file : open : no such file or directory
+    export GO_BUILD_FLAGS="-a -pkgdir dontusecurrentpkgs"
 
     cd ${S}/src/import
     oe_runmake binaries
