@@ -2,7 +2,6 @@ FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
 SRC_URI_append += "file://bind_use_of_cookies_to_specific.patch \
                    file://40-netfield.rules \
-                   file://CVE-2021-4034.patch \
 "
 
 do_install_append() {
