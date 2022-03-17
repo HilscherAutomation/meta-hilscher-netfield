@@ -9,6 +9,7 @@ SRC_URI_append += "file://enable_applets.cfg      \
                    file://enable_verbose_usage.cfg  \
                    file://enable_tftp_blocksize.cfg \
                    file://enable_netcat110_support.cfg \
+                   file://enable_wget_openssl.cfg \
 "
 
 # Make sure syslogd / klogd do not start automatically, we are relying on journald

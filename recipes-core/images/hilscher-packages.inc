@@ -16,6 +16,9 @@ IMAGE_INSTALL += "${@('unmount-overlays' if d.getVar('NETIOT_OVERLAY_DIRS')!='' 
 # Include /etc/os-release in images
 IMAGE_INSTALL += "os-release"
 
+# Log rotation
+IMAGE_INSTALL += "logrotate"
+
 # Include syslog push daemon
 IMAGE_INSTALL += "systemd-netlogd"
 
