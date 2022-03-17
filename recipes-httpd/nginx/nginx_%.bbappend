@@ -3,6 +3,7 @@ FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 SRC_URI_append += " \
 	file://nginx_gen_ssl_cert \
 	file://90.hardening.conf \
+	file://nginx.logrotate \
 	"
 
 APPARMOR_PROFILES="${PN}.apparmor:usr.sbin.nginx"
@@ -27,6 +28,9 @@ do_install_append() {
   for add_conf in 90.hardening.conf; do
     install -m 0644 ${WORKDIR}/$add_conf ${D}/etc/nginx/conf.d
   done
+
+  install -d ${D}${sysconfdir}/logrotate.d
+  install -m 0644 ${WORKDIR}/nginx.logrotate ${D}${sysconfdir}/logrotate.d/nginx
 }
 
 PACKAGES =+ "${PN}-conf"
