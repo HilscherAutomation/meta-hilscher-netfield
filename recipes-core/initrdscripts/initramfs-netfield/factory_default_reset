@@ -1,10 +1,10 @@
 #!/bin/sh
 
-factory_reset_enabled() {
+factory_default_reset_enabled() {
 	return 0
 }
 
-factory_reset_run() {
+factory_default_reset_run() {
 	reset_done=0
 
 	for label in backup system; do
@@ -14,10 +14,10 @@ factory_reset_run() {
 			mount $tmp_dev $tmpdir
 
 			if [ -e "$tmpdir/.factory_reset" ]; then
-				echo "Found .factory_reset on $tmp_dev"
+				__debug "Found .factory_reset on $tmp_dev"
 				data_dev=$(blkid | grep "LABEL=\"data\"" | cut -d ":" -f1)
 				if [ -b "$data_dev" ]; then
-					echo "Formatting $data_dev using ext4"
+					__debug "Formatting $data_dev using ext4"
 					mkfs.ext4 -q -L data -F /dev/mapper/data-data
 					rm $tmpdir/.factory_reset
 					reset_done=1

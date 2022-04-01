@@ -60,18 +60,18 @@ configure_ip() {
 	[ -n "$device" ] || device=$(ip_choose_if)
 
 	if [ -z "$device" ]; then
-		echo "ERROR: IP requested but no network device was found"
+		__debug "ERROR: IP requested but no network device was found"
 		return 1
 	fi
 
 	if [ "$autoconf" = "dhcp" ]; then
 		# automatic configuration
 		if [ ! -e /usr/share/udhcpc/default.script ]; then
-			echo "ERROR: DHCP requested but not present in initrd"
+			__debug "ERROR: DHCP requested but not present in initrd"
 			return 1
 		fi
 		#ebegin "Obtaining IP via DHCP ($device)..."
-		echo "Obtaining IP via DHCP ($device)..."
+		__debug "Obtaining IP via DHCP ($device)..."
 		ifconfig "$device" 0.0.0.0
 		udhcpc -i "$device" -f -q
 		#eend $?
@@ -79,7 +79,7 @@ configure_ip() {
 		# manual configuration
 		[ -n "$client_ip" -a -n "$netmask" ] || return
 		#ebegin "Setting IP ($device)..."
-		echo "Setting IP ($device)..."
+		__debug "Setting IP ($device)..."
 		if ifconfig "$device" "$client_ip" netmask "$netmask"; then
 			[ -z "$gw_ip" ] || ip route add 0.0.0.0/0 via "$gw_ip" dev "$device"
 		fi

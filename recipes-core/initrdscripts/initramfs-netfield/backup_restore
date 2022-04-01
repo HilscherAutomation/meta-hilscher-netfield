@@ -1,18 +1,16 @@
 #!/bin/sh
 
-restore_backup_enabled() {
+backup_restore_enabled() {
 	return 0
 }
 
-restore_backup_run() {
-	# Mount backup partition
-	backupdev=$(blkid | grep "LABEL=\"backup\"" | cut -d ":" -f1)
-	if [ -b "$backupdev" ]; then
-		tmpdir=$(mktemp -d)
-		mount -o ro $backupdev $tmpdir
+backup_restore_run() {
+	dev=$(blkid | grep "LABEL=\"backup\"" | cut -d ":" -f1)
+	if [ -b "$dev" ]; then
+		mp=$(mktemp -d) && mount -o ro $dev $mp
 
-		if [ -e "$tmpdir/.restore" ]; then
-			. $tmpdir/.restore
+		if [ -e "$mp/.restore" ]; then
+			. $mp/.restore
 			if [ "$restore" = "1" ]; then
 				[ -n "$password" ] && arg_password="-c $password"
 				# id0 is always data backup
@@ -24,13 +22,13 @@ restore_backup_run() {
 					# Full restore requires reboot as kernel might have changed
 					reboot="1"
 				fi
-				fsarchiver restfs $tmpdir/$archive $arg_password -j "$(grep -c ^processor /proc/cpuinfo)" $dest
-				mount -o remount,rw $backupdev $tmpdir
-				rm $tmpdir/.restore
-				mount -o remount,ro $backupdev $tmpdir
+				fsarchiver restfs $mp/$archive $arg_password -j "$(grep -c ^processor /proc/cpuinfo)" $dest
+				# Delete restore request file.
+				mount -o remount,rw $dev $mp && rm $mp/.restore && mount -o remount,ro $dev $mp
 
 				if [ "$reboot" = "1" ]; then
-					echo "System is rebooting!"
+					__debug "System is rebooting!"
+# 					__reboot
 					echo 1 > /proc/sys/kernel/sysrq
 					echo e > /proc/sysrq-trigger # send SIGTERM to all processes, allowing them to terminate gracefully
 					echo s > /proc/sysrq-trigger # flush data to disk
@@ -40,7 +38,6 @@ restore_backup_run() {
 			fi
 		fi
 
-		umount $tmpdir
-		rmdir $tmpdir
+		umount $mp && rmdir $mp
 	fi
 }

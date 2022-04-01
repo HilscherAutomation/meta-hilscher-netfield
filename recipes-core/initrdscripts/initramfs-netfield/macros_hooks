@@ -1,0 +1,73 @@
+#!/bin/sh
+
+# Macros ...
+############
+
+__msg() {
+	msg "### ${module}: $@"
+}
+
+__info() {
+	info "### ${module}: $@"
+}
+
+__debug() {
+	[ $bootparam_mydebug ] && echo "### ${module}: $@" >/dev/console
+}
+
+__fatal() {
+	fatal "### ${module}: $@"
+}
+
+__skip() {
+	[ -n "$bootparam_mydebug" ] && {
+		echo "### Skipping $1 ..." >/dev/console
+		echo "################################################################################" >/dev/console
+	}
+}
+
+# Hook functions ...
+####################
+
+premod() {
+	echo "################################################################################" >/dev/console
+	echo "### Starting $1 ..." >/dev/console
+}
+
+postmod() {
+	echo "### Exiting $1 ..." >/dev/console
+	echo "################################################################################" >/dev/console
+}
+
+__app=$0
+__func=$1
+__module=$2
+
+case $__func in
+	pre)
+		premod $__module;;
+	post)
+		postmod $__module;;
+	*);;
+esac
+
+# Module functions ...
+######################
+
+# Add extra options for debug images ...
+grep -qo debug < /firmware.version && {
+	bootparam_init_fatal_sh=true
+	bootparam_mydebug=true
+}
+
+macros_hooks_enabled() {
+	return 0
+}
+
+macros_hooks_run() {
+	if [ $bootparam_mydebug ]; then
+		premod $module
+		add_module_pre_hook $(find /init.d/ -name *-macros_hooks)
+		add_module_post_hook $(find /init.d/ -name *-macros_hooks)
+	fi
+}

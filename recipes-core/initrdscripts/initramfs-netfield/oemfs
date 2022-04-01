@@ -1,0 +1,40 @@
+#!/bin/sh
+
+oemfs_enabled() {
+	return 0
+}
+
+oemfs_run() {
+	if [ -z "${ROOTFS_DIR}" ]; then
+		__fatal "Error: Invalid or missing ROOTFS_DIR."
+	fi
+
+	__debug "FIXME: Mount errors related by squashfs/loop-devices."
+	#mp=$(mktemp -d) && mkdir -p $mp && mount -o ro $boot_dev $mp
+	mp=$boot_mp
+
+	[ -d "$mp/oem" ] || {
+		#umount $mp && rmdir $mp
+		__debug "Unable to find OEM directory ..."
+		return 0
+	}
+
+	oem_overlay_image=$(find $mp/oem | grep ".*-image-oem-.*" | grep -v ".sig$" | sort | tail -n1)
+	[ -n "$oem_overlay_image"  ] || {
+		#umount $mp && rmdir $mp
+		__debug "Unable to find OEM rootfs file ..."
+		return 0
+	}
+
+	# Verifying oem rootfs overlay image (squashfs image)
+	__debug "Verifying $oem_overlay_image ..."
+	offset=$(verify_file $oem_overlay_image) || {
+		__fatal "... failed!"
+	}
+	__debug "... success => Using $oem_overlay_image as OEM rootfs overlay."
+
+	mkdir -p /run/overlay/oemfs
+	mount -o ro $oem_overlay_image /run/overlay/oemfs
+
+	mount -t overlay overlay -o lowerdir=/run/overlay/oemfs:${ROOTFS_DIR} ${ROOTFS_DIR}
+}

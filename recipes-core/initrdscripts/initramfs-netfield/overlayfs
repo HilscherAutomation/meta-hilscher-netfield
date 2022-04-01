@@ -1,0 +1,51 @@
+#!/bin/sh
+
+overlayfs_enabled() {
+	if [ -z "$bootparam_overlaytargets" ]; then
+		__skip
+		return 1
+	fi
+	return 0
+}
+
+overlayfs_run() {
+	if [ -z "${ROOTFS_DIR}" ]; then
+		__fatal "Error: Invalid or missing ROOTFS_DIR."
+		return 1
+	fi
+
+	rwdir="/run/overlay"
+	mkdir -p $rwdir
+
+	[ -n "$bootparam_overlayfstype" ] && bootparam_overlayfstype="-t $bootparam_overlayfstype"
+	[ -n "$bootparam_overlayflags" ] && bootparam_overlayflags="-o $bootparam_overlayflags"
+
+	if [ -b "$bootparam_overlay" ]; then
+		__debug "Use $bootparam_overlay as overlayfs upperdir."
+		# Mount overlayfs storage loacation for read/write data.
+		mount $bootparam_overlay $rwdir $bootparam_overlayfstype $bootparam_overlayflags
+	else
+		__debug "Use tmpfs as overlayfs upperdir."
+		mount -t tmpfs tmpfs $rwdir
+	fi
+
+	for dir in $bootparam_overlaytargets; do
+		__debug "Mounting overlay on $dir"
+
+		if [ "$dir" = "/" -o "$dir" = "rootfs" ]; then
+			dir="rootfs"
+			mp="${ROOTFS_DIR}"
+		else
+			dir=$(echo $dir | sed 's,^/,,') # Removes leading '/'
+			mp="${ROOTFS_DIR}/$dir"
+		fi
+		dir=$(echo $dir | sed 's,/,-,g') # Replaces all '/' by '-'
+
+		lowerdirs=$mp
+		upperdir="$rwdir/$dir"
+		workdir="$rwdir/$dir-work"
+
+		mkdir -p $upperdir $workdir
+		mount -t overlay overlay -o lowerdir=$lowerdirs,upperdir=$upperdir,workdir=$workdir $mp
+	done
+}

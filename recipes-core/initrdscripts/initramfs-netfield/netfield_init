@@ -1,0 +1,149 @@
+#!/bin/sh
+
+################################################################################
+###
+### Module functions ...
+###
+
+netfield_init_enabled() {
+	return 0
+}
+
+netfield_init_run() {
+	load_kernel_modules_run
+	check_filesystems_run
+	boot_cfg_run
+	verify_root_run
+}
+
+################################################################################
+###
+### Working functions
+###
+
+load_kernel_modules_run() {
+	__debug "Load required kernel modules ..."
+	__debug "################################"
+	sleep 1
+
+	load_kernel_module pub-key-loader
+	load_kernel_module device-data
+
+	load_kernel_module efivarfs
+	[ -e /sys/firmware/efi/efivars ] && mount -t efivarfs none /sys/firmware/efi/efivars
+}
+
+check_filesystems_run() {
+	__debug "Check filesystems for defects ..."
+	__debug "#################################"
+
+	for check_label in system data backup; do
+		dev_list=$(blkid | grep "LABEL=\"$check_label\"" | cut -d ":" -f1)
+		for dev in $dev_list; do
+			dev=$(readlink -f $dev)
+			if [ -b "$dev" ]; then
+				FS=$(lsblk -f -o KNAME,FSTYPE | grep $(basename $dev) | tr -s ' ' | cut -d ' ' -f2)
+				__debug "Checking $FS on $dev"
+				case $FS in
+				'ext4' | 'ext3' | 'ext2')
+					fsck.ext4 -p $dev
+					;;
+				*)
+					__debug "Unknown fstype $FS on $dev to check"
+					;;
+				esac
+			fi
+		done
+	done
+}
+
+boot_cfg_run() {
+	__debug "Handle boot.cfg file and update bootparams ..."
+	__debug "##############################################"
+
+	if [ -n "$bootparam_bootCfg" ]; then
+		# Replace LABEL of bootparam_bootCfg by real block device.
+		if grep -q "^LABEL=" <<<$bootparam_bootCfg; then
+			label=$(echo $bootparam_bootCfg | cut -d'=' -f2 | cut -d'/' -f1)
+			__debug "Waiting for block device of $bootparam_bootCfg ..."
+			while ! dev=$(blkid -L $label); do sleep 1; done
+			bootparam_bootCfg=$(sed "s,^LABEL=$label,$dev," <<< $bootparam_bootCfg)
+		fi
+
+		boot_dev=$(dirname $bootparam_bootCfg)
+		
+		__debug "Waiting for bootCfg block device of $bootparam_bootCfg ..."
+		while [ ! -b "$boot_dev" ]; do sleep 1; done
+
+		boot_mp="/tmp/mp-$(basename $boot_dev)"
+		mkdir -p $boot_mp && mount -o ro,noatime $boot_dev $boot_mp
+
+		boot_cfg=$boot_mp/$(basename $bootparam_bootCfg)
+
+		__debug "Verifying $bootparam_bootCfg ..."
+		offset=$(verify_file $boot_cfg) || {
+			__fatal "... failed!"
+		}
+		__debug "... success => Using $boot_cfg as boot.cfg file."
+
+		. $boot_cfg
+	fi
+
+	# Mandatory: root (e.g. root="rootfs.squashfs")
+	# Optional: rootfstype (e.g. rootfstype="squashfs"
+	# Optional: rootflags (e.g. rootflags="sync")
+	dummy=${bootparam_root:=$root}
+	dummy=${bootparam_rootfstype:=$rootfstype}
+	dummy=${bootparam_rootflags:=$rootflags}
+
+	[ -n "$bootparam_root" ] || {
+		__fatal "Invalid or missing 'root' parameter"
+	}
+
+	# Replace LABEL of bootparam_root by real block device.
+	if grep -q "^LABEL=" <<<$bootparam_root; then
+		# Replace LABEL by real block device.
+		label=$(echo $bootparam_root | cut -d'=' -f2 | cut -d'/' -f1)
+		__debug "Waiting for root block device of $bootparam_root ..."
+		while ! dev=$(blkid -L $label); do sleep 1; done
+		bootparam_root=$(sed "s,^LABEL=$label,$dev," <<< $bootparam_root)
+	fi
+
+	# boot_dev:
+	# This is the block device where the boot.cfg, the oem directory and the rootfs[-image] are stored.
+	[ ! $boot_dev ] && boot_dev=$(grep ^/dev/ <<< $bootparam_root | cut -d'/' -f-3)
+
+	# Try prepending boot_mp if bootparam_root is not an absolute path
+	grep -q ^/ <<<$bootparam_root || bootparam_root=${boot_mp:+"$boot_mp/"}$bootparam_root
+
+	[ -z "$bootparam_rootfstype" ] && bootparam_rootfstype=$(grep -o [^.]*$ <<< $bootparam_root)
+	if [ "$bootparam_rootfstype" = "squashfs" ]; then
+		#grep loop <<< $bootparam_rootflags || bootparam_rootflags="loop,ro,$bootparam_rootflags"
+		bootparam_ro=true
+	fi
+
+	# Optional: overlay (e.g. overlay="(/dev/mapper/data-data")
+	# Optional: overlayfstype (e.g. overlayfstype="ext4")
+	# Optional: overlayflags (e.g. overlayflags="sync")
+	# Optional: overlaytargets (e.g. overlaytargets="rootfs" or overlaytargets="/etc /opt")
+	dummy=${bootparam_overlay:=$overlay}
+	dummy=${bootparam_overlayfstype:=$overlayfstype}
+	dummy=${bootparam_overlayflags:=$overlayflags}
+	dummy=${bootparam_overlaytargets:=$overlaytargets}
+}
+
+verify_root_run() {
+	__debug "Verify rootfs signature ..."
+	__debug "###########################"
+
+	# Verifying rootfs image file (squashfs image)
+	__debug "Verifying $bootparam_root ..."
+	if [ -f $bootparam_root ]; then
+		offset=$(verify_file $bootparam_root) || {
+			__fatal "... failed!"
+		}
+		__debug "... success => Using $bootparam_root as rootfs."
+	else
+		__debug "... not an image file => skipped"
+	fi
+}
