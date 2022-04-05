@@ -8,7 +8,7 @@ inherit cargo
 # how to get iotedge could be as easy as but default to a git checkout:
 # SRC_URI += "crate://crates.io/iotedge/0.1.0"
 SRC_URI += "git://github.com/azure/iotedge;protocol=https;nobranch=1"
-SRCREV = "9a0b369e60ef4cc8716d5fa8659a6f9c327eb43a"
+SRCREV = "4bbfdb99cf7afb16f23d6177865942cc22e197ce"
 S = "${WORKDIR}/git/edgelet"
 CARGO_SRC_DIR = "."
 
@@ -52,13 +52,14 @@ SRC_URI += " \
     crate://crates.io/core-foundation-sys/0.7.0 \
     crate://crates.io/core-foundation/0.7.0 \
     crate://crates.io/crc32fast/1.2.0 \
-    crate://crates.io/crossbeam-channel/0.4.4 \
+    crate://crates.io/crossbeam-channel/0.5.2 \
     crate://crates.io/crossbeam-deque/0.7.4 \
+    crate://crates.io/crossbeam-deque/0.8.1 \
     crate://crates.io/crossbeam-epoch/0.8.2 \
-    crate://crates.io/crossbeam-queue/0.1.2 \
+    crate://crates.io/crossbeam-epoch/0.9.7 \
     crate://crates.io/crossbeam-queue/0.2.3 \
-    crate://crates.io/crossbeam-utils/0.6.6 \
     crate://crates.io/crossbeam-utils/0.7.2 \
+    crate://crates.io/crossbeam-utils/0.8.7 \
     crate://crates.io/darling/0.13.0 \
     crate://crates.io/darling_core/0.13.0 \
     crate://crates.io/darling_macro/0.13.0 \
@@ -122,11 +123,9 @@ SRC_URI += " \
     crate://crates.io/mime/0.3.16 \
     crate://crates.io/miniz_oxide/0.3.7 \
     crate://crates.io/miniz_oxide/0.4.1 \
-    crate://crates.io/mio-named-pipes/0.1.7 \
     crate://crates.io/mio-uds/0.6.8 \
     crate://crates.io/mio/0.6.22 \
     crate://crates.io/miow/0.2.2 \
-    crate://crates.io/miow/0.3.7 \
     crate://crates.io/native-tls/0.2.4 \
     crate://crates.io/net2/0.2.37 \
     crate://crates.io/nix/0.23.1 \
@@ -163,12 +162,12 @@ SRC_URI += " \
     crate://crates.io/rand_core/0.4.2 \
     crate://crates.io/rand_core/0.5.1 \
     crate://crates.io/rand_hc/0.2.0 \
-    crate://crates.io/rayon-core/1.8.0 \
-    crate://crates.io/rayon/1.4.0 \
+    crate://crates.io/rayon-core/1.9.1 \
+    crate://crates.io/rayon/1.5.1 \
     crate://crates.io/rdrand/0.4.0 \
     crate://crates.io/redox_syscall/0.1.57 \
     crate://crates.io/regex-syntax/0.6.25 \
-    crate://crates.io/regex/1.5.4 \
+    crate://crates.io/regex/1.5.5 \
     crate://crates.io/remove_dir_all/0.5.3 \
     crate://crates.io/rustc-demangle/0.1.16 \
     crate://crates.io/rustc_version/0.2.3 \
@@ -214,7 +213,6 @@ SRC_URI += " \
     crate://crates.io/tokio-executor/0.1.10 \
     crate://crates.io/tokio-fs/0.1.7 \
     crate://crates.io/tokio-io/0.1.13 \
-    crate://crates.io/tokio-process/0.2.5 \
     crate://crates.io/tokio-reactor/0.1.12 \
     crate://crates.io/tokio-signal/0.2.9 \
     crate://crates.io/tokio-sync/0.1.8 \
@@ -279,64 +277,64 @@ SRC_URI += " \
 "
 
 SRCREV_FORMAT .= "_aziot-cert-common-http"
-SRCREV_aziot-cert-common-http = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
+SRCREV_aziot-cert-common-http = "923d618a8187bfdf2cf748ed9893e5c39d54a6f3"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/aziot-cert-common-http"
 SRCREV_FORMAT .= "_aziot-certd-config"
-SRCREV_aziot-certd-config = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
+SRCREV_aziot-certd-config = "923d618a8187bfdf2cf748ed9893e5c39d54a6f3"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/aziot-certd-config"
 SRCREV_FORMAT .= "_aziot-identity-common"
-SRCREV_aziot-identity-common = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
+SRCREV_aziot-identity-common = "923d618a8187bfdf2cf748ed9893e5c39d54a6f3"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/aziot-identity-common"
 SRCREV_FORMAT .= "_aziot-identity-common-http"
-SRCREV_aziot-identity-common-http = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
+SRCREV_aziot-identity-common-http = "923d618a8187bfdf2cf748ed9893e5c39d54a6f3"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/aziot-identity-common-http"
 SRCREV_FORMAT .= "_aziot-identityd-config"
-SRCREV_aziot-identityd-config = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
+SRCREV_aziot-identityd-config = "923d618a8187bfdf2cf748ed9893e5c39d54a6f3"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/aziot-identityd-config"
 SRCREV_FORMAT .= "_aziot-key-client"
-SRCREV_aziot-key-client = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
+SRCREV_aziot-key-client = "923d618a8187bfdf2cf748ed9893e5c39d54a6f3"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/aziot-key-client"
 SRCREV_FORMAT .= "_aziot-key-common"
-SRCREV_aziot-key-common = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
+SRCREV_aziot-key-common = "923d618a8187bfdf2cf748ed9893e5c39d54a6f3"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/aziot-key-common"
 SRCREV_FORMAT .= "_aziot-key-common-http"
-SRCREV_aziot-key-common-http = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
+SRCREV_aziot-key-common-http = "923d618a8187bfdf2cf748ed9893e5c39d54a6f3"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/aziot-key-common-http"
 SRCREV_FORMAT .= "_aziot-key-openssl-engine"
-SRCREV_aziot-key-openssl-engine = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
+SRCREV_aziot-key-openssl-engine = "923d618a8187bfdf2cf748ed9893e5c39d54a6f3"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/aziot-key-openssl-engine"
 SRCREV_FORMAT .= "_aziot-keyd-config"
-SRCREV_aziot-keyd-config = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
+SRCREV_aziot-keyd-config = "923d618a8187bfdf2cf748ed9893e5c39d54a6f3"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/aziot-keyd-config"
 SRCREV_FORMAT .= "_aziot-keys-common"
-SRCREV_aziot-keys-common = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
+SRCREV_aziot-keys-common = "923d618a8187bfdf2cf748ed9893e5c39d54a6f3"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/aziot-keys-common"
 SRCREV_FORMAT .= "_aziot-tpmd-config"
-SRCREV_aziot-tpmd-config = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
+SRCREV_aziot-tpmd-config = "923d618a8187bfdf2cf748ed9893e5c39d54a6f3"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/aziot-tpmd-config"
 SRCREV_FORMAT .= "_aziotctl-common"
-SRCREV_aziotctl-common = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
+SRCREV_aziotctl-common = "923d618a8187bfdf2cf748ed9893e5c39d54a6f3"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/aziotctl-common"
 SRCREV_FORMAT .= "_config-common"
-SRCREV_config-common = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
+SRCREV_config-common = "923d618a8187bfdf2cf748ed9893e5c39d54a6f3"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/config-common"
 SRCREV_FORMAT .= "_http-common"
-SRCREV_http-common = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
+SRCREV_http-common = "923d618a8187bfdf2cf748ed9893e5c39d54a6f3"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/http-common"
 SRCREV_FORMAT .= "_openssl-build"
-SRCREV_openssl-build = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
+SRCREV_openssl-build = "923d618a8187bfdf2cf748ed9893e5c39d54a6f3"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/openssl-build"
 SRCREV_FORMAT .= "_openssl-sys2"
-SRCREV_openssl-sys2 = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
+SRCREV_openssl-sys2 = "923d618a8187bfdf2cf748ed9893e5c39d54a6f3"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/openssl-sys2"
 SRCREV_FORMAT .= "_openssl2"
-SRCREV_openssl2 = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
+SRCREV_openssl2 = "923d618a8187bfdf2cf748ed9893e5c39d54a6f3"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/openssl2"
 SRCREV_FORMAT .= "_pkcs11"
-SRCREV_pkcs11 = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
+SRCREV_pkcs11 = "923d618a8187bfdf2cf748ed9893e5c39d54a6f3"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/pkcs11"
 SRCREV_FORMAT .= "_pkcs11-sys"
-SRCREV_pkcs11-sys = "ff90e7d71b08b8bd74a5c4adfd6b2d73fda39ac7"
+SRCREV_pkcs11-sys = "923d618a8187bfdf2cf748ed9893e5c39d54a6f3"
 EXTRA_OECARGO_PATHS += "${WORKDIR}/pkcs11-sys"
 
 require aziot-edge.inc
