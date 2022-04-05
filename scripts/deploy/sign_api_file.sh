@@ -83,11 +83,11 @@ fi
 vmsg "Creating (${api_file}.signed)"
 
 if [ -n "${engine}" ]; then
-	swtpm_params="-engine ${engine} -keyform engine"
+	engine_params="-engine ${engine} -keyform engine"
 fi
 
 if [ "${sign_image}" = "1" ]; then
-	openssl dgst ${swtpm_params} -sha512 -sign "${priv_key}" -out ${api_file}.signature ${api_file}
+	openssl dgst ${engine_params} -sha512 -sign "${priv_key}" -out ${api_file}.signature ${api_file}
 else
 	sha256sum ${api_file} | cut -d' ' -f1 | tr -d '\n' > ${api_file}.signature
 fi

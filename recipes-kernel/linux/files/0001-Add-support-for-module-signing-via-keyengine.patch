@@ -1,7 +1,7 @@
 From cd9b50c6b524d4bdd769f90b8da09b75c13e8276 Mon Sep 17 00:00:00 2001
 From: OpenEmbedded <oe.patch@oe>
 Date: Mon, 12 Jul 2021 12:19:12 +0000
-Subject: [PATCH] Add support for module signing via swtpm
+Subject: [PATCH] Add support for module signing via keyengine
 
 ---
  Makefile                                    |  6 +-

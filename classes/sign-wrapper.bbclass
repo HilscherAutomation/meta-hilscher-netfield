@@ -11,7 +11,6 @@
 #        of $PLATFORM_KEYNAME is populated under $SIGN_WRAPPER_KEY_DST after the configure step.
 #        To use one of the abstractions set SIGN_WRAPPER_MODE as follows:
 #          * file   : Local files are present
-#          * swtpm  : Use swtpm
 #          * pkcs11 : Use a HSM oder softHSM
 #
 #        Use openssl_sign_wrapper() for signing. For custom usage see the following lines.
@@ -26,11 +25,6 @@
 #        In case of a handle to a software TPM set: e.g. key_name=0x81000005 and $PLATFORM_KEYDIR($SIGN_WRAPPER_KEY_SRC) to empty string ""
 #        or use the the following:
 #
-#        SIGN_WRAPPER_KEY_SRC could be as well parameter to software TPM 
-#        e.g.:
-#        SIGN_WRAPPER_KEY_SRC="swtpm:host=127.0.0.1,port=2321"
-#        SIGN_WRAPPER_KEY="0x80000005"
-#
 # NOTE: If $PLATFORM_SIGN is disabled class will result to void. To use the functions anyway use $FORCE_SIGNING.
 #
 # ******************************************************************************************************
@@ -40,8 +34,6 @@
 #                                To use the class's functions anyway use $FORCE_SIGNING locally.
 # SIGN_WRAPPER_MODE   = [file] : Enables support of signing via software TPM / HSM.
 #                                 file   : Local/unprotected key files must be available
-#                                 swtpm  : Requires $TPMSERVER_IP accordingly ($TPMSERVER_PORT, $TPM2TSSENGINE_TCTI and
-#                                         $TPM2TOOLS_TCTI is optional).
 #                                 pkcs11 : Optional $TPMSERVER_IP for remote signing via libpkcs11-proxy
 #
 # ******************************************************************************************************
@@ -52,10 +44,6 @@
 # SIGN_WRAPPER_KEY_DST = [${DEPLOY_DIR_IMAGE}/key_store/[$key_name]/$key_name.pub] : Target path where to install public key.
 #
 # FORCE_SIGNING       = [$PLATFORM_SIGN] : In case $PLATFORM_SIGN is disabled, set this to use functions anyway.
-# TPMSERVER_IP         = [""] : Set to IP of SWTPM server.
-# TPMSERVER_PORT       = ["2321] : Set to port of SWTPM server.
-# TPM2TSSENGINE_TCTI   = [swtpm:host=${TPMSERVER},port=${TPMSERVER_PORT}] : Normally no modfication required.
-# TPM2TOOLS_TCTI       = [swtpm:host=${TPMSERVER},port=${TPMSERVER_PORT}] : Normally no modfication required.
 #
 #
 # ******************************************************************************************************
@@ -79,12 +67,6 @@ SIGN_WRAPPER_KEY_DST ??= "${DEPLOY_DIR_IMAGE}/key_store/"
 SIGN_WRAPPER_MODE    ??= "file"
 SIGN_WRAPPER_OPENSSL_PARAMS     ??= ""
 
-# SWTPM
-SIGN_WRAPPER_TPMSERVER_IP       ??= ""
-SIGN_WRAPPER_TPMSERVER_PORT     ??= "2321"
-SIGN_WRAPPER_TPM2TSSENGINE_TCTI ??= "swtpm:host=${SIGN_WRAPPER_TPMSERVER},port=${SIGN_WRAPPER_TPMSERVER_PORT}"
-SIGN_WRAPPER_TPM2TOOLS_TCTI     ??= "swtpm:host=${SIGN_WRAPPER_TPMSERVER},port=${SIGN_WRAPPER_TPMSERVER_PORT}"
-
 # PKCS11
 SIGN_WRAPPER_PKCS11_REMOTE      ??= ""
 SIGN_WRAPPER_PKCS11_PIN         ??= ""
@@ -92,17 +74,13 @@ SIGN_WRAPPER_PKCS11_PIN         ??= ""
 python () {
     mode = d.getVar('SIGN_WRAPPER_MODE', True)
 
-    if mode not in ['file', 'swtpm', 'pkcs11']:
+    if mode not in ['file', 'pkcs11']:
         bb.fatal("Invalid signing mode %r selected" % mode)
-    if mode == 'swtpm' and d.getVar('SIGN_WRAPPER_TPMSERVER_IP', True) is None:
-        bb.fatal("Signing via SWTPM requires a destination server ip")
 
     signing_required = d.getVar('PLATFORM_SIGN', True) == '1' or d.getVar('FORCE_SIGNING', True) == '1'
 
     if signing_required:
-        if mode == 'swtpm':
-            d.appendVar('DEPENDS', ' tpm2-tools tpm2-tools-native openssl-native tpm2-tss-engine-native openssl')
-        elif mode == 'pkcs11':
+        if mode == 'pkcs11':
             d.appendVar('DEPENDS', ' gnutls-native libp11-native openssl-native')
             d.appendVarFlag('do_shared_workdir', 'depends', ' gnutls-native:do_populate_sysroot')
             d.appendVarFlag('do_kernel_configme', 'depends', ' gnutls-native:do_populate_sysroot')
@@ -147,10 +125,6 @@ openssl_sign_wrapper() {
 		case "${SIGN_WRAPPER_MODE}" in
 		file)
 			openssl dgst "-${hash}" -sign "${priv_key_ref}" ${OPENSSL_SIGN_WRAPPER_ADD_OPTIONS} ${sign_file} > ${sign_file}.sig
-		;;
-
-		swtpm)
-			openssl dgst -engine tpm2tss -keyform engine "-${hash}" -sign "${priv_key_ref}" ${OPENSSL_SIGN_WRAPPER_ADD_OPTIONS} ${sign_file} > ${sign_file}.sig
 		;;
 
 		pkcs11)
@@ -204,10 +178,6 @@ populate_public_key () {
 					openssl rsa -in $priv_key_ref -pubout > "${pub_key_ref}"
 				;;
 
-				swtpm)
-					tpm2_readpublic -c $priv_key_ref -o "${pub_key_ref}" -f PEM
-				;;
-
 				pkcs11)
 					if [ -n "${SIGN_WRAPPER_PKCS11_REMOTE}" ]; then
 						proxy_options="--provider=${STAGING_LIBDIR_NATIVE}/libpkcs11-proxy.so"
@@ -248,8 +218,8 @@ merge_signature() {
 # Function returns the correct name reference of a given key -> either the name (complete path)
 # of a private key file or the handle and sets the required environment variables accordingly.
 # 
-# If in case a handle to to a software TPM is used, $SIGN_WRAPPER_KEY_SRC can be used to set the
-# servers parameter (see TPM2TSSENGINE_TCTI/TPM2TOOLS_TCTI).
+# If in case a handle to to a keyengine is used, $SIGN_WRAPPER_KEY_SRC can be used to set the
+# servers parameter.
 #
 # Parameter:
 # key [-] = name of private key
@@ -265,16 +235,6 @@ setup_sign_wrapper_env() {
 				if [ ! -e ${keypath} ]; then
 					bbfatal "Signing key ${keypath} not found"
 				fi
-			;;
-
-			swtpm)
-				# variable is required, that libsl is able to find the software TPM
-				# engine tpm2tss. Since the path lookup is strange we have to set it
-				# here explicitely.
-				keypath="${key}"
-				export OPENSSL_ENGINES="${RECIPE_SYSROOT_NATIVE}/usr/lib/engines-1.1/"
-				export TPM2TSSENGINE_TCTI="${SIGN_WRAPPER_KEY_SRC}"
-				export TPM2TOOLS_TCTI="${SIGN_WRAPPER_KEY_SRC}"
 			;;
 
 			pkcs11)
@@ -306,7 +266,7 @@ sign_wrapper_copy_certificate() {
 		setup_sign_wrapper_env "${PLATFORM_KEYNAME}"
 
 		case "${SIGN_WRAPPER_MODE}" in
-		file|swtpm)
+		file)
 			if [ "$fmt" = "der" ]; then
 				cp "${KEYS_IMAGE_SIGN_CERT_DER}" "$dst"
 			else
@@ -328,10 +288,10 @@ sign_wrapper_copy_certificate() {
 }
 
 ################################################################################################
-# Function sets prepares environment to use swtpm
+# Function sets prepares environment to use keyengine
 ################################################################################################
 do_install_prepend() {
-	# in case swtpm is used we need to setup the engine path via environment variable here to be able to sign the modules in the install step
+	# in case keyengine is used we need to setup the engine path via environment variable here to be able to sign the modules in the install step
 	setup_sign_wrapper_env "${PLATFORM_KEYNAME}"
 }
 do_install[vardeps] += "PLATFORM_SIGN SIGN_WRAPPER_KEY SIGN_WRAPPER_KEY_SRC SIGN_WRAPPER_KEY_DST"

@@ -75,7 +75,6 @@ netfield_create_recovery_swu() {
   setup_sign_wrapper_env "${PLATFORM_KEYNAME}"
   local signing_key=$(setup_sign_wrapper_env "${PLATFORM_KEYNAME}")
   case "${SIGN_WRAPPER_MODE}" in
-    swtpm) engine_params="-e tpm2tss" ;;
     pkcs11) engine_params="-e pkcs11" ;;
   esac
   if [ "${PLATFORM_SIGN}" = "1" ]; then
@@ -132,7 +131,6 @@ netfield_create_recovery_zip() {
   setup_sign_wrapper_env "${PLATFORM_KEYNAME}"
   local signing_key=$(setup_sign_wrapper_env "${PLATFORM_KEYNAME}")
   case "${SIGN_WRAPPER_MODE}" in
-    swtpm) engine_params="-e tpm2tss" ;;
     pkcs11) engine_params="-e pkcs11" ;;
   esac
 

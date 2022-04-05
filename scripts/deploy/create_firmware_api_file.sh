@@ -109,10 +109,10 @@ if [ -e "${fw_image}" ]; then
     cp ${fw_image} _firmware_api/firmware
 
     if [ -n "${engine}" ]; then
-      swtpm_param="-engine ${engine} -keyform engine"
+      engine_param="-engine ${engine} -keyform engine"
     fi
     if [ "${sign_image}" = "1" ]; then
-      openssl dgst $swtpm_param -sha512 -sign "${priv_key}" -out _firmware_api/firmware/$(basename $fw_image).sig ${fw_image}
+      openssl dgst $engine_param -sha512 -sign "${priv_key}" -out _firmware_api/firmware/$(basename $fw_image).sig ${fw_image}
     else
       sha256sum ${fw_image} | cut -d' ' -f1 | tr -d '\n' > _firmware_api/firmware/$(basename $fw_image).sig
     fi
