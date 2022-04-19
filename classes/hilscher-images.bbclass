@@ -15,7 +15,7 @@ DEPLOY_EXT_LIST_append += "${@bb.utils.filter('NETFIELD_IMAGES', 'recovery.zip',
 
 __generate_swu() {
   # Create hashes
-  hashFirmwareImage=$(sha256sum ${tmpdir}/firmware | cut -d' ' -f1)
+  hashFirmwareImage=$(sha256sum ${tmpdir}/initrd-api-firmware | cut -d' ' -f1)
   hashHelper=$(sha256sum ${tmpdir}/helper.lua | cut -d' ' -f1)
 
   if [ -z "${SWU_BOARD_SPEC}" ]; then
@@ -38,8 +38,8 @@ __generate_swu() {
   echo ""
   echo "		files: ("
   echo "			{"
-  echo "				filename = \"firmware\";"
-  echo "				path = \"/run/.system_part/firmware\";"
+  echo "				filename = \"initrd-api-firmware\";"
+  echo "				path = \"/mnt/system/initrd-api-firmware\";"
   echo "				sha256 = \"$hashFirmwareImage\";"
   echo "			}"
   echo "		);"
@@ -87,7 +87,7 @@ netfield_create_recovery_swu() {
   cd ..
   tmpdir=$(mktemp -d)
 
-  cp ${tmpdir_tmp}/firmware.signed ${tmpdir}/firmware
+  cp ${tmpdir_tmp}/firmware.signed ${tmpdir}/initrd-api-firmware
   rm -rf ${tmpdir_tmp}
 
   # Patch scripts

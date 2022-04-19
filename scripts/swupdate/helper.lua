@@ -51,28 +51,25 @@ function file_exists(name)
 end
 
 function mount_and_cleanup_system()
-	os.execute("mkdir -p /run/.system_part")
-	if os.execute("test -b /dev/disk/by-bootmode/active") == true then
-		-- Due to a problem during production we may need to resize system partition
-		os.execute("resize2fs /dev/disk/by-bootmode/active")
+	os.execute("mkdir -p /mnt/system")
 
-		-- We are in active mode with running firmware
-		os.execute("mount -o ro /dev/disk/by-bootmode/active /run/.system_part")
-		os.execute("mount -o remount,rw,nodelalloc /run/.system_part")
+	-- Due to a problem during production we may need to resize system partition
+	os.execute("resize2fs /dev/disk/by-partlabel/system")
+
+	-- Check if system partition is read-only (default) If this fails directly mount it rw
+	if os.execute("mount -o ro /dev/disk/by-partlabel/system /mnt/system") == true then
+		os.execute("mount -o remount,rw,nodelalloc /mnt/system")
 	else
-		-- Due to a problem during production we may need to resize system partition
-		os.execute("resize2fs /dev/disk/by-bootmode/standby-0")
-
-		-- We are in rescue mode, so standby-0 should be our target to update
-		os.execute("mount -o rw,nodelalloc /dev/disk/by-bootmode/standby-0 /run/.system_part")
+		os.execute("mount -o nodelalloc /dev/disk/by-partlabel/system /mnt/system")
 	end
 
-	-- Delete alternative firmware to make sure we have enough diskspace. We are recovering anyway cleaning everything
-	if file_exists("/run/.system_part/aboot.cfg") then
-		os.execute("for file in $(find /run/.system_part/ -maxdepth 1 -name '*fitImage*'); do grep -q $(basename $file) /run/.system_part/aboot.cfg && rm $file*; done")
-		os.execute("for file in $(find /run/.system_part/ -maxdepth 1 -name '*.rootfs.squashfs'); do grep -q $(basename $file) /run/.system_part/aboot.cfg && rm $file*; done")
-		os.execute("rm -f /run/.system_part/aboot.cfg*")
-	end
+	-- Delete the unbooted boot.cfg file to make sure we have enough diskspace. We are recovering anyway cleaning everything.
+	os.execute("grep -q bootCfg=.*/aboot.cfg /proc/cmdline && rm -rf /mnt/system/boot.cfg*")
+	os.execute("grep -q bootCfg=.*/boot.cfg /proc/cmdline && rm -rf /mnt/system/aboot.cfg*")
+
+	-- Delete obsolete files
+	os.execute("for file in $(find /mnt/system -maxdepth 1 -name *fitImage*); do grep -q $(basename $file) /mnt/system/*boot.cfg || rm $file*; done")
+	os.execute("for file in $(find /mnt/system/ -maxdepth 1 -name *.rootfs.squashfs); do grep -q $(basename $file) /mnt/system/*boot.cfg || rm $file*; done")
 end
 
 function preinst()
@@ -168,9 +165,7 @@ function preinst()
 end
 
 function postinst()
-	-- Mark swupdate status as failed.
-	os.execute("sync")
-	os.execute("mount -o remount,ro /run/.system_part")
+	os.execute("sync && umount /mnt/system && rmdir /mnt/system")
 
 	swupdate.info("Rebooting system ...")
 	os.execute("(sleep 1; reboot;) &")
