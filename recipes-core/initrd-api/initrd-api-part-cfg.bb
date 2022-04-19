@@ -67,4 +67,5 @@ do_deploy() {
 }
 addtask deploy after do_sign
 
+RDEPENDS_${PN} += "dosfstools e2fsprogs-mke2fs e2fsprogs-resize2fs e2fsprogs-e2fsck util-linux-sfdisk"
 FILES_${PN} = "${datadir}"

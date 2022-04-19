@@ -154,14 +154,9 @@ rm -f ${logfile}
 rsync_log=$(mktemp)
 echo "--- rsync info -----------------" >> ${rsync_log}
 
-[ "${reboot}" == "1" ] && {
-  do_firmware_update
-  do_reboot
-}
-
-[ "${shutdown}" == "1" ] && {
-  do_firmware_update &&
-  do_shutdown
+do_firmware_update && {
+	[ "$removable" = "0" ] && do_reboot
+	do_shutdown
 }
 
 # This should never be reached

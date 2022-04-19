@@ -1,16 +1,9 @@
 #!/bin/sh
 
-get_arg() {
-	echo ${args} | sed 's/ /\n/g' | grep $1 | cut -s -d'=' -f2
-}
-
-log() {
-	echo "$@" | tee -a ${logfile}
-}
-
 do_reboot() {
 	trap "" 15 # TERM
 	log "System is rebooting!"
+	sleep 1
 	echo 1 > /proc/sys/kernel/sysrq
 	echo e > /proc/sysrq-trigger # send SIGTERM to all processes, allowing them to terminate gracefully
 #	echo i > /proc/sysrq-trigger # send SIGKILL to all processes, forcing them to terminate immediately
@@ -22,6 +15,7 @@ do_reboot() {
 do_shutdown() {
 	trap "" 9 15 # TERM
 	log "System is shutting down!"
+	sleep 1
 	echo 1 > /proc/sys/kernel/sysrq
 	echo e > /proc/sysrq-trigger # send SIGTERM to all processes, allowing them to terminate gracefully
 #	echo i > /proc/sysrq-trigger # send SIGKILL to all processes, forcing them to terminate immediately
@@ -94,9 +88,18 @@ do_check_version() {
 	[ "$allow_update" = "1" ] && return 0 || return 1
 }
 
-args=$*
-apifile=$(get_arg apifile)
-logfile=$(get_arg logfile)
-reboot=$(get_arg internal)
-shutdown=$(get_arg external)
+log() {
+	echo "$(basename $apifile): $@"
+	echo "$@" >> $logfile
+}
 
+get_key_val() {
+	echo $2 | tr ', ' '\n' | grep "^$1=" | cut -s -d'=' -f2
+}
+
+apifile=$(get_key_val apifile $*)
+logfile=$apifile.log
+
+dev=$(grep $(dirname $apifile) /proc/mounts | cut -d' ' -f1)
+part=$(basename $dev)
+removable=$(cat /sys/block/*/$part/../removable)
