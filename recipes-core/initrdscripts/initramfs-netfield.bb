@@ -44,6 +44,8 @@ do_install() {
 }
 
 PACKAGES = " \
+	${PN} \
+	${PN}-base \
 	${PN}-netfield-init \
 	${PN}-platform-init \
 	${PN}-initrd-api\
@@ -53,12 +55,14 @@ PACKAGES = " \
 	${PN}-detect-cifx \
 	${PN}-provisioning \
 	${PN}-oemfs \
-	${PN}-platform-mounts \
+	${PN}-platform-mount \
 	${PN}-update-hooks \
 	${PN}-overlayfs \
-	\
-	${PN}-base \
 "
+
+SUMMARY_${PN}-netfield-init = "Modular initramfs support for the netfield-os (base-components)"
+RRECOMMENDS_${PN}-base += ""
+FILES_${PN}-base += "/init.d/*-macros_hooks"
 
 SUMMARY_${PN}-netfield-init = "Modular initramfs support for generic netfield initialization."
 RDEPENDS_${PN}-netfield-init += "${PN}-base pub-key-loader device-data-driver e2fsprogs-e2fsck util-linux-lsblk file-signature"
@@ -98,9 +102,9 @@ SUMMARY_${PN}-oemfs = "Modular initramfs support for oemfs."
 RDEPENDS_${PN}-oemfs += "${PN}-base"
 FILES_${PN}-oemfs += "/init.d/*-oemfs"
 
-SUMMARY_${PN}-platfrom-mount = "Modular initramfs support for platform-mount."
-RDEPENDS_${PN}-platfrom-mount += "${PN}-base"
-FILES_${PN}-platfrom-mount += "/init.d/*-platfrom_mount"
+SUMMARY_${PN}-platform-mount = "Modular initramfs support for platform-mount."
+RDEPENDS_${PN}-platform-mount += "${PN}"
+FILES_${PN}-platform-mount += "/init.d/*-platform_mount"
 
 SUMMARY_${PN}-update-hooks = "Modular initramfs support for update_hooks."
 RDEPENDS_${PN}-update-hooks += "${PN}-base initramfs-update-hooks"
@@ -110,7 +114,7 @@ SUMMARY_${PN}-overlayfs = "Modular initramfs support for overlayfs."
 RDEPENDS_${PN}-overlayfs += "${PN}-base"
 FILES_${PN}-overlayfs += "/init.d/*-overlayfs"
 
-# Put all remaining files into the base package.
-ALLOW_EMPTY_${PN}-base = "1"
-RRECOMMENDS_${PN}-base += "${PACKAGES}"
-FILES_${PN}-base = "/"
+# This package references all other packages so that it can be used as a wrapper.
+ALLOW_EMPTY_${PN} = "1"
+RRECOMMENDS_${PN} += "${PACKAGES}"
+FILES_${PN} = ""
