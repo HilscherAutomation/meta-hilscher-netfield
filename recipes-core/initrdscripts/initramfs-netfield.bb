@@ -14,7 +14,6 @@ SRC_URI = " \
 	file://detect_cifx file://detect_cifx_setup \
 	file://provisioning file://functions \
 	file://oemfs \
-	file://platform_mount \
 	file://update_hooks_pre_overlayfs file://update_hooks_post_overlayfs \
 	file://overlayfs \
 "
@@ -37,7 +36,6 @@ do_install() {
 	install -m 0755 ${WORKDIR}/functions ${D}/init.d/functions
 
 	install -m 0755 ${WORKDIR}/oemfs ${D}/init.d/91-oemfs
-	install -m 0755 ${WORKDIR}/platform_mount ${D}/init.d/92-platform_mount
 	install -m 0755 ${WORKDIR}/update_hooks_pre_overlayfs ${D}/init.d/93-update_hooks_pre_overlayfs
 	install -m 0755 ${WORKDIR}/overlayfs ${D}/init.d/94-overlayfs
 	install -m 0755 ${WORKDIR}/update_hooks_post_overlayfs ${D}/init.d/95-update_hooks_post_overlayfs
@@ -55,7 +53,6 @@ PACKAGES = " \
 	${PN}-detect-cifx \
 	${PN}-provisioning \
 	${PN}-oemfs \
-	${PN}-platform-mount \
 	${PN}-update-hooks \
 	${PN}-overlayfs \
 "
@@ -101,10 +98,6 @@ FILES_${PN}-provisioning += "/init.d/*-provisioning /init.d/functions"
 SUMMARY_${PN}-oemfs = "Modular initramfs support for oemfs."
 RDEPENDS_${PN}-oemfs += "${PN}-base"
 FILES_${PN}-oemfs += "/init.d/*-oemfs"
-
-SUMMARY_${PN}-platform-mount = "Modular initramfs support for platform-mount."
-RDEPENDS_${PN}-platform-mount += "${PN}"
-FILES_${PN}-platform-mount += "/init.d/*-platform_mount"
 
 SUMMARY_${PN}-update-hooks = "Modular initramfs support for update_hooks."
 RDEPENDS_${PN}-update-hooks += "${PN}-base initramfs-update-hooks"

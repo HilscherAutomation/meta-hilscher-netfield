@@ -1,0 +1,54 @@
+#!/bin/sh
+
+fstab_new="/tmp/updatefstab/fstab.new"
+fstab_old="/tmp/updatefstab/fstab.old"
+fstab_diff_add="/tmp/updatefstab/fstab.diff.add"
+fstab_diff_del="/tmp/updatefstab/fstab.diff.del"
+
+updatefstab_preoverlay() {
+	mkdir /tmp/updatefstab
+	cp $ROOTFS_DIR/etc/fstab $fstab_new
+}
+
+updatefstab_postoverlay() {
+	cp $ROOTFS_DIR/etc/fstab $fstab_old
+
+	# Create separate diff file for add and remove
+	diff -b $fstab_new $fstab_old | grep ^+ | tr -d '^+' | tail -n+2 > $fstab_diff_add
+	diff -b $fstab_new $fstab_old | grep ^- | tr -d '^-' | tail -n+2 > $fstab_diff_del
+
+	# Remove additional/new lines if they are already in old fstab.
+	while read -r line; do
+		grep -q "^$line$"  $fstab_diff_del && {
+			sed -i "s|^$line$||g" $fstab_diff_add
+		}
+	done < $fstab_diff_add
+
+	# Remove empty lines.
+	cat $fstab_diff_add | grep -v "^$" > $fstab_diff_add.tmp
+	mv $fstab_diff_add.tmp $fstab_diff_add
+
+	# Comment out old mountpoint entries that are conflicting to new ones.
+	while read -r line; do
+		grep -q "^$" <<<$line && continue
+		grep -q "^#" <<<$line && continue
+
+		mp=$(echo $line | cut -d' ' -f2)
+		cat $fstab_diff_add | sed "s,\(^.*\)\(.*\)\($mp\),#\1\2\3,g" >$fstab_diff_add.tmp
+		cat $fstab_diff_add.tmp | tr -s '^#' > $fstab_diff_add
+	done < $fstab_new
+
+	# Merge the remaining entries from the old fstab to the new one.
+	[ -n "$(cat $fstab_diff_add)" ] && {
+		__debug "Updating the /etc/fstab ..."
+		cat $fstab_diff_add >> $fstab_new
+
+		# Only for debug prints
+		diff $ROOTFS_DIR/etc/fstab $fstab_new
+
+		cp $fstab_new $ROOTFS_DIR/etc/fstab
+		__debug "... done"
+	}
+
+	rm -rf /tmp/updatefstab
+}

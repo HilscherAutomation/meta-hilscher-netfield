@@ -1,0 +1,11 @@
+# The rootfs as well as /dev, /proc, /sys, /run, /var/platform are already mounted by the initramfs.
+
+devpts               /dev/pts             devpts     mode=0620,ptmxmode=0666,gid=5      0  0
+tmpfs                /var/volatile        tmpfs      defaults              0  0
+
+tmpfs                /mnt                 tmpfs      size=128K,mode=777    0  0
+LABEL=backup         /mnt/backup          auto       defaults              0  0
+
+# ##############################################################################
+# Below are the custom configurations that may also be automatically merged from old fstab files.
+# Note: Maybe, some lines are commented out as they conficting to the new fstab!

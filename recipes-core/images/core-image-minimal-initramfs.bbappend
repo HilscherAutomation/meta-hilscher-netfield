@@ -3,8 +3,7 @@ inherit hilscher-image-check
 do_rootfs[vardepsexclude] += "FIRMWARE_VERSION FULL_FW_VERSION"
 
 INITRAMFS_SCRIPTS = " \
-	initramfs-framework-base \
-	initramfs-netfield-base \
+	initramfs-netfield \
 	initramfs-module-lvm \
 	initramfs-module-udev \
 "
