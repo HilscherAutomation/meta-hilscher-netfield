@@ -12,6 +12,10 @@ PACKAGECONFIG[apparmor] = "-Dapparmor=true,-Dapparmor=false,apparmor"
 PACKAGECONFIG_append += "seccomp audit"
 PACKAGECONFIG_append += "journal-upload"
 PACKAGECONFIG_remove += "networkd"
+
+# Use cgroups v2 per default
+PACKAGECONFIG_append += "cgroupv2"
+
 # Make sure journal-upload is not automatically started, as it requires a configuration
 SYSTEMD_PACKAGES_remove += "${PN}-journal-upload"
 SYSTEMD_SERVICE_${PN}-journal-upload = ""
