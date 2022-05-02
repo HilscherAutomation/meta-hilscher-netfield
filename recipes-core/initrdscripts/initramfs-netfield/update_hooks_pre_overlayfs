@@ -6,7 +6,7 @@ update_hooks_pre_overlayfs_enabled() {
 	updated_version=$(cat "${ROOTFS_DIR}/etc/.last_fw_update" 2>/dev/null)
 	running_version=$(cat "${ROOTFS_DIR}/firmware.version")
 	if [ "${running_version}" = "${updated_version}" ]; then
-		modskip
+		__skip
 		return 1
 	fi
 	return 0

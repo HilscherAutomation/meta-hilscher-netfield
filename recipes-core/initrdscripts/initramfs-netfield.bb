@@ -103,7 +103,7 @@ RDEPENDS_${PN}-platfrom-mount += "${PN}-base"
 FILES_${PN}-platfrom-mount += "/init.d/*-platfrom_mount"
 
 SUMMARY_${PN}-update-hooks = "Modular initramfs support for update_hooks."
-RDEPENDS_${PN}-update-hooks += "${PN}-base"
+RDEPENDS_${PN}-update-hooks += "${PN}-base initramfs-update-hooks"
 FILES_${PN}-update-hooks += "/init.d/*-update_hooks*"
 
 SUMMARY_${PN}-overlayfs = "Modular initramfs support for overlayfs."
