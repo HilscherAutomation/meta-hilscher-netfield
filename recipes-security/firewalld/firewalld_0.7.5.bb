@@ -5,7 +5,7 @@ LICENSE="GPL-2.0"
 LIC_FILES_CHKSUM="file://COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263"
 
 SRC_URI = "https://github.com/${BPN}/${BPN}/releases/download/v${PV}/${BPN}-${PV}.tar.gz"
-SRC_URI[sha256sum] = "414c46202c12334cd5c986214e5e2575d18e743c5531a97ace1c0cd94341c60d"
+SRC_URI[sha256sum] = "45a8a7dbc084ef56ce306154d3834922e7f1fc2bf11b6c821f579cad51313226"
 
 S="${WORKDIR}/${BPN}-${PV}"
 
