@@ -91,11 +91,11 @@ create_boot_cfg_file() {
 	echo "root='$root'" >> $dst
 	case "$(basename $dst)" in
 		"rboot.cfg")
-			echo "overlay=''" >> $dst
+			#echo "overlay=''" >> $dst
 			echo "overlaytargets='rootfs'" >> $dst
 			;;
 		*)
-			echo "overlay='${HILSCHER_OVERLAY}'" >> $dst
+			#echo "overlay='${HILSCHER_OVERLAY}'" >> $dst
 			echo "overlaytargets='${HILSCHER_OVERLAYTARGETS}'" >> $dst
 			;;
 	esac

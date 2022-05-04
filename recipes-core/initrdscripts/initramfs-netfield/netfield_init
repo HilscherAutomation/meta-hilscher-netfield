@@ -142,6 +142,9 @@ boot_cfg_run() {
 	dummy=${bootparam_overlayfstype:=$overlayfstype}
 	dummy=${bootparam_overlayflags:=$overlayflags}
 	dummy=${bootparam_overlaytargets:=$overlaytargets}
+
+	# Set default value of bootparam_overlay if not specified.
+	[ "$bootparam_overlaytargets" -a ! "$bootparam_overlay" ] && bootparam_overlay="/dev/mapper/data-data"
 }
 
 verify_root_run() {
