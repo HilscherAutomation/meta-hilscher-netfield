@@ -3,7 +3,7 @@ HOMEPAGE="https://github.com/zsh-users/zsh-completions"
 LICENSE="zsh"
 
 SRC_URI = "git://github.com/zsh-users/zsh-completions.git;protocol=https"
-SRCREV = "cf565254e26bb7ce03f51889e9a29953b955b1fb"
+SRCREV = "11ad0a45ff1695cac00e86c687cce6fa1fd1cdbd"
 
 LIC_FILES_CHKSUM = "file://LICENSE;md5=26b9ce7bfd3731f0df81909b2d90129b"
 

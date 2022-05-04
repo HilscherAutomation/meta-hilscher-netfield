@@ -11,7 +11,7 @@ LIC_FILES_CHKSUM = "file://LICENCE;md5=1a4c4cda3e8096d2fd483ff2f4514fec"
 DEPENDS = "ncurses bison-native libcap libpcre gdbm groff-native"
 
 SRC_URI = "${SOURCEFORGE_MIRROR}/${BPN}/${BP}.tar.xz"
-SRC_URI[sha256sum] = "dcc4b54cc5565670a65581760261c163d720991f0d06486da61f8d839b52de27"
+SRC_URI[sha256sum] = "b6973520bace600b4779200269b1e5d79e5f505ac4952058c11ad5bbf0dd9919"
 
 inherit autotools-brokensep gettext
 
