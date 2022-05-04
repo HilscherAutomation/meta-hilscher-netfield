@@ -12,6 +12,7 @@ netfield_init_enabled() {
 netfield_init_run() {
 	load_kernel_modules_run
 	check_filesystems_run
+	mount_filesystems_run
 	boot_cfg_run
 	verify_root_run
 }
@@ -55,6 +56,17 @@ check_filesystems_run() {
 			fi
 		done
 	done
+}
+
+mount_filesystems_run() {
+	__debug "Mount filesystems ..."
+	__debug "#####################"
+
+	mkdir -p /run && mount -t tmpfs -o mode=0755,nodev,nosuid,strictatime,size=128M tmpfs /run
+	mkdir -p /var/platform && mount -t tmpfs tmpfs /var/platform
+	add_mp /run /var/platform
+
+	mount -t tmpfs -o size=80% tmpfs /tmp
 }
 
 boot_cfg_run() {

@@ -26,6 +26,11 @@ __skip() {
 	}
 }
 
+ADDITIONAL_MOUNTPOINTS=""
+add_mp() {
+	ADDITIONAL_MOUNTPOINTS="$ADDITIONAL_MOUNTPOINTS $@"
+}
+
 # Hook functions ...
 ####################
 
@@ -53,6 +58,9 @@ esac
 
 # Module functions ...
 ######################
+
+# Required for chroot environments
+export PATH
 
 # Add extra options for debug images ...
 grep -qo debug < /firmware.version && {
