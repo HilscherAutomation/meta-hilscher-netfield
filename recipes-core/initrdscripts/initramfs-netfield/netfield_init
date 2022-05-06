@@ -98,15 +98,27 @@ boot_cfg_run() {
 		}
 		__debug "... success => Using $boot_cfg as boot.cfg file."
 
-		. $boot_cfg
+		while read -r line; do
+			# Skip comments and empty lines ...
+			grep ^# <<<$line && continue
+			grep ^$ <<<$line && continue
+
+			# Retrieve variable/option name and value.
+			opt=${line%=*}
+			value=${line#*=}
+
+			# Add to bootparam environment if not already done using the kernel cmdline.
+			# Note:
+			#   Booleans are currently not supported!
+			eval dummy=\${bootparam_$opt=$value}
+		done < $boot_cfg
 	fi
 
+	# bootparam_rootXXX
+	# =================
 	# Mandatory: root (e.g. root="rootfs.squashfs")
 	# Optional: rootfstype (e.g. rootfstype="squashfs"
 	# Optional: rootflags (e.g. rootflags="sync")
-	dummy=${bootparam_root:=$root}
-	dummy=${bootparam_rootfstype:=$rootfstype}
-	dummy=${bootparam_rootflags:=$rootflags}
 
 	[ -n "$bootparam_root" ] || {
 		__fatal "Invalid or missing 'root' parameter"
@@ -129,19 +141,14 @@ boot_cfg_run() {
 	grep -q ^/ <<<$bootparam_root || bootparam_root=${boot_mp:+"$boot_mp/"}$bootparam_root
 
 	[ -z "$bootparam_rootfstype" ] && bootparam_rootfstype=$(grep -o [^.]*$ <<< $bootparam_root)
-	if [ "$bootparam_rootfstype" = "squashfs" ]; then
-		#grep loop <<< $bootparam_rootflags || bootparam_rootflags="loop,ro,$bootparam_rootflags"
-		bootparam_ro=true
-	fi
+	[ "$bootparam_rootfstype" = "squashfs" ] && bootparam_ro=true
 
+	# bootparam_overlayXXX
+	# ====================
 	# Optional: overlay (e.g. overlay="(/dev/mapper/data-data")
 	# Optional: overlayfstype (e.g. overlayfstype="ext4")
 	# Optional: overlayflags (e.g. overlayflags="sync")
 	# Optional: overlaytargets (e.g. overlaytargets="rootfs" or overlaytargets="/etc /opt")
-	dummy=${bootparam_overlay:=$overlay}
-	dummy=${bootparam_overlayfstype:=$overlayfstype}
-	dummy=${bootparam_overlayflags:=$overlayflags}
-	dummy=${bootparam_overlaytargets:=$overlaytargets}
 
 	# Set default value of bootparam_overlay if not specified.
 	[ "$bootparam_overlaytargets" -a ! "$bootparam_overlay" ] && bootparam_overlay="/dev/mapper/data-data"
