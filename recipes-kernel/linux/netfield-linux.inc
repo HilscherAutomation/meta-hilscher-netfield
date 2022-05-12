@@ -22,6 +22,8 @@ KERNEL_MODULE_AUTOLOAD_append += "tun"
 
 # docker
 SRC_URI_append += "file://docker.cfg"
+# docker cgroup v2 support requires BPF_SYSCALL
+KERNEL_FEATURES_append += "features/bpf/bpf.scc"
 
 # Make sure ext4 extended attributes are enabled
 KERNEL_FEATURES_append += "cfg/fs/ext4.scc cfg/fs/ext3.scc cfg/fs/ext2.scc"
