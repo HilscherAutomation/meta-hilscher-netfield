@@ -62,9 +62,14 @@ mount_filesystems_run() {
 	__debug "Mount filesystems ..."
 	__debug "#####################"
 
+	# Note: Since /run already contains some content, it will be saved and restored.
+	[ -d /run ] && mv /run /tmp/run.orig
 	mkdir -p /run && mount -t tmpfs -o mode=0755,nodev,nosuid,strictatime,size=128M tmpfs /run
+	[ -d /tmp/run.orig ] && mv /tmp/run.orig/* /run && rmdir /tmp/run.orig
+	add_mp /run
+
 	mkdir -p /var/platform && mount -t tmpfs tmpfs /var/platform
-	add_mp /run /var/platform
+	add_mp /var/platform
 
 	mount -t tmpfs -o size=80% tmpfs /tmp
 }

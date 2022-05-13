@@ -22,14 +22,15 @@ initrd_api_run() {
 			}
 			__debug "... success => Using $f as initrd-api file."
 
-			mkdir -p /tmp/initrd-api && cd /tmp/initrd-api
+			mkdir -p /tmp/$(basename $f) && cd /tmp/$(basename $f)
 
 			contents=$(tail -c+${offset} $f | tar xzv)
  			__debug "$f: Provided contents: $(tr '\n' ' ' <<< $contents)"
 			[ -x runscript.sh ] && ./runscript.sh apifile=$f || {
 				__fatal "Executing $f failed ($?)!"
 			}
-			rm -rf *; cd - >/dev/null
+
+			cd - >/dev/null && rm -rf /tmp/$(basename $f)
 		}
 	done
 
