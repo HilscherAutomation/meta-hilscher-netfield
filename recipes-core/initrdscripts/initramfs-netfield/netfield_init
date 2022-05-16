@@ -14,7 +14,6 @@ netfield_init_run() {
 	check_filesystems_run
 	mount_filesystems_run
 	boot_cfg_run
-	verify_root_run
 }
 
 ################################################################################
@@ -157,20 +156,4 @@ boot_cfg_run() {
 
 	# Set default value of bootparam_overlay if not specified.
 	[ "$bootparam_overlaytargets" -a ! "$bootparam_overlay" ] && bootparam_overlay="/dev/mapper/data-data"
-}
-
-verify_root_run() {
-	__debug "Verify rootfs signature ..."
-	__debug "###########################"
-
-	# Verifying rootfs image file (squashfs image)
-	__debug "Verifying $bootparam_root ..."
-	if [ -f $bootparam_root ]; then
-		offset=$(verify_file $bootparam_root) || {
-			__fatal "... failed!"
-		}
-		__debug "... success => Using $bootparam_root as rootfs."
-	else
-		__debug "... not an image file => skipped"
-	fi
 }
