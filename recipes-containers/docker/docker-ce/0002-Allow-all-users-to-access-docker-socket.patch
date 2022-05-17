@@ -1,0 +1,26 @@
+From db6d2df94f31ba310703a344a361a54d587142e4 Mon Sep 17 00:00:00 2001
+From: Michael Trensch <mtrensch@hilscher.com>
+Date: Wed, 25 May 2022 10:13:15 +0200
+Subject: [PATCH 2/2] Allow all users to access docker socket.
+
+Permissions will be determined / granted by opa-docker-authz plugin
+---
+ contrib/init/systemd/docker.socket | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/contrib/init/systemd/docker.socket b/contrib/init/systemd/docker.socket
+index c76a23296e..a85e697bae 100644
+--- a/contrib/init/systemd/docker.socket
++++ b/contrib/init/systemd/docker.socket
+@@ -5,7 +5,7 @@ Description=Docker Socket for the API
+ # If /var/run is not implemented as a symlink to /run, you may need to
+ # specify ListenStream=/var/run/docker.sock instead.
+ ListenStream=/run/docker.sock
+-SocketMode=0660
++SocketMode=0666
+ SocketUser=root
+ SocketGroup=docker
+ 
+-- 
+2.25.1
+

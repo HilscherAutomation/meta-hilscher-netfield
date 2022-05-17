@@ -41,6 +41,7 @@ cockpit-ws:x:80:
 users:x:100:
 netadmin:x:101:
 timeadmin:x:102:
+docker-readonly:x:950:
 aziotid:x:960:
 aziotcs:x:961:aziotid
 aziotks:x:962:aziotid,aziotcs

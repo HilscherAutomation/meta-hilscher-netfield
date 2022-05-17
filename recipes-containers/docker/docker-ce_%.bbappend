@@ -3,6 +3,11 @@ require recipes-devtools/go/fix_go_cache.inc
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 SRC_URI_append += "file://docker.rules"
 
+SRC_URI_append += "\
+   file://0001-hack-Add-reading-of-user-credentials-from-socket.patch \
+   file://0002-Allow-all-users-to-access-docker-socket.patch \
+"
+
 DOCKER_BUILDTAGS_append += "exclude_graphdriver_devicemapper exclude_graphdriver_aufs exclude_graphdriver_zfs exclude_graphdriver_overlay"
 DEPENDS_remove_class-target += "libdevmapper"
 

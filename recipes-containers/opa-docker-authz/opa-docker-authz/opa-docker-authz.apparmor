@@ -1,0 +1,13 @@
+include <tunables/global>
+
+/usr/bin/opa-docker-authz {
+  #include <abstractions/base>
+
+  capability chown,
+  capability fsetid,
+
+  /{var/,}run/docker/plugins/opa-docker-authz.sock rwk,
+  /etc/docker/policies/{,*} r,
+
+  @{PROC}/sys/net/core/somaxconn r,
+}
