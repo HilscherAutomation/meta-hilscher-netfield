@@ -1,0 +1,7 @@
+polkit.addRule(function(action, subject) {
+  if (action.id.indexOf("org.freedesktop.timedate1.") == 0 &&
+        subject.active &&
+        subject.isInGroup ("timeadmin")) {
+    return polkit.Result.YES;
+  }
+});
