@@ -10,7 +10,7 @@ initrd_api_run() {
 	# This is to avoid mount errors for devices already mounted read-only.
 	mp=$(mktemp -d) && mkdir -p $mp && mount -o ro $boot_dev $mp && mount -o remount,rw $boot_dev $mp
 
-	for f in $(ls $mp/initrd-api-*); do
+	for f in $(find $mp -name initrd-api-*); do
 		grep -q .log$ <<< $f && continue
 		[ -e $f ] && {
 			# Verifying oem rootfs overlay image (squashfs image)
