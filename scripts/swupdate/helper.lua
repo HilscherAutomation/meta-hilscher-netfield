@@ -54,13 +54,13 @@ function mount_and_cleanup_system()
 	os.execute("mkdir -p /mnt/system")
 
 	-- Due to a problem during production we may need to resize system partition
-	os.execute("resize2fs /dev/disk/by-partlabel/system")
+	os.execute("resize2fs /dev/disk/by-label/system")
 
 	-- Check if system partition is read-only (default) If this fails directly mount it rw
-	if os.execute("mount -o ro /dev/disk/by-partlabel/system /mnt/system") == true then
+	if os.execute("mount -o ro /dev/disk/by-label/system /mnt/system") == true then
 		os.execute("mount -o remount,rw,nodelalloc /mnt/system")
 	else
-		os.execute("mount -o nodelalloc /dev/disk/by-partlabel/system /mnt/system")
+		os.execute("mount -o nodelalloc /dev/disk/by-label/system /mnt/system")
 	end
 
 	-- Delete the unbooted boot.cfg file to make sure we have enough diskspace. We are recovering anyway cleaning everything.
