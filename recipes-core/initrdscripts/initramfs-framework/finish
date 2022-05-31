@@ -27,7 +27,7 @@ finish_run() {
 		done
 
 		cd $ROOTFS_DIR
-		exec switch_root -c /dev/console $ROOTFS_DIR ${bootparam_init:-/sbin/init}
+		exec switch_root $ROOTFS_DIR ${bootparam_init:-/sbin/init}
 	else
 		__debug "No rootfs has been set"
 	fi
