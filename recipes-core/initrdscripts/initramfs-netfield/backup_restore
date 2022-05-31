@@ -28,7 +28,6 @@ backup_restore_run() {
 
 				if [ "$reboot" = "1" ]; then
 					__debug "System is rebooting!"
-# 					__reboot
 					echo 1 > /proc/sys/kernel/sysrq
 					echo e > /proc/sysrq-trigger # send SIGTERM to all processes, allowing them to terminate gracefully
 					echo s > /proc/sysrq-trigger # flush data to disk
