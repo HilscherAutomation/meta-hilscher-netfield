@@ -228,10 +228,14 @@ script_fitimage_assemble() {
 	# Step 5: Sign the image
 	#
 	if [ "x${UBOOT_SIGN_ENABLE}" = "x1" ] ; then
+		# NOTE: uboot-mkimage is a wrapper which injects the required parameter to support pkcs11 signing.
+		#       The parameter will be set via $UBOOT_MKIMAGE_PARAMS. The wrapper will only modify
+		#       the parameter set if "-k" is given. "-k dummy" will be replaced by UBOOT_MKIMAGE_PARAMS.
+		#       Check u-boot-tools.bbappend (this layer) for more info.
 		uboot-mkimage \
 			${@'-D "${UBOOT_MKIMAGE_DTCOPTS}"' if len('${UBOOT_MKIMAGE_DTCOPTS}') else ''} \
 			-F \
-			${UBOOT_MKIMAGE_PARAMS} \
+			-k dummy \
 			-r ${3}
 	fi
 }
