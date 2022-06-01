@@ -29,6 +29,9 @@ SRC_URI_append += "${@bb.utils.contains('DISTRO_FEATURES', 'apparmor', 'file://e
 # meta-security (zeus) adds apparmor.scc which is missing in older kernel-caches
 KERNEL_FEATURES_remove += "features/apparmor/apparmor.scc"
 
+# Enable ZRAM to be used as swap
+SRC_URI_append += "file://enable_zram.cfg"
+
 SRC_URI_append += "file://kernel_hardening.cfg \
                    file://netfilter_addon.cfg  \
                    file://nftables_addon.cfg"

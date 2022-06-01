@@ -31,6 +31,9 @@ IMAGE_INSTALL += "${@bb.utils.contains('DISTRO_FEATURES', 'apparmor', 'apparmor'
 # Auditing
 IMAGE_INSTALL += "auditd"
 
+# Swap on ZRAM
+IMAGE_INSTALL += "zram"
+
 # TPM
 IMAGE_INSTALL += "${@bb.utils.contains('MACHINE_FEATURES', 'tpm', 'tpm-tools trousers', '', d)}"
 IMAGE_INSTALL += "${@bb.utils.contains('MACHINE_FEATURES', 'tpm2', 'packagegroup-security-tpm2', '', d)}"
