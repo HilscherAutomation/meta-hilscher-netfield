@@ -87,7 +87,7 @@ do_general_settings() {
 
     cat <<EOF>>/etc/aziot/config.toml
 
-hostname: "$(hostname)"
+hostname = "$(hostname)"
 
 [agent]
 name = "edgeAgent"
