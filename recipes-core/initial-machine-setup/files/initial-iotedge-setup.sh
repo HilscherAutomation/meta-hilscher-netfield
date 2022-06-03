@@ -141,12 +141,14 @@ if [ "$iotedge_status" != "enabled" ]; then
             "symmetric_key")
                 do_symmetric_key_onboarding
                 do_general_settings
-		iotedge config apply
+                iotedge config apply
+                systemctl enable --no-block aziot-edged
                 ;;
             "tpm")
                 do_tpm_onboarding
                 do_general_settings
-		iotedge config apply
+                iotedge config apply
+                systemctl enable --no-block aziot-edged
                 ;;
             *)
                 echo "<4>Invalid zero-touch onboarding method ($method)"
