@@ -109,7 +109,7 @@ EOF
 }
 
 # Check for zero-touch onboarding data
-iotedge_status=$(systemctl is-enabled iotedge)
+iotedge_status=$(systemctl is-enabled aziot-edged)
 if [ "$iotedge_status" != "enabled" ]; then
     if [ -d "/var/platform/device_data/oem_data/iotedge" ]; then
         if [ -e "/var/platform/device_data/oem_data/iotedge/method" ]; then
