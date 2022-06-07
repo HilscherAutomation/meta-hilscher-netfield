@@ -4,6 +4,9 @@ inherit core-image
 
 require hilscher-packages.inc
 
+# image types recovery.swu/.zip depend on the the initrd api(-recovery) source
+DEPENDS += " initrd-api-recovery-src-native "
+
 do_adjust_fstab() {
     sed -i -e '/^[#[:space:]]*\/dev\/root/{s/defaults/ro/;s/\([[:space:]]*[[:digit:]]\)\([[:space:]]*\)[[:digit:]]$/\1\20/}' ${IMAGE_ROOTFS}/etc/fstab
 }

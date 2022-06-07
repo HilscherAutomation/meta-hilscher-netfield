@@ -87,7 +87,7 @@ do_firmware_recovery() {
   fi
 
   log "Deploying ${firmware} to ${dev} ... "
-  ./deploy.sh -a ${firmware} -d ${dev} -v -l "${logfile}" &&
+  ./recovery.sh -a ${firmware} -d ${dev} -v -l "${logfile}" &&
   sync
   [ $? -eq 0 ] && log "... done" || { log "... failed"; return 1; }
 

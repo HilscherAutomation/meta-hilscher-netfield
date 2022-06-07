@@ -3,15 +3,43 @@ inherit sign-wrapper hilscher-image-check
 NETFIELD_IMAGES ??= "recovery.zip recovery.swu"
 HILSCHER_EXTRA_ZIP_OPTIONS ??= ""
 
+RECOVERY_INITRD_API ??= "initrd-api-firmware"
+
 DEPENDS_append += "zip-native unzip-native openssl-native squashfs-tools-native coreutils-native"
 DEPENDS_append += "${@bb.utils.contains_any('NETFIELD_IMAGES', 'recovery.swu', 'cpio-native', '', d)}"
 
 # NOTE: as long as recovery images are netfield specific we provide image creation and deploy in one step (post-image_complete)
+do_image_complete[prefuncs] += "${@bb.utils.contains_any('NETFIELD_IMAGES', 'recovery.swu recovery.zip', 'create_recovery_initrd_api', '', d)}"
 do_image_complete[prefuncs] += "${@bb.utils.contains_any('NETFIELD_IMAGES', 'recovery.swu', 'netfield_create_recovery_swu', '', d)}"
 do_image_complete[prefuncs] += "${@bb.utils.contains_any('NETFIELD_IMAGES', 'recovery.zip', 'netfield_create_recovery_zip', '', d)}"
 
 # Make sure recovery.zip is deployed to dist directory
 DEPLOY_EXT_LIST_append += "${@bb.utils.filter('NETFIELD_IMAGES', 'recovery.zip', d)}"
+
+create_recovery_initrd_api() {
+  image_wic="${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.wic.bz2"
+
+  if [ ! -e "${image_wic}" ]; then
+    bbfatal "Error creating recovery image! Base image \"${image_wic}\" does not exist."
+  fi
+
+  setup_sign_wrapper_env "${PLATFORM_KEYNAME}"
+  local signing_key=$(setup_sign_wrapper_env "${PLATFORM_KEYNAME}")
+
+  mkdir -p ${WORKDIR}/firmware_api/firmware
+  cp ${WORKDIR}/recipe-sysroot-native/usr/share/initrd-api/recovery/* ${WORKDIR}/firmware_api/
+  cp ${image_wic} ${WORKDIR}/firmware_api/firmware
+
+  echo ${DATE} > ${WORKDIR}/firmware_api/firmware/timestamp
+  echo $FULL_FW_VERSION > ${WORKDIR}/firmware_api/firmware.version
+
+  tar -czf "${WORKDIR}/${RECOVERY_INITRD_API}" -C ${WORKDIR}/firmware_api/ .
+  openssl_sign_wrapper "${PLATFORM_KEY_NAME}" "sha512" "${WORKDIR}/${RECOVERY_INITRD_API}" "merge"
+
+  cp "${WORKDIR}/${RECOVERY_INITRD_API}.signed" "${DEPLOY_DIR_IMAGE}/recovery-initrd-api.signed"
+
+  rm -r ${WORKDIR}/firmware_api/
+}
 
 __generate_swu() {
   # Create hashes
@@ -56,39 +84,11 @@ __generate_swu() {
 }
 
 netfield_create_recovery_swu() {
-  image_wic="${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.wic.bz2"
-
   rm -f ${IMGDEPLOYDIR}/*.recovery.swu
 
-  if [ ! -e "${image_wic}" ]; then
-    bbfatal "Error creating swu-recovery image! Base image \"${image_wic}\" does not exist."
-  fi
-
-  # Create a working directory
-  tmpdir_tmp=$(mktemp -d)
-
-  cd ${tmpdir_tmp}
-  # create firmware file with runscript (see deploy/_firmware) and wic-image
-  export PHYSICAL_SYSTEM_DEVICE="${PHYSICAL_SYSTEM_DEVICE}"
-  export FIRMWARE_VERSION="${FULL_FW_VERSION}"
-
-  setup_sign_wrapper_env "${PLATFORM_KEYNAME}"
-  local signing_key=$(setup_sign_wrapper_env "${PLATFORM_KEYNAME}")
-  case "${SIGN_WRAPPER_MODE}" in
-    pkcs11) engine_params="-e pkcs11" ;;
-  esac
-  if [ "${PLATFORM_SIGN}" = "1" ]; then
-    sign_params="-k $signing_key"
-  else
-    sign_params="-u"
-  fi
-
-  ${NETFIELD_BASE}/scripts/deploy/create_firmware_api_file.sh ${engine_params} -a ${image_wic} ${sign_params} -s ${NETFIELD_BASE}/scripts/deploy/_firmware -v
-  cd ..
   tmpdir=$(mktemp -d)
 
-  cp ${tmpdir_tmp}/firmware.signed ${tmpdir}/initrd-api-firmware
-  rm -rf ${tmpdir_tmp}
+  cp ${DEPLOY_DIR_IMAGE}/recovery-initrd-api.signed ${tmpdir}/${RECOVERY_INITRD_API}
 
   # Patch scripts
   sed -e "s/@FW_VERSION@/${FULL_FW_VERSION}/g" ${NETFIELD_BASE}/scripts/swupdate/helper.lua > ${tmpdir}/helper.lua
@@ -113,39 +113,19 @@ netfield_create_recovery_swu() {
 }
 
 netfield_create_recovery_zip() {
-  image_wic="${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.wic.bz2"
   image_zip="${IMGDEPLOYDIR}/${IMAGE_NAME}.recovery.zip"
-
-  if [ ! -e "${image_wic}" ]; then
-    bbfatal "Error creating zip-recovery image! Base image \"${image_wic}\" does not exist."
-  fi
 
   rm -f ${IMGDEPLOYDIR}/*.recovery.zip
 
-  type="recovery"
+  mkdir -p ${WORKDIR}/usb_zip
+  cp ${DEPLOY_DIR_IMAGE}/recovery-initrd-api.signed ${WORKDIR}/usb_zip/${RECOVERY_INITRD_API}
+  cp ${DEPLOY_DIR_IMAGE}/boot-script-fit/boot-recovery.scr ${WORKDIR}/usb_zip/boot.scr
+  cp ${DEPLOY_DIR_IMAGE}/fitImage-core-image-minimal-initramfs*.bin ${WORKDIR}/usb_zip/Image
+  cd ${WORKDIR}/usb_zip/
 
-  export PHYSICAL_SYSTEM_DEVICE="${PHYSICAL_SYSTEM_DEVICE}"
-  export DEPLOY_DIR_IMAGE="${DEPLOY_DIR_IMAGE}"
-  export FIRMWARE_VERSION="${FULL_FW_VERSION}"
-
-  setup_sign_wrapper_env "${PLATFORM_KEYNAME}"
-  local signing_key=$(setup_sign_wrapper_env "${PLATFORM_KEYNAME}")
-  case "${SIGN_WRAPPER_MODE}" in
-    pkcs11) engine_params="-e pkcs11" ;;
-  esac
-
-  if [ "${PLATFORM_SIGN}" = "1" ]; then
-    sign_param="-k $signing_key"
-  else
-    sign_param="-u"
-  fi
-
-  ${NETFIELD_BASE}/scripts/deploy/create_dist_archive.sh ${engine_params} \
-    -o "${image_zip}" \
-    -i ${image_wic} \
-    ${sign_param} \
-    -c ${BSP_DEPLOYSCRIPT_DIR} -t $type \
-    ${HILSCHER_EXTRA_ZIP_OPTIONS}
+  zip -r "${image_zip}" ./*
 
   ln -sf $(basename ${image_zip}) ${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.recovery.zip
+
+  rm -r ${WORKDIR}/usb_zip
 }
