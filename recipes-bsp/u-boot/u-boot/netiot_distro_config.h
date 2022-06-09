@@ -2,11 +2,17 @@
 /*** NOTE: This file contains all generic definitions required for netFIELD OS bootloader. ***/
 /***       To overwrite settings see inlcuded file machine_config.h.                       ***/
 /*********************************************************************************************/
+#include <linux/sizes.h>
+
 #define xstr(a) str(a)
 #define str(a) #a
 
 /* max size of image for boot command */
+#ifdef CONFIG_SYS_BOOTM_LEN
+	#undef CONFIG_SYS_BOOTM_LEN
+#endif
 #define CONFIG_SYS_BOOTM_LEN SZ_32M
+
 /* max number of arguments */
 #define CONFIG_SYS_MAXARGS 64
 
