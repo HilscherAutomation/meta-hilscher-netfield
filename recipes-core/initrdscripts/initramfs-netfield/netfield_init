@@ -61,6 +61,10 @@ mount_filesystems_run() {
 	__debug "Mount filesystems ..."
 	__debug "#####################"
 
+	# Note: Wait until all udev events are handled.
+	while ! udevadm settle -t 1; do
+		__debug "Waiting for an empty udev event queue ..."
+	done
 	# Note: Since /run already contains some content, it will be saved and restored.
 	[ -d /run ] && mv /run /tmp/run.orig
 	mkdir -p /run && mount -t tmpfs -o mode=0755,nodev,nosuid,strictatime,size=128M tmpfs /run
