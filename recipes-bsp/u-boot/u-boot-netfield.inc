@@ -1,6 +1,6 @@
 FILESEXTRAPATHS_append := "${THISDIR}/u-boot:"
 
-RDEPENDS_${PN}_append += " boot-script-fit "
+DEPENDS_append += "boot-script-fit"
 
 # generic platform specific setup
 SRC_URI_append += "file://netiot_distro_config.h \

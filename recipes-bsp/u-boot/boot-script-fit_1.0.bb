@@ -4,7 +4,7 @@ LICENSE = "CLOSED"
 
 inherit sign-wrapper boot-script-fitimage deploy
 
-DEPENDS = "u-boot u-boot-mkimage-native dtc-native"
+DEPENDS = "u-boot-mkimage-native dtc-native"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
