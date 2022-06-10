@@ -1,19 +1,11 @@
 #!/bin/sh
 
-KEY_LOCATION_DEVICE="/etc/ssl/private/iotedge-device"
 KEY_LOCATION_CA="/etc/ssl/private/iotedge-ca"
-
-keys_to_check=" \
- device_ca_cert;${KEY_LOCATION_DEVICE}/cert.pem \
- device_ca_pk;${KEY_LOCATION_DEVICE}/privkey.pem \
- trusted_ca_certs;${KEY_LOCATION_CA}/cert.pem"
 
 # Calculcate days to 2038 (which is the current limit of iotedge)
 today=$(date +%s)
 lastday=$(date +%s -d 01/01/2038)
 maxvalidity=$((($lastday - $today) / 86400))
-
-delete_certs="false"
 
 check_and_generate_key_and_cert() {
     path="$1"
@@ -33,7 +25,6 @@ check_and_generate_key_and_cert() {
     key_modulus=$(openssl rsa -noout -modulus -in $path/privkey.pem 2> /dev/null)
     cert_modulus=$(openssl x509 -noout -modulus -in $path/cert.pem 2> /dev/null)
     if [ "$key_modulus" != "$cert_modulus" ]; then
-        delete_certs="true"
         if [ "$crt_ext" = "v3_ca" ]; then
             # root CA (self-signed)
             openssl req \
@@ -112,44 +103,33 @@ EOF
     fi
 }
 
-check_default_certificates="1"
-
-# Check if iotedged's config.yaml contains required keys
-for entry in $keys_to_check; do
-    key=$(echo $entry | cut -d ';' -f1)
-    defvalue=$(echo $entry | cut -d ';' -f2)
-
-    check=$(yq eval ".certificates.${key}" /etc/iotedge/config.yaml | sed -e 's@file://@@g')
-    if [ "$check" = "null" ]; then
-        yq --inplace eval ".certificates.${key}=\"file://${defvalue}\" | .certificates.${key} style=\"double\"" /etc/iotedge/config.yaml
-        check="$defvalue"
-    fi
-
-    if [ "$check" != "$defvalue" ]; then
-        echo "Detected manually modified config.yaml ($check != $defvalue), skipping certificate checking/generation"
-        check_default_certificates="0"
-        break
-    fi
-done
-
-if [ "$check_default_certificates" = "1" ]; then
-    mkdir -p ${KEY_LOCATION_CA} ${KEY_LOCATION_DEVICE}
-
-    check_and_generate_key_and_cert "${KEY_LOCATION_CA}" "/CN=$(hostname)-local-owner-ca" "v3_ca"
-    check_and_generate_key_and_cert "${KEY_LOCATION_DEVICE}" "/CN=$(hostname)-local-device-ca" "v3_intermediate_ca"
-
-    if [ "$delete_certs" = "true" ]; then
-        rm -rf /var/lib/iotedge/hsm/certs/* /var/lib/iotedge/hsm/cert_keys/*
-    fi
+if [ ! -e "/etc/aziot/config.toml" ]; then
+	echo "/etc/aziot/config.toml is missing. Exiting"
+	exit 0
 fi
 
-# Add max validity parameter if not existing
-check=$(yq eval ".certificates.auto_generated_ca_lifetime_days" /etc/iotedge/config.yaml)
-if [ "$check" = "null" ]; then
-    yq --inplace eval ".certificates.auto_generated_ca_lifetime_days=365 | .certificates.auto_generated_ca_lifetime_days style=\"\"" /etc/iotedge/config.yaml
-    delete_certs="true"
+if grep "\[edge_ca\]" /etc/aziot/config.toml; then
+	echo "Custom certificates detected. Assuming already patched"
+	exit 0
 fi
 
-if [ "$delete_certs" = "true" ]; then
-    rm -rf /var/lib/iotedge/hsm/certs/* /var/lib/iotedge/hsm/cert_keys/*
-fi
+mkdir -p ${KEY_LOCATION_CA}
+
+check_and_generate_key_and_cert "${KEY_LOCATION_CA}" "/CN=$(hostname)-local-owner-ca" "v3_ca"
+chown aziotks:aziotks ${KEY_LOCATION_CA}/privkey.pem
+chmod 0640 ${KEY_LOCATION_CA}/privkey.pem
+chown aziotcs:aziotcs ${KEY_LOCATION_CA}/cert.pem
+chmod 0644 ${KEY_LOCATION_CA}/cert.pem
+
+# Adjust super config
+cat <<EOF>>/etc/aziot/config.toml
+
+[edge_ca]
+cert = "file://${KEY_LOCATION_CA}/cert.pem"
+pk = "file://${KEY_LOCATION_CA}/privkey.pem"
+EOF
+
+# Delete previously generated CA certificates (if any)
+rm -f /var/lib/aziot/certd/certs/* /var/lib/aziot/keyd/keys/*
+
+OMIT_SERVICE_RESTART=1 iotedge config apply
