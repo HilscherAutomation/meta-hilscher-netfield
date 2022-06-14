@@ -2,11 +2,11 @@
 Description=Set initial iotedge container configuration
 DefaultDependencies=no
 After=local-fs.target initial-hostname.service
-Before=network.target dpkg-configure.service
+Before=network.target dpkg-configure.service aziot-edged.service
 ConditionPathIsReadWrite=/etc
 
 [Service]
-Type=oneshot
+Type=simple
 RemainAfterExit=Yes
 StandardOutput=syslog
 TimeoutSec=0
