@@ -1,0 +1,26 @@
+diff -aurN a/iotedge/src/config/apply.rs b/iotedge/src/config/apply.rs
+--- a/iotedge/src/config/apply.rs	2022-06-03 09:38:53.245605648 +0200
++++ b/iotedge/src/config/apply.rs	2022-06-14 16:01:10.273071655 +0200
+@@ -4,6 +4,7 @@
+ //! writes those files, and restarts the services.
+ 
+ use std::path::Path;
++use std::env;
+ 
+ use aziotctl_common::config as common_config;
+ 
+@@ -148,8 +149,12 @@
+ 
+     println!("Azure IoT Edge has been configured successfully!");
+     println!();
+-    println!("Restarting service for configuration to take effect...");
+-    crate::System::system_restart().map_err(|err| format!("{}", err))?;
++    if env::var("OMIT_SERVICE_RESTART").is_ok() {
++        println!("Skipping service restart!");
++    } else {
++        println!("Restarting service for configuration to take effect...");
++        crate::System::system_restart().map_err(|err| format!("{}", err))?;
++    }
+     println!("Done.");
+ 
+     Ok(())
