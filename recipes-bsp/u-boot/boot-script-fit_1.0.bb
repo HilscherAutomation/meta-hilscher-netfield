@@ -45,3 +45,13 @@ do_assemble_boot_script_fitimage_prepend() {
 			;;
 	esac
 }
+
+inherit hilscher-deploy
+
+hd_path = "${HDEPLOY_PATH_EXTRAS}/boot-scripts"
+
+do_hilscher_deploy() {
+	cp -r ${DEPLOYDIR}/${PN}/* "${hd_path}/"
+}
+do_hilscher_deploy[cleandirs] = "${hd_path}/"
+addtask hilscher_deploy before do_build after do_deploy

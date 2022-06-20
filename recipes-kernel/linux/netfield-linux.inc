@@ -191,3 +191,14 @@ do_assemble_fitimage_initramfs_append() {
 do_shared_workdir_prepend() {
 	setup_sign_wrapper_env "${PLATFORM_KEYNAME}"
 }
+
+inherit hilscher-deploy
+
+hd_path = "${HDEPLOY_PATH_EXTRAS}/kernel"
+
+do_hilscher_deploy() {
+	kernel=$(find ${DEPLOYDIR} -type l -name "fitImage-core-image-minimal-initramfs-${MACHINE}-${MACHINE}*")
+	cp -a $(readlink -f $kernel) "${hd_path}/"
+}
+do_hilscher_deploy[cleandirs] = "${hd_path}/"
+addtask hilscher_deploy before do_build after do_deploy

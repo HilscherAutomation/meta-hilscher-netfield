@@ -32,3 +32,5 @@ VENDOR_VARIANT_ID="netfield"
 # NOTE: cockpit-branding-default is included in base image and can be left out here
 OEM_IMAGE_INSTALL += " \
 "
+
+require recipes-core/images/hdeploy_image.inc

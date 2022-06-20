@@ -1,11 +1,13 @@
 #!/bin/sh -e
 
+image_search_dir="./"
+
 getImagePath() {
 	imageType=$1
 
-	image="$(find -name "*.$imageType" -type l)"
+	image="$(find ${image_search_dir} -name "*.$imageType" -type l)"
 	[ -n "$image" ] && image=$(readlink $image)
-	[ -z "$image" ] && image="$(find -name "*.$imageType" -type f)"
+	[ -z "$image" ] && image="$(find ${image_search_dir} -name "*.$imageType" -type f)"
 	[ -z "$image" ] && return 1
 
 	echo $image
@@ -27,6 +29,11 @@ which fastboot > /dev/null || {
 }
 
 target=$1
+
+if [ $# -gt "1" ]; then
+	image_search_dir=$2
+fi
+echo "Search within \"${image_search_dir}\" for fastboot files..."
 
 gptImage="$(getImagePath 'gpt.sparse.fastboot' || getImagePath 'gpt.raw.fastboot' || getImagePath 'gpt.fastboot')"
 bootImage="$(getImagePath 'boot.sparse.fastboot' || getImagePath 'boot.raw.fastboot' || getImagePath 'boot.fastboot')"

@@ -109,7 +109,6 @@ SCRIPTDIR=$(dirname ${SCRIPTDIR})
 
 # Relative path, convert to absolute path
 [[ ! "$DEPLOY_DIR" = /* ]] && DEPLOY_DIR="${PWD}/$DEPLOY_DIR"
-rm -rf $DEPLOY_DIR
 
 for machine in $PLATFORMS; do
 	# NOTE:

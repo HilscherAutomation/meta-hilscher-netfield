@@ -2,25 +2,29 @@
 
 getImagePath() {
 	imageType=$1
+
 	image="$(find -name "*.$imageType" -type l)"
-	[ -z "$image" ] && {
-		echo "Error: No image found!" >&2
-		exit 1
-	}
-	image=$(readlink $image)
+	[ -n "$image" ] && image=$(readlink $image)
+	[ -z "$image" ] && image="$(find -name "*.$imageType" -type f)"
+	[ -z "$image" ] && return 1
+
 	echo $image
 }
 
 ### Main function
 
 [ $# -lt 1 ] && {
-	echo "Usage: $0 DEST-DEV";
+	echo "Usage: $0 DEST-DEV" [path to image];
 	exit 1;
 }
 
 target=$1
 
-image="$(getImagePath 'wic.bz2')"
+if [ $# -gt "1" ]; then
+	image=$2
+else
+	image="$(getImagePath 'wic.bz2')"
+fi
 
 # Security check for unexpected device types.
 [ -b $target ] || {
