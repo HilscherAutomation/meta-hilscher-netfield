@@ -121,6 +121,15 @@ netfield_create_recovery_zip() {
   cp ${DEPLOY_DIR_IMAGE}/recovery-initrd-api.signed ${WORKDIR}/usb_zip/${RECOVERY_INITRD_API}
   cp ${DEPLOY_DIR_IMAGE}/boot-script-fit/boot-recovery.scr ${WORKDIR}/usb_zip/boot.scr
   cp ${DEPLOY_DIR_IMAGE}/fitImage-core-image-minimal-initramfs*.bin ${WORKDIR}/usb_zip/Image
+
+  # Copy bootloader
+  [ -e ${DEPLOY_DIR_IMAGE}/boot-files/bootx64.efi ] && {
+    mkdir -p ${WORKDIR}/usb_zip/EFI/BOOT
+    cp -L ${DEPLOY_DIR_IMAGE}/boot-files/bootx64.efi ${WORKDIR}/usb_zip/EFI/BOOT
+  }
+
+  echo ${FIRMWARE_VERSION} > ${WORKDIR}/usb_zip/VERSION
+
   cd ${WORKDIR}/usb_zip/
 
   zip -r "${image_zip}" ./*
