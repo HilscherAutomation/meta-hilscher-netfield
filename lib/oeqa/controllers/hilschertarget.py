@@ -11,7 +11,6 @@ class HilscherTarget(OESSHTarget):
         '''super(HilscherTarget, self).__init__(logger, target_ip, server_ip, user='dutuser', **kwargs)'''
         super().__init__(logger, target_ip, server_ip, **kwargs)
 
-
         ''' This original variable value is only used for comments. '''
         self.target_ip = self.ip
 
@@ -33,6 +32,8 @@ class HilscherTarget(OESSHTarget):
         except:
             bb.fatal("Waiting for %s (%s) timed out!" % (self.target_ip, self.ip))
 
+        return 0
+
     def deploy(self):
         src = os.path.realpath(self.swufile)
         dst = "/tmp/" + os.path.basename(src)
@@ -50,6 +51,8 @@ class HilscherTarget(OESSHTarget):
 
         ''' Wait until the target device has rebooted after power cycle. '''
         self.wait_until_booted()
+
+        return 0
 
     def start(self, **kwargs):
         self.deploy()
