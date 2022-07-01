@@ -59,7 +59,7 @@ wheel:x:988:
 messagebus:x:989:
 netdev:x:990:
 www:x:991:
-iotedge:x:992:aziotcs,aziotks,aziotid
+iotedge:x:992:aziotcs,aziotks,aziotid,edgeagentuser
 docker:x:993:iotedge,admin
 ntp:x:994:
 systemd-journal:x:995:iotedge

@@ -7,9 +7,10 @@ fi
 
 tmpdir=$(mktemp -d)
 
-PACKAGES_TO_EXTRACT="iotedge/edgelet:iotedge:aziot-edge iot-identity-service:iotedged:azure-identity-service"
+PACKAGES_TO_EXTRACT="iotedge/edgelet:iotedge:aziot-edge iot-identity-service:aziotd:azure-identity-service"
+VERSION="$1"
 
-git clone https://github.com/azure/iotedge -b "$1" "$tmpdir"/iotedge
+git clone https://github.com/azure/iotedge -b "$VERSION" "$tmpdir"/iotedge
 # Extract version / hash of iot-identity-service
 identity_commit=$(grep -m1 -o "https://github.com/Azure/iot-identity-service.*#.*" "$tmpdir"/iotedge/edgelet/Cargo.lock | sed -e 's/.*#\(.*\)"/\1/')
 git clone https://github.com/Azure/iot-identity-service "$tmpdir"/iot-identity-service
@@ -24,17 +25,20 @@ cat << EOF > "$tmpdir"/exec.sh
     apt install -y python3-pip jq
     pip3 install yq
 
-    cargo install cargo-generate --locked cargo-bitbake
+    cargo install --git https://github.com/meta-rust/cargo-bitbake --tag v0.3.16
     for tmp_package in $PACKAGES_TO_EXTRACT; do
         dir=\$(echo "\$tmp_package" | cut -d ':' -f1)
         package=\$(echo "\$tmp_package" | cut -d ':' -f2)
         sed -i -e 's@\(^edition = .*\)@\1\nhomepage = "https://github.com/azure/iotedge"@' /iotedge/"\$dir"/"\$package"/Cargo.toml
         sed -i -e 's@\(^edition = .*\)@\1\nrepository = "https://github.com/azure/iotedge"@' /iotedge/"\$dir"/"\$package"/Cargo.toml
-        echo "1.47.0" > /iotedge/"\$dir"/rust-toolchain
+	if [ ! -e "/iotedge/"\$dir"/rust-toolchain.toml" ]; then
+            echo "1.58.0" > /iotedge/"\$dir"/rust-toolchain
+        fi
         cd /iotedge/"\$dir"/"\$package" || exit 1
         cargo bitbake
 
-	srcrevs_to_check=\$(cat "\${package}"_0.1.0.bb | grep "^SRCREV_" | grep -v "^SRCREV_FORMAT" | tr -d ' ')
+	[ -e "\${package}_${VERSION}.bb" ] && config_to_check="\${package}_${VERSION}.bb" || config_to_check="\${package}_0.1.0.bb"
+	srcrevs_to_check=\$(cat "\${config_to_check}" | grep "^SRCREV_" | grep -v "^SRCREV_FORMAT" | tr -d ' ')
 	echo "Checking following SRCREV: '\$srcrevs_to_check'"
 	for rev in \$srcrevs_to_check; do
 		echo "rev '\$rev'"
@@ -50,13 +54,13 @@ cat << EOF > "$tmpdir"/exec.sh
 			# Extract hash from cargo.lock
 			cargo_src=\$(tomlq '.package[]  | select(.name == "'\$cargo_name'") | .source' "\$CARGO_LOCK")
 			old_cargo_rev="\$cargo_rev"
-			cargo_rev=\$(echo "\$cargo_src" | tr -d '"' | cut -d '#' -f2)
+			cargo_rev=\$(echo "\$cargo_src" | grep "\$old_cargo_rev" | tr -d '"' | cut -d '#' -f2)
 			if [[ \$cargo_rev =~ ^[A-Fa-f0-9]{64}$ ]]; then
 				echo "Unable to find SRCREV for package '\$cargo_name'"
 				exit 1
 			else
 				echo "Replacing SRCREV '\$old_cargo_rev' with '\$cargo_rev' for package '\$cargo_name'"
-				sed -i -e "s@SRCREV_\$cargo_name[ =].*@SRCREV_\$cargo_name = \"\$cargo_rev\"@g" "\${package}_0.1.0.bb"
+				sed -i -e "s@SRCREV_\$cargo_name[ =].*@SRCREV_\$cargo_name = \"\$cargo_rev\"@g" "\${config_to_check}"
 			fi
 		fi
 	done
@@ -64,7 +68,7 @@ cat << EOF > "$tmpdir"/exec.sh
 EOF
 
 chmod +x "$tmpdir"/exec.sh
-docker run -it --rm -v "$tmpdir":/iotedge rust:1.51 /iotedge/exec.sh
+docker run -it --rm -v "$tmpdir":/iotedge rust:1.58 /iotedge/exec.sh
 
 # Prepare recipe and patch it according to our build
 for tmp_package in $PACKAGES_TO_EXTRACT; do
@@ -77,7 +81,7 @@ for tmp_package in $PACKAGES_TO_EXTRACT; do
     [ -z "$version" ] && version="git"
     cd - || exit 1
 
-    mv "$tmpdir"/"$dir"/"$package"/"$package"_0.1.0.bb recipes-iot/iotedge/"${recipename}"_"$version".bb
+    mv "$tmpdir"/"$dir"/"$package"/"$package"_*.bb recipes-iot/iotedge/"${recipename}"_"$version".bb
 
     # We need to use the edgelet subdirectory when building
     if echo "$dir"  | grep '/'; then

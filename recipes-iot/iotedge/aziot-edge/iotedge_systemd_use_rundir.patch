@@ -29,7 +29,7 @@ diff -aurN a/contrib/systemd/debian/aziot-edged.mgmt.socket b/contrib/systemd/de
 +ListenStream=/run/iotedge/mgmt.sock
  SocketMode=0660
  DirectoryMode=0755
- SocketUser=iotedge
+ SocketUser=edgeagentuser
 diff -aurN a/contrib/systemd/debian/aziot-edged.workload.socket b/contrib/systemd/debian/aziot-edged.workload.socket
 --- a/contrib/systemd/debian/aziot-edged.workload.socket	2021-04-12 12:01:54.115145015 +0200
 +++ b/contrib/systemd/debian/aziot-edged.workload.socket	2021-04-12 12:36:43.333267769 +0200

@@ -26,4 +26,9 @@ updateiotedge_postoverlay() {
 			chroot "${ROOTFS_DIR}" systemctl enable aziot-edged
 		fi
 	fi
+
+	# Add edgeagentuser if not existing
+	if ! grep -q "edgeagentuser:x:13622" ${ROOTFS_DIR}/etc/passwd; then
+		chroot "${ROOTFS_DIR}" useradd -g iotedge -c "edgeAgent user" -ms /sbin/nologin -u 13622 edgeagentuser
+	fi
 }
