@@ -1,4 +1,4 @@
-inherit kernel-uboot uboot-sign
+inherit kernel-uboot uboot-sign kernel-arch
 
 python __anonymous () {
     kerneltypes = d.getVar('KERNEL_IMAGETYPES', True) or ""
@@ -83,7 +83,7 @@ fitimage_emit_section_kernel() {
                         description = "Linux kernel";
                         data = /incbin/("${3}");
                         type = "kernel";
-                        arch = "${UBOOT_ARCH}";
+                        arch = "${ARCH}";
                         os = "linux";
                         compression = "${4}";
                         load = <0>;
@@ -104,7 +104,7 @@ fitimage_emit_section_script() {
                         description = "Boot script";
                         data = /incbin/("${3}");
                         type = "script";
-                        arch = "${UBOOT_ARCH}";
+                        arch = "${ARCH}";
                         os = "linux";
                         compression = "none";
                         load = <0x02000000>;
@@ -228,9 +228,14 @@ script_fitimage_assemble() {
 	# Step 5: Sign the image
 	#
 	if [ "x${UBOOT_SIGN_ENABLE}" = "x1" ] ; then
+		# NOTE: uboot-mkimage is a wrapper which injects the required parameter to support pkcs11 signing.
+		#       The parameter will be set via $UBOOT_MKIMAGE_PARAMS. The wrapper will only modify
+		#       the parameter set if "-k" is given. "-k dummy" will be replaced by UBOOT_MKIMAGE_PARAMS.
+		#       Check u-boot-tools.bbappend (this layer) for more info.
 		uboot-mkimage \
 			${@'-D "${UBOOT_MKIMAGE_DTCOPTS}"' if len('${UBOOT_MKIMAGE_DTCOPTS}') else ''} \
-			-F -k "${UBOOT_SIGN_KEYDIR}" \
+			-F \
+			-k dummy \
 			-r ${3}
 	fi
 }
@@ -238,7 +243,7 @@ script_fitimage_assemble() {
 do_assemble_boot_script_fitimage() {
 	for BOOT_SCRIPT in ${BOOT_SCRIPTS}; do
 		cd ${B}
-		script_fitimage_assemble boot.its ${BOOT_SCRIPT} $(basename "${BOOT_SCRIPT%.cmd}-fit")
+		script_fitimage_assemble boot.its ../${BOOT_SCRIPT} $(basename "${BOOT_SCRIPT%.cmd}.scr")
 	done
 }
 

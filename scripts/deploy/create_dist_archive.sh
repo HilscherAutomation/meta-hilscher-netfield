@@ -140,7 +140,7 @@ rm -rf _firmware_api tmp_repo
 if [ -e "firmware.signed" ]; then
   realfirmware=$(basename $(readlink firmware.signed))
   rm firmware.signed
-  mv ${realfirmware} firmware
+  mv ${realfirmware} initrd-api
 fi
 
 prepare_boot_part="${custom_scripts}/prepare_boot_partition.sh"
