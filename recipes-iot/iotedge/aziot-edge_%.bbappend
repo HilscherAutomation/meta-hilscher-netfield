@@ -2,6 +2,7 @@ FILESEXTRAPATHS_prepend := "${THISDIR}/docker:${THISDIR}/aziot-edge:"
 
 SRC_URI_append += "file://iotedge-docker.service \
                    file://iotedge-docker.socket \
+                   file://iotedge.slice \
                    file://iotedge.json \
                    file://iotedge_bridge.sh \
                    file://iotedge.rules \
@@ -12,22 +13,27 @@ SRC_URI_append += "file://iotedge-docker.service \
                    file://aziot-genca \
                    file://iotedge_config_skip_service_start.patch \
                    file://aziot-generate-local-ca.patch \
+                   file://iotedge-docker-config.sh \
 "
 
 RDEPENDS_${PN}_append += "bridge-utils yq"
 
-SYSTEMD_SERVICE_${PN}_append += "iotedge-docker.service iotedge-docker.socket"
+SYSTEMD_SERVICE_${PN}_append += "iotedge-docker.service iotedge-docker.socket iotedge.slice"
 
 do_install_append() {
     install -d ${D}${sysconfdir}/docker
     install -m0644 ${WORKDIR}/iotedge.json ${D}${sysconfdir}/docker/
     install -m0644 ${WORKDIR}/iotedge-docker.service ${D}${systemd_system_unitdir}
     install -m0644 ${WORKDIR}/iotedge-docker.socket ${D}${systemd_system_unitdir}
+    install -m0644 ${WORKDIR}/iotedge.slice ${D}${systemd_system_unitdir}
 
     sed -i -e 's/docker.socket/iotedge-docker.socket/g' \
            -e 's/docker.service/iotedge-docker.service/g' \
            -e 's/\[Service\]/\[Service\]\nOOMScoreAdjust=-1000/g' \
            ${D}${systemd_system_unitdir}/aziot-edged.service
+
+    install -d ${D}/usr/libexec/iotedge-docker/
+    install -m 0755 ${WORKDIR}/iotedge-docker-config.sh ${D}/usr/libexec/iotedge-docker/iotedge-docker-config
 
     install ${WORKDIR}/docker-iotedge.sh ${D}${bindir}/docker-iotedge
 

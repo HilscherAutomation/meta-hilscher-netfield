@@ -2,9 +2,9 @@
 Description=Docker Application Container Engine (iotedge instance)
 Documentation=https://docs.docker.com
 Before=docker.service
-After=network-online.target iotedge-docker.socket firewalld.service
+After=network-online.target iotedge-docker.socket firewalld.service iotedge.slice
 Wants=network-online.target
-Requires=iotedge-docker.socket
+Requires=iotedge-docker.socket iotedge.slice
 
 [Service]
 Type=notify
@@ -13,6 +13,7 @@ Type=notify
 # for containers run by docker
 ExecStartPre=/usr/sbin/iotedge_bridge create
 ExecStopPost=/usr/sbin/iotedge_bridge delete
+ExecStartPre=/usr/libexec/iotedge-docker/iotedge-docker-config
 ExecStart=/usr/bin/dockerd --config-file /etc/docker/iotedge.json -H fd://
 ExecReload=/bin/kill -s HUP $MAINPID
 LimitNOFILE=1048576
