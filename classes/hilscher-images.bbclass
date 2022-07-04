@@ -119,7 +119,7 @@ netfield_create_recovery_zip() {
 
   mkdir -p ${WORKDIR}/usb_zip
   cp ${DEPLOY_DIR_IMAGE}/recovery-initrd-api.signed ${WORKDIR}/usb_zip/${RECOVERY_INITRD_API}
-  cp ${DEPLOY_DIR_IMAGE}/boot-script-fit/boot-recovery.scr ${WORKDIR}/usb_zip/boot.scr
+  cp ${DEPLOY_DIR_IMAGE}/boot-script-fit/fitImage-boot-recovery.scr ${WORKDIR}/usb_zip/boot-fit.scr
   cp ${DEPLOY_DIR_IMAGE}/fitImage-core-image-minimal-initramfs*.bin ${WORKDIR}/usb_zip/Image
 
   # Copy bootloader

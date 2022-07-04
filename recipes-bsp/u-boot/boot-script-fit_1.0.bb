@@ -23,8 +23,8 @@ do_deploy() {
 		install -d ${DEPLOYDIR}/${PN}
 		cd ${B}
 		for BOOT_SCRIPT in ${BOOT_SCRIPTS}; do
-			install -m 0644 $(basename "${BOOT_SCRIPT%.cmd}.scr") ${DEPLOYDIR}/${PN}
-			echo installing $(basename "${BOOT_SCRIPT%.cmd}.scr") to ${DEPLOYDIR}/${PN}
+			echo installing $(basename "${BOOT_SCRIPT%.cmd}.scr") to ${DEPLOYDIR}/${PN}/fitImage-${BOOT_SCRIPT%.cmd}.scr
+			install -m 0644 $(basename "${BOOT_SCRIPT%.cmd}.scr") ${DEPLOYDIR}/${PN}/fitImage-${BOOT_SCRIPT%.cmd}.scr
 		done
 	fi
 }

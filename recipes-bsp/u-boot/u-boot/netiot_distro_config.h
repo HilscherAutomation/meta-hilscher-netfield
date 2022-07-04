@@ -22,13 +22,10 @@
 	"initrd_high="INITRD_HIGH"\0" \
 	"fdt_high="FDT_HIGH"\0" \
 	"loadaddr=" xstr(CONFIG_LOADADDR) "\0" \
-	"script=boot.scr\0" \
+	"script=boot-fit.scr\0" \
 	"scriptaddr=" xstr(CONFIG_LOADADDR) "\0" \
 	"fitscript=script@1\0" \
-	"mmcdev=0\0" \
-	"mmc_parts=0 1\0" \
-	"usb_parts=1\0" \
-	"bootcmd_mmc="MMCBOOT_COMMAND"\0" \
+	"bootcmd_plat="PLATBOOT_COMMAND"\0" \
 	"bootcmd_usb0="USBBOOT_COMMAND"\0" \
 	"pxe_setup="PXEBOOT_SETUP"\0" \
 	"bootcmd_pxe="PXEBOOT_COMMAND"\0" \
@@ -51,7 +48,7 @@
 #define CONFIG_BOOTCOMMAND \
 	"run platform_init; " \
 	"run bootcmd_usb0; " \
-	"run bootcmd_mmc; " \
+	"run bootcmd_plat; " \
 	"if test $start_pxe != 0; then " \
 		"while true; do " \
 			"run pxe_setup; " \
@@ -92,43 +89,23 @@
 		"fdt addr ${scriptaddr} && fdt check && source ${scriptaddr}:${fitscript}; "
 #endif
 
-#ifndef USB_LOAD_BOOT_SCRIPT
-	#define USB_LOAD_BOOT_SCRIPT \
-		"load usb ${0}:${part} ${scriptaddr} ${script} && "START_SCRIPT"; "
-#endif
+#define USBBOOT_COMMAND  \
+	"if test -e ${usb_dev_if} ${usb_dev}:${usb_recovery_part} ${script}; then " \
+		"echo Found U-Boot script ${script}; " \
+		"load ${usb_dev_if} ${usb_dev}:${usb_recovery_part} ${scriptaddr} ${script} && "START_SCRIPT"; " \
+		"if test $? != 0; then " \
+			"echo SCRIPT FAILED: continuing...; " \
+		"fi; " \
+	"fi; "
 
-#ifndef USBBOOT_COMMAND
-	#define USBBOOT_COMMAND  \
-		"if usb reset && usb dev; then " \
-			"for part in ${usb_parts}; do " \
-				"if test -e usb 0:${part} ${script}; then " \
-					"echo Found U-Boot script ${script}; " \
-					USB_LOAD_BOOT_SCRIPT \
-					"if test $? != 0; then " \
-						"echo SCRIPT FAILED: continuing...; " \
-					"fi; " \
-				"fi; " \
-			"done; " \
-		"fi;"
-#endif
-
-#ifndef MMC_LOAD_BOOT_SCRIPT
-	#define MMC_LOAD_BOOT_SCRIPT \
-		"fatload mmc ${mmcdev}:${mmcpart} ${scriptaddr} ${script} && "START_SCRIPT"; "
-#endif
-
-#ifndef MMCBOOT_COMMAND
-	#define MMCBOOT_COMMAND  \
-		"for part in ${mmc_parts}; do " \
-			"if test -e mmc ${mmcdev}:${part} ${script}; then " \
-				"echo Found U-Boot script ${script}; " \
-				MMC_LOAD_BOOT_SCRIPT \
-				"if test $? != 0; then " \
-					"echo SCRIPT FAILED: continuing...; " \
-				"fi; " \
-			"fi; " \
-		"done;"
-#endif
+#define PLATBOOT_COMMAND  \
+	"if test -e ${plat_dev_if} ${plat_dev}:${plat_boot_part} ${script}; then " \
+		"echo Found U-Boot script ${script}; " \
+		"load ${plat_dev_if} ${plat_dev}:${plat_boot_part} ${scriptaddr} ${script} && "START_SCRIPT"; " \
+		"if test $? != 0; then " \
+			"echo SCRIPT FAILED: continuing...; " \
+		"fi; " \
+	"fi; "
 
 #ifndef PXEBOOT_SETUP
 	#define PXEBOOT_SETUP \
