@@ -1,0 +1,8 @@
+[Unit]
+Description=Slice used to execute iotedge docker modules
+Before=slices.target
+
+[Slice]
+MemoryAccounting=true
+IOAccounting=true
+CPUAccounting=true

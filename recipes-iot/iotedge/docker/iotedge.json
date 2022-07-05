@@ -4,7 +4,7 @@
   "data-root" : "/run/overlay/iotedge-docker",
   "pidfile"   : "/var/run/iotedge-docker.pid",
   "exec-root" : "/var/run/iotedge-docker",
-  "cgroup-parent" : "/iotedge-docker",
+  "cgroup-parent" : "iotedge.slice",
   "default-address-pools": [
     {
       "base": "10.253.0.1/16",
