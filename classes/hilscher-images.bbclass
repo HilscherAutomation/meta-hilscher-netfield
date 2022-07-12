@@ -39,7 +39,7 @@ __generate_swu() {
   echo "		files: ("
   echo "			{"
   echo "				filename = \"firmware\";"
-  echo "				path = \"/run/.system_part/firmware\";"
+  echo "				path = \"/mnt/system/initrd-api\";"
   echo "				sha256 = \"$hashFirmwareImage\";"
   echo "			}"
   echo "		);"

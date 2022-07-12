@@ -21,15 +21,16 @@ do_firmware_recovery() {
 
   firmware=`ls -1 firmware/*.wic.bz2 | head -n1`
 
-  log -n "  Searching update device ... "
+  log "Searching update device ... "
   for scan_dev in @PHYSICAL_SYSTEM_DEVICE@; do
-    echo -n "$scan_dev ... "
     if [ -b "${scan_dev}" ]; then
+      log "  $scan_dev ... found"
       dev="${scan_dev}"
       break
     fi
+    log "  $scan_dev ... not found"
   done
-  [ -n "${dev}" ] && log "done (${dev})" || { log "failed"; return 1; }
+  [ -n "${dev}" ] && log "... done (${dev})" || { log "... failed"; return 1; }
 
   [ -e /etc/mtab ] || ln -s /proc/mounts /etc/mtab # required for mkfs.ext4
 
@@ -54,7 +55,7 @@ do_firmware_recovery() {
       for img in $tmpdir/rootfs.img $tmpdir/*.squashfs; do
         if [ -e $img ]; then
             tmp_sys=$(mktemp -d)
-            mount -o loop $img $tmp_sys
+            mount -o ro,loop $img $tmp_sys
             if [ -e $tmp_sys/fw_version ]; then
                 installed_version_str=$(cat $tmp_sys/fw_version)
                 umount $tmp_sys
@@ -85,10 +86,10 @@ do_firmware_recovery() {
     fi
   fi
 
-  log -n "  Deploying ${firmware} to ${dev} ... "
-  ./deploy.sh -a ${firmware} -d ${dev} -v -l "${logfile}" &&
+  log "Deploying ${firmware} to ${dev} ... "
+  ./recovery.sh -a ${firmware} -d ${dev} -v -l "${logfile}" &&
   sync
-  [ $? -eq 0 ] && log "done" || { log "failed"; return 1; }
+  [ $? -eq 0 ] && log "... done" || { log "... failed"; return 1; }
 
   if [ -e "/var/platform/update_led" ]; then
     echo 0 > /var/platform/update_led  # disable the trigger
@@ -109,11 +110,9 @@ source ./common
 
 rm -f ${logfile}
 
-do_firmware_recovery
-
-[ $? -eq 0 ] && {
-  [ "${reboot}" == "1" ] && do_reboot
-  [ "${shutdown}" == "1" ] && do_shutdown
+do_firmware_recovery && {
+	[ "$removable" = "0" ] && do_reboot
+	do_shutdown
 }
 
 # This should never be reached

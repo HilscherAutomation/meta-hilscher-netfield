@@ -10,13 +10,13 @@ PBZIP=$(which pbzip2)
 #===============================================================================
 vmsg ()
 {
-	[ "$verbose" = "1" ] && echo "$@" | tee -a "${logfile}"
+	[ "$verbose" = "1" ] && echo "$MYNAME: $@" | tee -a "${logfile}"
 	return 0
 }
 
 vmsg_errout ()
 {
-	[ "$verbose" = "1" ] && echo -ne "\n\e[1;31m$@\e[0m\n\n" | tee -a "${logfile}"
+	[ "$verbose" = "1" ] && echo -ne "\n\e[1;31m$MYNAME: $@\e[0m\n\n" | tee -a "${logfile}"
 	exit 1
 }
 
@@ -71,100 +71,54 @@ LVM_OPTS="--config global/use_lvmetad=0"
 
 backup_nvd ()
 {
-	vmsg -n "- Creating a backup of nvd directory ..."
-	tmpdir=$(mktemp -d)
+	local mp
 
 	vgchange -ay ${LVM_OPTS} > /dev/null
 	vgscan --mknodes ${LVM_OPTS} > /dev/null
 
-	for label in BACKUP BOOT RESC SYSTEM system backup rescue; do
-		tmp_dev=$(blkid | grep "LABEL=\"$label\"" | cut -d ':' -f1)
-		if [ -b "$tmp_dev" ]; then
-			mount -o ro $tmp_dev $tmpdir
-			if [ -d "$tmpdir/nvd" ]; then
-				tar cf nvd.tar -C $tmpdir nvd
+	for label in backup; do
+		if dev=$(blkid -L $label); then
+			mp=$(mktemp -d) && mount -o ro $dev $mp
+			if [ -d "$mp/nvd" ]; then
+				vmsg "Creating backup file ${label}_nvd.tar ..."
+				tar cf ${label}_nvd.tar -C $mp nvd
+				vmsg "... done"
+			else
+				vmsg "No 'nvd' directory found on partition ${label}."
 			fi
-			umount $tmpdir
+			umount $mp && rmdir $mp
+		else
+			vmsg "Invalid or missing partition '$label'!"
 		fi
-		[ -e "nvd.tar" ] && break
 	done
 
-	rmdir $tmpdir
-
 	vgchange -an ${LVM_OPTS} > /dev/null
-	if [ -e "nvd.tar" ]; then
-		vmsg " done ($tmp_dev)"
-	else
-		vmsg " done (not found)"
-	fi
 }
 
 restore_nvd ()
 {
-	vmsg -n "- Restoring nvd directory from backup ..."
+	local mp
 
-	if [ -e "nvd.tar" ]; then
-		tmpdir=$(mktemp -d)
-
-		restore_devs=""
-
-		for label in rescue boot; do
-			tmp_dev=$(blkid | grep "LABEL=\"$label\"" | cut -d ':' -f1)
-			if [ -b "$tmp_dev" ]; then
-				mount $tmp_dev $tmpdir
-				tar xf nvd.tar -C $tmpdir
-				umount $tmpdir
-				sync
-				restore_devs="$tmp_dev $restore_devs"
-			fi
-		done
-
-		rmdir $tmpdir
-
-		vmsg " done ($restore_devs)"
-	else
-		vmsg " done (no backup found)"
-	fi
-}
-
-backup_oem ()
-{
 	vgchange -ay ${LVM_OPTS} > /dev/null
 	vgscan --mknodes ${LVM_OPTS} > /dev/null
 
-	tmp_dev=$(blkid | grep 'LABEL="system"' | cut -d ':' -f1)
-	if [ -b "$tmp_dev" ]; then
-		tmpdir=$(mktemp -d)
-		mount -o ro $tmp_dev $tmpdir
-		if [ -d "$tmpdir/oem" ]; then
-			vmsg -n "- Creating a backup of oem directory ..."
-			tar cf oem.tar -C $tmpdir oem
-			vmsg " done"
+	for label in backup; do
+		if [ -e ${label}_nvd.tar ]; then
+			if dev=$(blkid -L $label); then
+				mp=$(mktemp -d) && mount $dev $mp
+				vmsg "Restoring backup file ${label}_nvd.tar ..."
+				tar xf ${label}_nvd.tar -C $mp
+				vmsg "... done"
+				umount $mp && rmdir $mp
+			else
+				vmsg "Invalid or missing partition '$label'!"
+			fi
+		else
+			vmsg "No backup file ${label}_nvd.tar found."
 		fi
-		umount $tmpdir
-		rmdir $tmpdir
-	fi
+	done
 
 	vgchange -an ${LVM_OPTS} > /dev/null
-}
-
-restore_oem ()
-{
-	if [ -e "oem.tar" ]; then
-		vmsg -n "- Restoring nvd directory from backup ..."
-		tmpdir=$(mktemp -d)
-
-		tmp_dev=$(blkid | grep "LABEL='system'" | cut -d ':' -f1)
-		if [ -b "$tmp_dev" ]; then
-			mount $tmp_dev $tmpdir
-			tar xf oem.tar -C $tmpdir
-			umount $tmpdir
-			sync
-		fi
-
-		rmdir $tmpdir
-		vmsg " done"
-	fi
 }
 
 #===============================================================================
@@ -208,7 +162,6 @@ if [ -z "${firmware}" -o -z "${deploy_dev}" ]; then
 fi
 
 backup_nvd
-backup_oem
 
 if [ -z "${PBZIP}" ]; then
     BZIP="bzip2"
@@ -216,7 +169,7 @@ else
     BZIP="${PBZIP}"
 fi
 
-vmsg "- Deploying ${firmware} to ${deploy_dev} ..."
+vmsg "Deploying ${firmware} to ${deploy_dev} ..."
 if [ -z "${PV}" ]; then
     dd if=${firmware} of=${deploy_dev} bs=1M
 else
@@ -227,8 +180,20 @@ fi
 # Re-read partition table
 reread_partition_table "$deploy_dev"
 
+# Handle initrd-api files of recovered firmware.
+# This ensures that the initrd-api-part-cfg is executed to create the LVM backup- and data-partition.
+vmsg "Processing initrd-api files of currently deployed firmware image ..."
+__debug() {
+	vmsg $@
+}
+__fatal() {
+	vmsg_errout $@
+}
+. /init.d/*-initrd_api
+boot_dev=$(blkid -L rescue) && initrd_api_run
+vmsg "... done"
+
 restore_nvd
-restore_oem
 
 sync
 

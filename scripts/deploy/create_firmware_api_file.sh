@@ -134,11 +134,8 @@ fi
 [ -z "${PHYSICAL_SYSTEM_DEVICE}" ] && PHYSICAL_SYSTEM_DEVICE="/dev/mmcblk0 /dev/sda"
 sed -i -e "s;@PHYSICAL_SYSTEM_DEVICE@;${PHYSICAL_SYSTEM_DEVICE};g" _firmware_api/runscript.sh
 
-deployscript=${SCRIPTDIR}/deploy.sh
-
-vmsg -n "- Add the deploy script and replace the shell ... "
-cp "${deployscript}" _firmware_api/deploy.sh &&
-sed -i 's/bash/sh/' _firmware_api/deploy.sh
+vmsg -n "- Add the deploy/recovery script and replace the shell ... "
+cp "${SCRIPTDIR}/recovery.sh" _firmware_api/recovery.sh &&
 [ $? -eq 0 ] && vmsg "done" || vmsg_errout "failed!"
 
 #mark as executable since initrd_api will check this
