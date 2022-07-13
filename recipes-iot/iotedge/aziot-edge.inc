@@ -5,6 +5,8 @@ LIC_FILES_CHKSUM="file://../LICENSE;md5=0f7e3b1308cb5c00b372a6e78835732d"
 
 DEPENDS_append += "libstd-rs openssl"
 
+SRC_URI += "file://aziot_use_unwind_instead_abort.patch"
+
 inherit systemd
 SYSTEMD_AUTO_ENABLE = "disable"
 SYSTEMD_SERVICE_${PN} = "aziot-edged.service aziot-edged.mgmt.socket aziot-edged.workload.socket"
@@ -12,9 +14,8 @@ SYSTEMD_SERVICE_${PN} = "aziot-edged.service aziot-edged.mgmt.socket aziot-edged
 inherit useradd
 USERADD_PACKAGES="${PN}"
 USERADD_PARAM_${PN} = "--system --no-create-home --home-dir /var/lib/aziot/edged --shell /sbin/nologin --user-group --groups docker,systemd-journal,aziotcs,aziotks,aziotid,aziottpm iotedge;"
+USERADD_PARAM_${PN} += "-g iotedge -s /sbin/nologin edgeagentuser;"
 GROUPADD_PARAM_${PN} = "-r docker;-r systemd-journal;-r aziotcs;-r aziotks;-r aziotid; -r aziottpm"
-
-SRC_URI += "file://rust_1.51_compatibility.patch"
 
 do_install_append() {
     install -d ${D}${sysconfdir}/aziot/edged/config.d ${D}${sysconfdir}/logrotate.d ${D}${systemd_system_unitdir} \

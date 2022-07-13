@@ -1,0 +1,19 @@
+Abort does not compile:
+| error: the crate `panic_abort` does not have the panic strategy `abort`
+
+unwind seems to be recommended:
+From https://github.com/meta-rust/meta-rust/issues/343
+  Using panic abort leaves no cookie crumbs in the syslog, which is why unwind is preferred.
+diff -aurN a/Cargo.toml b/Cargo.toml
+--- a/Cargo.toml	2022-07-01 11:17:03.116316296 +0200
++++ b/Cargo.toml	2022-07-01 12:56:27.516715841 +0200
+@@ -14,7 +14,7 @@
+ ]
+ 
+ [profile.dev]
+-panic = 'abort'
++panic = 'unwind'
+ 
+ [profile.release]
+-panic = 'abort'
++panic = 'unwind'

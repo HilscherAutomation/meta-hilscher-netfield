@@ -59,7 +59,7 @@ wheel:x:987:
 messagebus:x:988:
 netdev:x:989:
 www:x:990:
-iotedge:x:991:aziotcs,aziotks,aziotid
+iotedge:x:991:aziotcs,aziotks,aziotid,edgeagentuser
 docker:x:992:iotedge,admin
 polkitd:x:993:
 cifx:x:994:
