@@ -19,6 +19,10 @@ d /run/overlay/docker 0755 root root -
 L+ /var/lib/docker - - - - /run/overlay/docker
 EOF
 
+        cat <<EOF>> ${D}${sysconfdir}/tmpfiles.d/docker_netadmin.conf
+z ${sysconfdir}/docker/daemon.json 0664 root netadmin
+EOF
+
         # Use journald as logging driver, which supports log rotation
         install -d ${D}${sysconfdir}/docker
         echo '{' > ${D}${sysconfdir}/docker/daemon.json

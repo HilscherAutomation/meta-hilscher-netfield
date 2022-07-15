@@ -42,6 +42,12 @@ do_install_append() {
     install -d ${D}${sysconfdir}/default
     install -m 0644 ${WORKDIR}/iotedge.default ${D}${sysconfdir}/default/iotedge
 
+    install -d ${D}${sysconfdir}/tmpfiles.d
+    cat <<EOF>> ${D}${sysconfdir}/tmpfiles.d/iotedge_netadmin.conf
+z ${sysconfdir}/default/iotedge 0664 root netadmin
+z ${sysconfdir}/docker/iotedge.json 0664 root netadmin
+EOF
+
     install -d ${D}${base_libdir}/udev/rules.d/
     install -m 0644 ${WORKDIR}/iotedge.rules ${D}${base_libdir}/udev/rules.d/80-iotedge.rules
 
