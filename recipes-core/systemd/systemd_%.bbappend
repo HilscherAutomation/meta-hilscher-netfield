@@ -2,7 +2,9 @@ FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
 RDEPENDS_${PN}_append += "systemd-machine-units"
 
-SRC_URI_append += "file://disable_predictable_network_names.patch"
+SRC_URI_append += "file://disable_predictable_network_names.patch \
+    file://pass_unit_name_on_enable_disable.patch \
+"
 
 # Default servers to add to initial configuration
 EXTRA_OEMESON_append += "-Dntp-servers='0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org'"
