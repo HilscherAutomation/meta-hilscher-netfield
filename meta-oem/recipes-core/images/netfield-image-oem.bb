@@ -7,3 +7,18 @@ require oem-base.inc
 VENDOR_VARIANT_ID=""
 
 IMAGE_INSTALL_append += "swupdate-oem upnpd-oem"
+
+inherit hilscher-deploy
+
+# skip sstate creation since image size will blow up sstate very fast
+SSTATE_SKIP_CREATION = "1"
+
+hd_path = "${HDEPLOY_PATH_EXTRAS}/base_image"
+
+do_hilscher_deploy() {
+	for file in $(find ${IMGDEPLOYDIR} -type l -name "*.squashfs"); do
+		cp -a $(readlink -f $file) ${hd_path}
+	done
+}
+do_hilscher_deploy[cleandirs] = "${hd_path}/"
+addtask hilscher_deploy before do_build after do_image_complete

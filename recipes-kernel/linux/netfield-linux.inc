@@ -67,7 +67,7 @@ SRC_URI_append += "file://enable_iscsi.cfg"
 
 # Kernel module signing
 SRC_URI_append += "${@bb.utils.contains('PLATFORM_SIGN', '1', 'file://enable_signed_modules.cfg', '', d)}"
-SRC_URI_append += "${@bb.utils.contains('PLATFORM_SIGN', '1', 'file://0001-Add-support-for-module-signing-via-swtpm.patch', '', d)}"
+SRC_URI_append += "${@bb.utils.contains('PLATFORM_SIGN', '1', 'file://0001-Add-support-for-module-signing-via-keyengine.patch', '', d)}"
 
 INHIBIT_PACKAGE_STRIP="1"
 EXTRA_OEMAKE_append += " INSTALL_MOD_STRIP=1 "
@@ -94,11 +94,6 @@ do_compile_prepend() {
 		file)
 			sed -i 's/CONFIG_MODULE_SIG_KEY=.*/CONFIG_MODULE_SIG_KEY="certs\/iotgw_signing_key.pem"/g' ${B}/.config
 			sed -i 's/CONFIG_MODULE_SIG_ENGINE=.*/CONFIG_MODULE_SIG_ENGINE=""/g' ${B}/.config
-		;;
-		swtpm)
-			#'"${PLATFORM_KEYNAME}"'
-			sed -i 's/CONFIG_MODULE_SIG_KEY=.*/CONFIG_MODULE_SIG_KEY="'"$signing_key"'"/g' ${B}/.config
-			sed -i 's/CONFIG_MODULE_SIG_ENGINE=.*/CONFIG_MODULE_SIG_ENGINE="tpm2tss"/g' ${B}/.config
 		;;
 		pkcs11)
 			#'"${PLATFORM_KEYNAME}"'
@@ -151,16 +146,13 @@ kernel_sign_wrapper_init() {
 	sign_key=$(setup_sign_wrapper_env "${PLATFORM_KEYNAME}")
 
 	case ${SIGN_WRAPPER_MODE} in
-		file)   UBOOT_MKIMAGE_PARAMS="-k UBOOT_SIGN_KEYDIR}"  ;;
-		swtpm)  UBOOT_MKIMAGE_PARAMS="-N tpm2tss" ;;
+		file)   export UBOOT_MKIMAGE_PARAMS="-k UBOOT_SIGN_KEYDIR}"
+			;;
 		pkcs11) #u-boot mkimage expects URL without leading pkcs11:
 			sign_key=$(echo $sign_key | sed -e 's/^pkcs11://')
-			UBOOT_MKIMAGE_PARAMS="-k ${sign_key} -N pkcs11"
+			export UBOOT_MKIMAGE_PARAMS="-k ${sign_key} -N pkcs11"
 			;;
 	esac
-
-	# for debugging puposes uncomment the following line
-	#export TSS2_LOG="all+TRACE"
 }
 
 do_assemble_fitimage_prepend() {
@@ -199,3 +191,14 @@ do_assemble_fitimage_initramfs_append() {
 do_shared_workdir_prepend() {
 	setup_sign_wrapper_env "${PLATFORM_KEYNAME}"
 }
+
+inherit hilscher-deploy
+
+hd_path = "${HDEPLOY_PATH_EXTRAS}/kernel"
+
+do_hilscher_deploy() {
+	kernel=$(find ${DEPLOYDIR} -type l -name "fitImage-core-image-minimal-initramfs-${MACHINE}-${MACHINE}*")
+	cp -a $(readlink -f $kernel) "${hd_path}/"
+}
+do_hilscher_deploy[cleandirs] = "${hd_path}/"
+addtask hilscher_deploy before do_build after do_deploy

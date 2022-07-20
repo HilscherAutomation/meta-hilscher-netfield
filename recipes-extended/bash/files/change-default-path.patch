@@ -1,0 +1,12 @@
+diff -Nura a/config-top.h b/config-top.h
+--- a/config-top.h	2005-04-29 22:36:34.000000000 +0200
++++ b/config-top.h	2022-05-04 07:18:08.589190998 +0200
+@@ -52,7 +52,7 @@
+ /* The default value of the PATH variable. */
+ #ifndef DEFAULT_PATH_VALUE
+ #define DEFAULT_PATH_VALUE \
+-  "/usr/gnu/bin:/usr/local/bin:/bin:/usr/bin:."
++  "/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin:."
+ #endif
+ 
+ /* The value for PATH when invoking `command -p'.  This is only used when

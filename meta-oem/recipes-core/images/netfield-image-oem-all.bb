@@ -11,11 +11,13 @@ OEM_BASE_IMAGE="netfield-image-oem"
 
 OEM_BRANDING_MERGE="1"
 
+require recipes-core/images/hdeploy_image.inc
+
 # Make sure that all OEM_BRANDING_IMAGES are completed before they will be merge togther in a common SWU update image.
 python () {
     branding_images = d.getVar('OEM_BRANDING_IMAGES') or ""
     for branding in branding_images.split():
-        d.appendVarFlag('do_image_swu', 'depends', " %s:do_image_complete" % branding)
+        d.appendVarFlag('do_image_swu', 'depends', " %s:do_hilscher_deploy" % branding)
 }
 
 # Only deploy SWU update image

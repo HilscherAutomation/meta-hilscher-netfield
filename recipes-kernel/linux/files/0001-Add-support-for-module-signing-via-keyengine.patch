@@ -1,0 +1,208 @@
+From cd9b50c6b524d4bdd769f90b8da09b75c13e8276 Mon Sep 17 00:00:00 2001
+From: OpenEmbedded <oe.patch@oe>
+Date: Mon, 12 Jul 2021 12:19:12 +0000
+Subject: [PATCH] Add support for module signing via keyengine
+
+---
+ Makefile                                    |  6 +-
+ arch/arm64/configs/mcm-imx8m-mini_defconfig |  1 +
+ certs/Kconfig                               |  5 ++
+ certs/Makefile                              |  4 ++
+ scripts/sign-file.c                         | 73 +++++++++++++++++++--
+ 5 files changed, 82 insertions(+), 7 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index f4115702996c..4899ed5bd8d2 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1012,7 +1012,11 @@ export mod_compress_cmd
+ ifdef CONFIG_MODULE_SIG_ALL
+ $(eval $(call config_filename,MODULE_SIG_KEY))
+ 
+-mod_sign_cmd = scripts/sign-file $(CONFIG_MODULE_SIG_HASH) $(MODULE_SIG_KEY_SRCPREFIX)$(CONFIG_MODULE_SIG_KEY) certs/signing_key.x509
++ifneq ($(strip $(CONFIG_MODULE_SIG_ENGINE)),"")
++	MOD_SIG_ENGINE = -e $(CONFIG_MODULE_SIG_ENGINE)
++endif
++
++mod_sign_cmd = scripts/sign-file $(MOD_SIG_ENGINE) $(CONFIG_MODULE_SIG_HASH) $(MODULE_SIG_KEY_SRCPREFIX)$(CONFIG_MODULE_SIG_KEY) certs/signing_key.x509
+ else
+ mod_sign_cmd = true
+ endif
+diff --git a/certs/Kconfig b/certs/Kconfig
+index c94e93d8bccf..6e4c349d4ff5 100644
+--- a/certs/Kconfig
++++ b/certs/Kconfig
+@@ -15,6 +15,11 @@ config MODULE_SIG_KEY
+          then the kernel will automatically generate the private key and
+          certificate as described in Documentation/admin-guide/module-signing.rst
+ 
++config MODULE_SIG_ENGINE
++	string "Engine name"
++	default ""
++#	depends on MODULE_SIG_KEY
++
+ config SYSTEM_TRUSTED_KEYRING
+ 	bool "Provide system-wide ring of trusted keys"
+ 	depends on KEYS
+diff --git a/certs/Makefile b/certs/Makefile
+index f4c25b67aad9..b5ee2cf30ba2 100644
+--- a/certs/Makefile
++++ b/certs/Makefile
+@@ -92,15 +92,19 @@ endif # CONFIG_MODULE_SIG_KEY
+ 
+ $(eval $(call config_filename,MODULE_SIG_KEY))
+ 
++ifeq ($(strip $(CONFIG_MODULE_SIG_ENGINE)),"")
+ # If CONFIG_MODULE_SIG_KEY isn't a PKCS#11 URI, depend on it
+ ifeq ($(patsubst pkcs11:%,%,$(firstword $(MODULE_SIG_KEY_FILENAME))),$(firstword $(MODULE_SIG_KEY_FILENAME)))
+ X509_DEP := $(MODULE_SIG_KEY_SRCPREFIX)$(MODULE_SIG_KEY_FILENAME)
+ endif
++endif
+ 
+ # GCC PR#66871 again.
+ $(obj)/system_certificates.o: $(obj)/signing_key.x509
+ 
++ifeq ($(strip $(CONFIG_MODULE_SIG_ENGINE)),"")
+ targets += signing_key.x509
+ $(obj)/signing_key.x509: scripts/extract-cert $(X509_DEP) FORCE
+ 	$(call if_changed,extract_certs,$(MODULE_SIG_KEY_SRCPREFIX)$(CONFIG_MODULE_SIG_KEY))
++endif
+ endif # CONFIG_MODULE_SIG
+diff --git a/scripts/sign-file.c b/scripts/sign-file.c
+index fbd34b8e8f57..88b22b1a09b1 100644
+--- a/scripts/sign-file.c
++++ b/scripts/sign-file.c
+@@ -70,7 +70,7 @@ static __attribute__((noreturn))
+ void format(void)
+ {
+ 	fprintf(stderr,
+-		"Usage: scripts/sign-file [-dp] <hash algo> <key> <x509> <module> [<dest>]\n");
++		"Usage: scripts/sign-file [-edp] [<openssl engine>] <hash algo> <key> <x509> <module> [<dest>]\n");
+ 	fprintf(stderr,
+ 		"       scripts/sign-file -s <raw sig> <hash algo> <x509> <module> [<dest>]\n");
+ 	exit(2);
+@@ -132,11 +132,15 @@ static int pem_pw_cb(char *buf, int len, int w, void *v)
+ 	return pwlen;
+ }
+ 
+-static EVP_PKEY *read_private_key(const char *private_key_name)
++static EVP_PKEY *read_private_key(const char *private_key_name, ENGINE* engine)
+ {
+ 	EVP_PKEY *private_key;
+ 
+-	if (!strncmp(private_key_name, "pkcs11:", 7)) {
++	if (engine != NULL) {
++		private_key = ENGINE_load_private_key(engine, private_key_name,
++						      NULL, NULL);
++		ERR(!private_key, "%s", private_key_name);
++	} else if (!strncmp(private_key_name, "pkcs11:", 7)) {
+ 		ENGINE *e;
+ 
+ 		ENGINE_load_builtin_engines();
+@@ -206,9 +210,50 @@ static X509 *read_x509(const char *x509_name)
+ 	return x509;
+ }
+ 
++/* Try to load an engine in a shareable library */
++static ENGINE *try_load_engine(const char *engine)
++{
++	ENGINE *e = ENGINE_by_id("dynamic");
++	if (e) {
++		if (!ENGINE_ctrl_cmd_string(e, "SO_PATH", engine, 0)
++			|| !ENGINE_ctrl_cmd_string(e, "LOAD", NULL, 0)) {
++			ENGINE_free(e);
++			e = NULL;
++		}
++	}
++	return e;
++}
++
++static ENGINE *setup_engine(const char *engine)
++{
++	ENGINE *e = NULL;
++
++	if (engine) {
++		e = ENGINE_by_id(engine);
++		if (e == NULL) {
++			e = try_load_engine(engine);
++			if (e == NULL) {
++				ERR(1, "invalid engine \"%s\"\n", engine);
++				return NULL;
++			}
++		}
++
++		if (!ENGINE_set_default(e, ENGINE_METHOD_ALL)) {
++			ERR(1, "can't use that engine\n");
++			ENGINE_free(e);
++			return NULL;
++		}
++		fprintf(stdout,  "engine \"%s\" set.\n", ENGINE_get_id(e));
++	}
++	return e;
++}
++
+ int main(int argc, char **argv)
+ {
+ 	struct module_signature sig_info = { .id_type = PKEY_ID_PKCS7 };
++	char *ossl_engine = NULL;
++	bool use_engine = false;
++	ENGINE *engine = NULL;
+ 	char *hash_algo = NULL;
+ 	char *private_key_name = NULL, *raw_sig_name = NULL;
+ 	char *x509_name, *module_name, *dest_name;
+@@ -242,8 +287,9 @@ int main(int argc, char **argv)
+ #endif
+ 
+ 	do {
+-		opt = getopt(argc, argv, "sdpk");
++		opt = getopt(argc, argv, "sedpk");
+ 		switch (opt) {
++		case 'e': use_engine = true; break;
+ 		case 's': raw_sig = true; break;
+ 		case 'p': save_sig = true; break;
+ 		case 'd': sign_only = true; save_sig = true; break;
+@@ -257,13 +303,18 @@ int main(int argc, char **argv)
+ 
+ 	argc -= optind;
+ 	argv += optind;
+-	if (argc < 4 || argc > 5)
++	if (argc < 4 || argc > 6)
+ 		format();
+ 
+ 	if (raw_sig) {
+ 		raw_sig_name = argv[0];
+ 		hash_algo = argv[1];
+ 	} else {
++		if (use_engine) {
++			ossl_engine = argv[0];
++			argc--;
++			argv++;
++		}
+ 		hash_algo = argv[0];
+ 		private_key_name = argv[1];
+ 	}
+@@ -291,10 +342,20 @@ int main(int argc, char **argv)
+ 	ERR(!bm, "%s", module_name);
+ 
+ 	if (!raw_sig) {
++		if (use_engine) {
++			if (ossl_engine == NULL) {
++				fprintf(stderr, "Input openssl engine is null\n");
++				exit(1);
++			}
++
++			// Engine setup
++			ENGINE_load_builtin_engines();
++			engine = setup_engine(ossl_engine);
++		}
+ 		/* Read the private key and the X.509 cert the PKCS#7 message
+ 		 * will point to.
+ 		 */
+-		private_key = read_private_key(private_key_name);
++		private_key = read_private_key(private_key_name, engine);
+ 		x509 = read_x509(x509_name);
+ 
+ 		/* Digest the module data. */
+-- 
+2.17.1
+

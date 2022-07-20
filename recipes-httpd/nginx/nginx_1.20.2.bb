@@ -1,0 +1,5 @@
+require nginx.inc
+
+LIC_FILES_CHKSUM = "file://LICENSE;md5=206629dc7c7b3e87acb31162363ae505"
+
+SRC_URI[sha256sum] = "958876757782190a1653e14dc26dfc7ba263de310e04c113e11e97d1bef45a42"

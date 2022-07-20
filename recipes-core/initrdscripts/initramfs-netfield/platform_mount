@@ -1,0 +1,23 @@
+#!/bin/sh
+
+platform_mount_enabled() {
+	return 0
+}
+
+platform_mount_run() {
+	if [ -z "${ROOTFS_DIR}" ]; then
+		__debug "Invalid or missing ROOTFS_DIR."
+		return 1
+	fi
+
+	# Mount additional 'default' required partitions
+	mount -t tmpfs -o size=128K,mode=777 tmpfs ${ROOTFS_DIR}/mnt
+	for platform_mnt in backup; do
+		dev=$(blkid | grep "LABEL=\"${platform_mnt}\"" | cut -d ":" -f1)
+		if [ -n "${dev}" ]; then
+			__debug "mount ${dev} on ${ROOTFS_DIR}/mnt/${platform_mnt} ..."
+			mkdir -p ${ROOTFS_DIR}/mnt/${platform_mnt}
+			mount ${dev} ${ROOTFS_DIR}/mnt/${platform_mnt}
+		fi
+	done
+}

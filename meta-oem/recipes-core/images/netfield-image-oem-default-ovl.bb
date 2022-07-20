@@ -16,7 +16,7 @@ OEM_IMAGE_INSTALL = " \
 "
 require oem-base.inc
 
-do_image[depends] += "${OEM_BASE_IMAGE}:do_image_complete"
+do_image[depends] += "${OEM_BASE_IMAGE}:do_image_complete ${OEM_BASE_IMAGE}:do_hilscher_deploy"
 
 # Add OEM_BASE_IMAGE to wic image
 WIC_SYSTEM_PART_CONTENT_append += "${OEM_BASE_IMAGE}-${MACHINE}.squashfs"

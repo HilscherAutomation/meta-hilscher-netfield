@@ -1,0 +1,42 @@
+#!/bin/sh
+
+backup_restore_enabled() {
+	return 0
+}
+
+backup_restore_run() {
+	dev=$(blkid | grep "LABEL=\"backup\"" | cut -d ":" -f1)
+	if [ -b "$dev" ]; then
+		mp=$(mktemp -d) && mount -o ro $dev $mp
+
+		if [ -e "$mp/.restore" ]; then
+			. $mp/.restore
+			if [ "$restore" = "1" ]; then
+				[ -n "$password" ] && arg_password="-c $password"
+				# id0 is always data backup
+				dest="id=0,dest=/dev/mapper/data-data"
+				if [ "$type" = "full" ]; then
+					system_dev=$(blkid | grep "LABEL=\"system\"" | cut -d ":" -f1)
+					dest="$dest id=1,dest=$system_dev"
+
+					# Full restore requires reboot as kernel might have changed
+					reboot="1"
+				fi
+				fsarchiver restfs $mp/$archive $arg_password -j "$(grep -c ^processor /proc/cpuinfo)" $dest
+				# Delete restore request file.
+				mount -o remount,rw $dev $mp && rm $mp/.restore && mount -o remount,ro $dev $mp
+
+				if [ "$reboot" = "1" ]; then
+					__debug "System is rebooting!"
+					echo 1 > /proc/sys/kernel/sysrq
+					echo e > /proc/sysrq-trigger # send SIGTERM to all processes, allowing them to terminate gracefully
+					echo s > /proc/sysrq-trigger # flush data to disk
+					echo u > /proc/sysrq-trigger # remount all filesystems read-only
+					echo b > /proc/sysrq-trigger
+				fi
+			fi
+		fi
+
+		umount $mp && rmdir $mp
+	fi
+}

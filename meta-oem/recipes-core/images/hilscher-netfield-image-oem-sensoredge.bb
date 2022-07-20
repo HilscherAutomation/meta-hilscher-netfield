@@ -38,3 +38,5 @@ OEM_IMAGE_INSTALL += " \
 	cockpit-oem-ovl-remove-onboarding \
 	cockpit-oem-ovl-remove-terminal \
 "
+
+require recipes-core/images/hdeploy_image.inc

@@ -1,0 +1,107 @@
+#!/bin/sh
+
+device_data_enabled() {
+	return 0
+}
+
+device_data_run() {
+	# Create temporary module directory
+	moddir=/tmp/$module; mkdir -p $moddir
+
+	dev=$(blkid -L backup)
+	mp=$(mktemp -d) && mkdir -p $mp && mount -o ro $dev $mp
+
+	# NOTE:
+	# As old INTEL devices/firmwares stored the device-label only in efivar,
+	# this migration step is carried out to copy this device-label to a common dedicated storage location.
+	[ ! -r $mp/nvd/device_data ] && {
+		load_kernel_module efivarfs && mount -t efivarfs none /sys/firmware/efi/efivars
+		[ -e /sys/firmware/efi/efivars/hilscher-23682453-5d09-4e17-a1a6-f5efb21996d9 ] && {
+			mount -o remount,rw $dev $mp && mkdir -p $mp/nvd
+			cat /sys/firmware/efi/efivars/hilscher-23682453-5d09-4e17-a1a6-f5efb21996d9 > $mp/nvd/device_data
+			mount -o remount,ro $dev $mp
+		}
+		[ -e /sys/firmware/efi/efivars ] && umount /sys/firmware/efi/efivars
+	}
+
+	mac=$(cat /sys/class/net/eth0/address | tr -d ':' | tr "[:lower:]" "[:upper:]")
+	openssl x509 -pubkey -in /proc/sys/srm/owner-cert -noout > $moddir/owner-public.key
+
+	dd=$mp/nvd/device_data
+	if [ -r $dd ]; then
+		# Split device data into signature and data
+		dd_sig=$(cut -d $'\n' -f1 < $dd)
+		dd_data=$(cut -d $'\n' -f2 < $dd)
+
+		base64 -i -d <<<$dd_sig > $moddir/dd.sig
+
+		__debug "Verifying $dd ..."
+		echo -n $dd_data | openssl dgst -sha512 -verify  $moddir/owner-public.key -signature $moddir/dd.sig && {
+			# Check against all found MAC's
+			grep -q mac\":\"$mac <<< $dd_data && {
+				device_data=$dd_data
+				__debug "... success => Using $dd as device_data file."
+			}
+		}
+		[ $device_data ] || __debug "... failed! => Using fake device data."
+	else
+		__debug "Invalid or missing device data! => Using fake device data."
+	fi
+
+	# Load kernel driver for securly providing device data in runtime environment.
+	load_kernel_module device-data
+
+	# Export device-/fake-data to runtime environment.
+	if [ $device_data ]; then
+		# Replace single backslash with double backslashes (some labels are non-standard JSON)
+		echo -n $device_data |  sed -e 's,\([^\\]\\\)\([^\\]\),\1\\\2,g' > /sys/device_data/export
+	else
+		# Define some defaults used to create fake device data.
+		productname="unknown"
+		[ -e "/proc/device-tree/model" ] && productname=$(cat /proc/device-tree/model)
+		[ -e "/sys/class/dmi/id/product_name" ] && productname=$(cat /sys/class/dmi/id/product_name)
+		[ -e "/forced_productname" ] && productname=$(cat /forced_productname)
+
+		fallback_serial="MAC:$mac"
+
+		# NOTE:
+		# Since there are no device labels for virtual machines, the efivar hmi-* is used to provide
+		# additional unique informations about the machine.
+		# These are required for onboarding devices to the cloud.
+		# NOTE:
+		# Maybe this can be deleted in the future!
+		if [ -e "/sys/firmware/efi/efivars/hmi-45cd6521-a671-4782-8119-c29a709d2574" ]; then
+			machine_id="$(cat /sys/firmware/efi/efivars/hmi-45cd6521-a671-4782-8119-c29a709d2574 | tail -c +5)"
+			modulus=$(openssl x509 -noout -modulus -in /proc/sys/srm/owner-cert | cut -d "=" -f2)
+			machine_id=$(echo $machine_id | openssl aes-256-cbc -nosalt -a -d -k "$modulus" -pbkdf2)
+			if [ $? -ne 0 ]; then
+				add_dl_data=',"product_number":"!!TAMPERED!!"'
+				fallback_serial="!!TAMPERED!!"
+				chattr -i /sys/firmware/efi/efivars/hmi-45cd6521-a671-4782-8119-c29a709d2574
+				rm -f /sys/firmware/efi/efivars/hmi-45cd6521-a671-4782-8119-c29a709d2574
+			else
+				add_dl_data=',"machine_id":"'"$machine_id"'"'
+				add_dl_data="${add_dl_data},"'"product_number":"'"$(echo $machine_id | head -c 12)"'"'
+				fallback_serial="$(echo $machine_id | tail -c 13)"
+			fi
+		fi
+
+		echo -n '{"product_name":"'"${productname}"'","serial_number":"'"${fallback_serial}"'"'"${add_dl_data}"'}' > /sys/device_data/export
+	fi
+
+	# Export the device-data signature as well as the public device key to runtime environment.
+	signature="${dd_sig:-"na"}"
+	pubkey="$(cat $moddir/owner-public.key)"
+	echo -n '{"signature":"'"${signature}"'"}' > /sys/device_data/export
+	echo -n '{"publickey":"'"${pubkey}"'"}' | sed 's,\n,\\n,' > /sys/device_data/export
+
+	# Lock the kernel driver to prevent later tampering.
+	echo 1 > /sys/device_data/lock
+
+	# Provide a link in /var/platform
+	ln -s /sys/device_data /var/platform/device_data
+
+	# Cleanup
+	umount $mp  && rmdir $mp
+	rm -rf $moddir
+}

@@ -3,17 +3,7 @@ inherit hilscher-image-check
 do_rootfs[vardepsexclude] += "FIRMWARE_VERSION FULL_FW_VERSION"
 
 INITRAMFS_SCRIPTS = " \
-	initramfs-framework-base \
-	initramfs-framework-boot-cfg \
-	initramfs-framework-initrd-api \
-	initramfs-framework-device-data \
-	initramfs-framework-provisioning \
-	${@bb.utils.contains('PLATFORM_SIGN', '1', 'initramfs-framework-owner-cert', '', d)} \
-	initramfs-framework-platform-init \
-	initramfs-framework-fieldbus-detection \
-	initramfs-framework-fscheck \
-	initramfs-framework-factory-reset \
-	initramfs-framework-restore-backup \
+	initramfs-netfield \
 	initramfs-module-lvm \
 	initramfs-module-udev \
 "

@@ -1,0 +1,38 @@
+#!/bin/sh
+
+initrd_api_enabled() {
+	return 0
+}
+
+initrd_api_run() {
+	# NOTE:
+	# The device mount takes place in two steps, first as read-only and then as read/write.
+	# This is to avoid mount errors for devices already mounted read-only.
+	mp=$(mktemp -d) && mkdir -p $mp && mount -o ro $boot_dev $mp && mount -o remount,rw $boot_dev $mp
+
+	for f in $(find $mp -name initrd-api*); do
+		grep -q .log$ <<< $f && continue
+		[ -e $f ] && {
+			# Verifying oem rootfs overlay image (squashfs image)
+			__debug "Verifying $f ..."
+			offset=$(verify_file $f) || {
+				__debug "... failed!"
+				rm -f $f
+				continue
+			}
+			__debug "... success => Using $f as initrd-api file."
+
+			mkdir -p /tmp/$(basename $f) && cd /tmp/$(basename $f)
+
+			contents=$(tail -c+${offset} $f | tar xzv)
+ 			__debug "$f: Provided contents: $(tr '\n' ' ' <<< $contents)"
+			[ -x runscript.sh ] && ./runscript.sh apifile=$f || {
+				__fatal "Executing $f failed ($?)!"
+			}
+
+			cd - >/dev/null && rm -rf /tmp/$(basename $f)
+		}
+	done
+
+	sync && umount $mp && rmdir $mp
+}

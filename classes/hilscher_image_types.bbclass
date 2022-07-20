@@ -1,5 +1,7 @@
 inherit kernel-artifact-names sign-wrapper
 
+DEPENDS_append += "${@bb.utils.contains_any('IMAGE_FSTYPES', 'wic.bz2 fastboot', 'deploy-scripts-native', '', d)}"
+
 HILSCHER_RESCUE_IMAGE_LINK_NAME ??= "${HILSCHER_RESCUE_IMAGE}-${MACHINE}"
 INITRAMFS_IMAGE_NAME ?= "${@['${INITRAMFS_IMAGE}-${MACHINE}', ''][d.getVar('INITRAMFS_IMAGE') == '']}"
 
@@ -91,11 +93,9 @@ create_boot_cfg_file() {
 	echo "root='$root'" >> $dst
 	case "$(basename $dst)" in
 		"rboot.cfg")
-			echo "overlay=''" >> $dst
 			echo "overlaytargets='rootfs'" >> $dst
 			;;
 		*)
-			echo "overlay='${HILSCHER_OVERLAY}'" >> $dst
 			echo "overlaytargets='${HILSCHER_OVERLAYTARGETS}'" >> $dst
 			;;
 	esac
@@ -498,46 +498,4 @@ IMAGE_CMD_fastboot() {
 			ln -sf ${IMAGE_NAME}.$pname.sparse.fastboot ${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.$pname.sparse.fastboot
 		fi
 	done
-}
-
-########################################
-# Hilscher Deploy
-########################################
-
-HILSCHER_DEPLOY_ROOT_DIR ??= "${DEPLOY_DIR}/dist/"
-PSEUDO_IGNORE_PATHS .= ",${HILSCHER_DEPLOY_ROOT_DIR}"
-DEPLOY_EXT_LIST ??= "${IMAGE_FSTYPES}"
-
-do_image_complete[postfuncs] += "do_hilscher_deploy"
-do_hilscher_deploy() {
-	[ "${IMAGE_BASENAME}" = "${INITRAMFS_IMAGE}" ] && return 0
-	[ "${IMAGE_BASENAME}" = "${HILSCHER_RESCUE_IMAGE}" ] && return 0
-
-	hilscherDeployRootDir="${@d.getVar('HILSCHER_DEPLOY_ROOT_DIR')}"
-
-	deploydir="${hilscherDeployRootDir}/${MACHINE}/${IMAGE_BASENAME}/${FULL_FW_VERSION}"
-
-	mkdir -p $deploydir
-	cd $deploydir
-
-	extList="${DEPLOY_EXT_LIST}"
-	for ext in $extList; do
-		# Delete old image types
-		rm -f $deploydir/*.$ext
-
-		# Deploy images
-		for file in $(find ${IMGDEPLOYDIR} -type l -name "*.$ext"); do
-			cp -a $(readlink -f $file) .
-			ln -sf $(readlink $file) ./$(basename $file)
-		done
-	done
-
-	HILSCHER_DISTRO_BASE="${TOPDIR}/../meta-hilscher-netfield"
-	# Install script for easy deploying wic.bz2 images
-	[ -n "$(find -name '*.wic.bz2')" ] && install -m 755 ${HILSCHER_DISTRO_BASE}/scripts/deploy-wic-bz2 ./
-
-	# Install script for easy deploying fastboot images
-	[ -n "$(find -name '*.fastboot')" ] && install -m 755 ${HILSCHER_DISTRO_BASE}/scripts/deploy-fastboot ./
-
-	cd -
 }

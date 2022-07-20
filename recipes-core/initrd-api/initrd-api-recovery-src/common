@@ -1,0 +1,105 @@
+#!/bin/sh
+
+do_reboot() {
+	trap "" 15 # TERM
+	log "System is rebooting!"
+	sleep 1
+	echo 1 > /proc/sys/kernel/sysrq
+	echo e > /proc/sysrq-trigger # send SIGTERM to all processes, allowing them to terminate gracefully
+#	echo i > /proc/sysrq-trigger # send SIGKILL to all processes, forcing them to terminate immediately
+	echo s > /proc/sysrq-trigger # flush data to disk
+	echo u > /proc/sysrq-trigger # remount all filesystems read-only
+	echo b > /proc/sysrq-trigger
+}
+
+do_shutdown() {
+	trap "" 9 15 # TERM
+	log "System is shutting down!"
+	sleep 1
+	echo 1 > /proc/sys/kernel/sysrq
+	echo e > /proc/sysrq-trigger # send SIGTERM to all processes, allowing them to terminate gracefully
+#	echo i > /proc/sysrq-trigger # send SIGKILL to all processes, forcing them to terminate immediately
+	echo s > /proc/sysrq-trigger # flush data to disk
+	echo u > /proc/sysrq-trigger # remount all filesystems read-only
+	echo o > /proc/sysrq-trigger
+}
+
+do_check_version() {
+	# Get installed version information
+	installed_version_str=$1
+	installed_type=$(echo $installed_version_str | cut -d "." -f5)
+	[ -z "$installed_type" ] && installed_type="release"
+	installed_version=$(echo $installed_version_str | cut -d "." -f1-4 | sed -e 's/^[VBT]//g')
+
+	# Get update version information
+	update_version_str=$2
+	update_type=$(echo $update_version_str | cut -d "." -f5)
+	[ -z "$update_type" ] && update_type="release"
+	update_version=$(echo $update_version_str | cut -d "." -f1-4 | sed -e 's/^[VBT]//g')
+
+	allow_update="0"
+
+	if [ "$installed_type" = "debug" -o "$update_type" = "debug" ]; then
+		log "ATTENTION: You are on / installing a debug version. Up- and Downgrading is possible"
+		log "           old version: $installed_version_str"
+		log "           new version: $update_version_str"
+		allow_update="1"
+	elif [ "$installed_version" = "$update_version" ]; then
+		# rc and beta have a version suffix (rc-1, beta-1)
+		if echo "$installed_type" | grep -q -E "^beta"; then
+			if echo "$update_type" | grep -q -E "^rc|^release"; then
+				# only beta -> rc and release is allowed
+				allow_update="1"
+			elif echo "$update_type" | grep -q -E "^beta"; then
+				# beta-x -> beta-(x+y) is allowed
+				old_beta_idx=$(echo "$installed_type" | cut -d "-" -f2)
+				new_beta_idx=$(echo "$update_type" | cut -d "-" -f2)
+				if [ $old_beta_idx -le $new_beta_idx ]; then
+					allow_update="1"
+				fi
+			fi
+		fi
+
+		if echo "$installed_type" | grep -q -E "^rc"; then
+			# only rc -> release is allowed
+			if echo "$update_type" | grep -q -E "^release"; then
+				allow_update="1"
+			elif echo "$update_type" | grep -q -E "^rc"; then
+				# rc-x -> rc-(x+y) is allowed
+				old_rc_idx=$(echo "$installed_type" | cut -d "-" -f2)
+				new_rc_idx=$(echo "$update_type" | cut -d "-" -f2)
+				if [ $old_rc_idx -le $new_rc_idx ]; then
+					allow_update="1"
+				fi
+			fi
+		fi
+
+		if [ "$installed_type" = "$update_type" ]; then
+			# Allow factory default on same firmware
+			allow_update="1"
+		fi
+
+	elif [ "$installed_version" \< "$update_version" ]; then
+		allow_update="1"
+	else
+		log "INFO: Installed version is already same or newer. Update not required"
+	fi
+
+	[ "$allow_update" = "1" ] && return 0 || return 1
+}
+
+log() {
+	echo "$(basename $apifile): $@"
+	echo "$@" >> $logfile
+}
+
+get_key_val() {
+	echo $2 | tr ', ' '\n' | grep "^$1=" | cut -s -d'=' -f2
+}
+
+apifile=$(get_key_val apifile $*)
+logfile=$apifile.log
+
+dev=$(grep $(dirname $apifile) /proc/mounts | cut -d' ' -f1)
+part=$(basename $dev)
+removable=$(cat /sys/block/*/$part/../removable)

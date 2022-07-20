@@ -1,0 +1,71 @@
+#!/bin/sh -e
+
+image_search_dir="./"
+
+getImagePath() {
+	imageType=$1
+
+	image="$(find ${image_search_dir} -name "*.$imageType" -type l)"
+	[ -n "$image" ] && image=$(readlink $image)
+	[ -z "$image" ] && image="$(find ${image_search_dir} -name "*.$imageType" -type f)"
+	[ -z "$image" ] && return 1
+
+	echo $image
+}
+
+### Main function
+
+which fastboot > /dev/null || {
+	echo "Error: fastboot not found!"
+	echo ""
+	echo "Please install the fastboot tools and add these to PATH variable."
+	echo "https://developer.android.com/studio/releases/platform-tools"
+	exit 1
+}
+
+[ $# -lt 1 ] && {
+	echo "Usage: $0 DEST-IP";
+	exit 1;
+}
+
+target=$1
+
+if [ $# -gt "1" ]; then
+	image_search_dir=$2
+fi
+echo "Search within \"${image_search_dir}\" for fastboot files..."
+
+gptImage="$(getImagePath 'gpt.sparse.fastboot' || getImagePath 'gpt.raw.fastboot' || getImagePath 'gpt.fastboot')"
+bootImage="$(getImagePath 'boot.sparse.fastboot' || getImagePath 'boot.raw.fastboot' || getImagePath 'boot.fastboot')"
+rescueImage="$(getImagePath 'rescue.sparse.fastboot' || getImagePath 'rescue.raw.fastboot' || getImagePath 'rescue.fastboot')"
+systemImage="$(getImagePath 'system.sparse.fastboot' || getImagePath 'system.raw.fastboot' || getImagePath 'system.fastboot')"
+
+while ! ping $target -c1 >/dev/null; do echo  "Waiting for $target"; sleep 1; done
+
+echo "Deploying to $target"
+echo "gpt image: $gptImage"
+echo "boot image: $bootImage"
+echo "rescue image: $rescueImage"
+echo "system image: $systemImage"
+
+[ -n "$gptImage" ] && {
+	fastboot -s udp:$target flash gpt $gptImage
+}
+[ -n "$bootImage" ] && {
+	fastboot -s udp:$target erase boot
+	fastboot -s udp:$target flash boot $bootImage
+}
+[ -n "$rescueImage" ] && {
+	fastboot -s udp:$target erase rescue
+	fastboot -s udp:$target flash rescue $rescueImage
+}
+[ -n "$systemImage" ] && {
+	fastboot -s udp:$target erase system
+	fastboot -s udp:$target flash system $systemImage
+}
+
+fastboot -s udp:$target reboot
+
+date
+
+echo "... done"

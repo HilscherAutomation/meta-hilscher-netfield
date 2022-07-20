@@ -1,0 +1,29 @@
+#!/bin/sh
+
+update_hooks_post_overlayfs_enabled() {
+	# check if the update was already running - we do not need to
+	# to check / run every time, typically this will run after system update
+	updated_version=$(cat "${ROOTFS_DIR}/etc/.last_fw_update" 2>/dev/null)
+	running_version=$(cat "${ROOTFS_DIR}/firmware.version")
+	if [ "${running_version}" = "${updated_version}" ]; then
+		__skip
+		return 1
+	fi
+	return 0
+}
+
+update_hooks_post_overlayfs_run() {
+	# Load and run post-hooks
+	if [ -d "/etc/update-hooks.d/" ] ; then
+		for m in /etc/update-hooks.d/*; do
+			__module=`basename $m | cut -d'-' -f 2`
+
+			# process hook
+			. $m
+
+			eval "${__module}_postoverlay"
+		done
+	fi
+
+	echo "${running_version}" > ${ROOTFS_DIR}/etc/.last_fw_update
+}

@@ -24,20 +24,6 @@ do_mkfs_ext4() { mkfs.ext4 -O 64bit -F $1 ${2:+-L $2} || return 1; }
 do_fsck_ext4() { fsck.ext4 -y -f $1 || return 1; }
 do_fsresize_ext4() { resize2fs $1 || return 1; }
 
-# Plugin: btrfs
-do_mkfs_btrfs() { mkfs.btrfs -f $1 ${2:+-L $2} || return 1; }
-do_fsck_btrfs() { btrfsck --repair $1 || return 1; }
-do_fsresize_btrfs() {
-	local mp=$(mktemp -d) rc=0
-
-	mkdir -p $mp
-	mount $1 $mp
-	btrfs filesystem resize max $mp || rc=1
-	umount $1
-
-	return $rc
-}
-
 # Plugin: extended
 do_mkfs_extended() { return 0; }
 do_fsck_extended() { return 0; }
@@ -75,33 +61,33 @@ get_free_part_info() {
 }
 
 create_part() {
-	echo "Creating partition $pn ($conf_line) ..."
+	log "Creating partition $pn ($conf_line) ..."
 
 	# Read out information of free partition
 	if ! get_free_part_info; then
-		echo "Error: Creating partition ${pn} failed: Disk space empty!"
+		log "Error: Creating partition ${pn} failed: Disk space empty!"
 		return 1
 	fi
 
 	if [ "$part_tabel" = "dos" ]; then
 		# Create new DOS partition
 		case $fstype in
-			'ext4' | 'ext3' | 'ext2' | 'btrfs') id="83" ;;
+			'ext4' | 'ext3' | 'ext2') id="83" ;;
 			'vfat') id="0c" ;;
 			'lvm') id="8e" ;;
 			'extended') id="05" ;;
-			*) echo "Error: Invalid or missing partition type!"; return 1;;
+			*) log "Error: Invalid or missing partition type!"; return 1;;
 		esac
 	elif [ "$part_tabel" = "gpt" ]; then
 		# Create new GPT partition
 		case $fstype in
-			'ext4' | 'ext3' | 'ext2' | 'btrfs') id="0FC63DAF-8483-4772-8E79-3D69D8477DE4" ;;
+			'ext4' | 'ext3' | 'ext2') id="0FC63DAF-8483-4772-8E79-3D69D8477DE4" ;;
 			'vfat') id="EBD0A0A2-B9E5-4433-87C0-68B6B72699C7" ;;
 			'lvm') id="E6D6D379-F507-44C2-A23C-238F2A3DF928" ;;
-			*) echo "Error: Invalid or missing partition type!"; return 1;;
+			*) log "Error: Invalid or missing partition type!"; return 1;;
 		esac
 	else
-		echo "Error: Invalid or missing partition table!"
+		log "Error: Invalid or missing partition table!"
 		return 1
 	fi
 
@@ -109,44 +95,44 @@ create_part() {
 	start=$(sfdisk -F $dev | tail -n1 | cut -d ' ' -f1)
 	part_spec="${start},${size},${id}"
 	if ! flock $dev /bin/sh -c "echo $part_spec | sfdisk --no-reread -q -a $dev -W always"; then
-		echo "Error: Creating partition ${pn} failed!"
+		log "Error: Creating partition ${pn} failed!"
 		return 1
 	fi
 
 	# Format new partition with filesystem
 	case "$fstype" in
-		'ext4' | 'ext3' | 'ext2' | 'vfat' | 'btrfs')
+		'ext4' | 'ext3' | 'ext2' | 'vfat')
 			if ! do_mkfs_$fstype $dev_node $label; then
-				echo "Error: Creating partition ${pn} ($dev_node, $fstype) failed: Filesystem error!"
+				log "Error: Creating partition ${pn} ($dev_node, $fstype) failed: Filesystem error!"
 				return 1
 			fi
 			;;
 		'lvm')
-			vgchange -an
-			pvcreate $dev_node -ff -y -Zy
-			vgcreate $vgname $dev_node -Zy
-			vgchange -ay
+			vgchange -an && pvcreate $dev_node -ff -y -Zy && vgcreate $vgname $dev_node -Zy && vgchange -ay || {
+				log "Error: Creating partition ${pn} ($dev_node, $fstype) failed!"
+				return 1
+			}
 			;;
 		'extended')
 			;;
 		*)
-			echo "Error: Creating partition ${pn} ($dev_node, $fstype) failed: Invalid or missing fstype!"
-			echo "Error: Creating partition ${pn} ($dev_node, $fstype) failed: Supported fstype: ext4, ext3, ext2, vfat, btrfs!"
+			log "Error: Creating partition ${pn} ($dev_node, $fstype) failed: Invalid or missing fstype!"
+			log "Error: Creating partition ${pn} ($dev_node, $fstype) failed: Supported fstype: ext4, ext3, ext2, vfat!"
 			return 1
 			;;
 	esac
 
-	echo "Creating partition ${pn} ($dev_node, $fstype) successfully done!"
+	log "Creating partition ${pn} ($dev_node, $fstype) successfully done!"
 
 	return 0
 }
 
 resize_part() {
-	echo "Resizing partition $pn ($conf_line) ..."
+	log "Resizing partition $pn ($conf_line) ..."
 
 	# Read out information of free partition
 	if ! get_free_part_info; then
-		echo "Error: Creating partition ${pn} failed: Disk space empty!"
+		log "Error: Creating partition ${pn} failed: Disk space empty!"
 		return 1
 	fi
 
@@ -154,22 +140,18 @@ resize_part() {
 	cur_part_size_bytes=$(toBytes $cur_part_size)
 	size_bytes=$(toBytes $size)
 	if [ $size_bytes -lt $cur_part_size_bytes ]; then
-		echo "Error: Resizing partition ${pn} failed: Size cannot shrink!"
+		log "Error: Resizing partition ${pn} failed: Size cannot shrink!"
 		return 1
 	fi
 
 	# TODO: Check if partition fits on disk
-
-	# Prepare the device for resizing.
-	mp=$(grep $dev_node /proc/mounts | cut -d' ' -f2)
-	[ -n "$mp" ] && umount $dev_node
 
 	do_fsck_$fstype $dev_node
 
 	# Resize partition
 	[ "$size" = "max" ] && size="+"
 	if ! flock $dev /bin/sh -c "echo ,${size} | sfdisk --no-reread -q -N ${pn} ${dev}"; then
-		echo "Resizing partition ${pn} ($dev_node, $fstype) failed: Partition error!"
+		log "Resizing partition ${pn} ($dev_node, $fstype) failed: Partition error!"
 		return 1
 	fi
 
@@ -179,13 +161,10 @@ resize_part() {
 	#       to something before last check time. Both informations are kept in the
 	#       superblock of the filesystem. If last_checktime < last_mounttime resizing
 	#       via resize2fs will fail with the need to run e2fsck.
-	tmp_mp=$(mktemp -d)
-	mount $dev_node $tmp_mp || {
-		echo "Failed to mount ${dev_node}. Resizing will fail - aborting!"
+	tmp_mp=$(mktemp -d) && mount $dev_node $tmp_mp && umount $tmp_mp && rm -r $tmp_mp || {
+		log "Failed to mount ${dev_node}. Resizing will fail - aborting!"
 		return 1
 	}
-	umount $dev_node
-	rm -r $tmp_mp
 
 	# Sometimes resize2fs complains about missing fsck (especially on intel virtual platforms)
 	# so recheck filesystem
@@ -193,20 +172,16 @@ resize_part() {
 
 	# Resize filesystem
 	if ! do_fsresize_$fstype $dev_node; then
-		echo "Resizing partition ${pn} ($dev_node, $fstype) failed: Filesystem error!"
+		log "Resizing partition ${pn} ($dev_node, $fstype) failed: Filesystem error!"
 		return 1
 	fi
-
-	# Cleanup
-	[ -n "$mp" ] && mount $dev_node $mp
-
-	echo "Resizing partition ${pn} ($dev_node, $fstype) successfully done!"
+	log "Resizing partition ${pn} ($dev_node, $fstype) successfully done!"
 
 	return 0
 }
 
 create_logical_lvm_volume() {
-	echo "Creating logical LVM volume $lvn ($conf_line) ..."
+	log "Creating logical LVM volume $lvn ($conf_line) ..."
 
 	if echo ${size} | grep -q "%"; then
 		lvcreate -n $lvname -l ${size} $vgname -Zn
@@ -219,58 +194,14 @@ create_logical_lvm_volume() {
 
 	# Format logical volume
 	if ! yes | do_mkfs_$fstype /dev/mapper/$vgname-$lvname $label; then
-		echo "Creating logical LVM volume ${lvn} (/dev/mapper/$vgname-$lvname, $fstype) failed!"
+		log "Creating logical LVM volume ${lvn} (/dev/mapper/$vgname-$lvname, $fstype) failed!"
 		return 1
 	fi
 
-	echo "Creating logical LVM volume ${lvn} (/dev/mapper/$vgname-$lvname, $fstype) successfully done!"
-}
-
-get_key_val() {
-	echo $2 | sed 's/,/\n/g' | grep "^$1=" | cut -s -d'=' -f2
-}
-
-APP_NAME="Initial-Device-Partition-Manager"
-
-do_main_exit() {
-        exit_code=${1:-0}
-        case $exit_code in
-        0)
-                echo "Exiting $APP_NAME successfully!"
-                exit 0
-                ;;
-        *)
-                echo "Exiting $APP_NAME erroneous ($exit_code)!"
-                exit $exit_code
-                ;;
-        esac
+	log "Creating logical LVM volume ${lvn} (/dev/mapper/$vgname-$lvname, $fstype) successfully done!"
 }
 
 do_main() {
-	echo "Starting $APP_NAME ..."
-
-	dev_list="$(cat part.cfg | grep ^device)"
-	dev_list="$(echo $dev_list | cut -d "=" -f2)"
-
-	for tmp_dev in $dev_list; do
-		if [ -b "$tmp_dev" ]; then
-			dev="$tmp_dev"
-			break
-		fi
-	done
-
-	if [ -z "$dev" ]; then
-		echo "System device not found in $dev_list"
-		do_main_exit 1
-	else
-		echo "Using system device $dev"
-	fi
-
-	# Unmount fs where apifile resides, as this usually resides on rescue partition
-	api_mp=$(dirname $apifile)
-	api_dev=$(cat /proc/mounts | grep $api_mp | cut -d " " -f1)
-	umount $api_mp
-
 	sgdisk=$(which sgdisk)
 	[ -n "$sgdisk" ] && sgdisk -e $dev
 
@@ -285,7 +216,7 @@ do_main() {
 		part=$(get_key_val part $conf_line)
 		[ -z "$part" ] && continue
 
-		echo "========================================"
+		log "========================================"
 
 		size=$(get_key_val size $conf_line)
 		fstype=$(get_key_val fstype $conf_line)
@@ -304,34 +235,33 @@ do_main() {
 		dev_node=$(get_cur_dev_node)
 
 		cur_part_conf=$(echo "$cur_parts" | head -n${pn} | tail -n1)
-
 		# Check partition availability
 		if [ ${cur_parts_count} -lt ${pn} ]; then
-			create_part || do_main_exit 1
+			create_part || return 1
 			continue
 		fi
 
 		# Check partition filesystem
 		cur_part_fstype=$(lsblk -o NAME,FSTYPE ${dev_node} | sed "1 d" | head -n1 | tr -s " " | cut -d " " -f2 | sed "s/LVM2_member/lvm/")
 		if [ "$cur_part_fstype" != "$fstype" ]; then
-			echo "Error: Partition $dev_node: fstype mismatch ($fstype!=$cur_part_fstype)"
-			do_main_exit 1
+			log "Error: Partition $dev_node: fstype mismatch ($fstype!=$cur_part_fstype)"
+			return 1
 		fi
 
 		# Check partition size
 		cur_part_size=$(echo $cur_part_conf | cut -d " " -f5)
 		if [ "$cur_part_size" != "$size" ]; then
-			resize_part || do_main_exit 1
+			resize_part || return 1
 			continue
 		fi
 
-		echo "Partition $pn ($dev_node) okay!"
+		log "Partition $pn ($dev_node) okay!"
 	done
 
 	for conf_line in $conf; do
 		lvname=$(get_key_val lvname $conf_line)
 		[ -z "$lvname" ] && continue
-		echo "========================================"
+		log "========================================"
 
 		let lvn++
 		vgname=$(get_key_val vgname $conf_line)
@@ -340,27 +270,92 @@ do_main() {
 		label=$(get_key_val label $conf_line)
 
 		# Create logical LVM volume
-		create_logical_lvm_volume || do_main_exit 1
+		create_logical_lvm_volume || return 1
 	done
 
-	echo "========================================"
+	log "========================================"
 
-	# Delete intrd-api file
-	mount $api_dev $api_mp
-	rm $apifile
-	cp /tmp/initrdapi.log ${logfile:-/dev/null}
-	sync
-
-	do_main_exit 0
+	return 0
 }
 
-# Transform to comma only separated argument list
-args=$(echo $* | tr ', ' ',')
+do_init() {
+	# Check for part.cfg
+	[ -r part.cfg ] || {
+		log "Invalid or missing part.cfg"
+		return 1
+	}
 
-apifile=$(get_key_val apifile $args)
-logfile=$(get_key_val logfile $args)
+	# Retrieve physical device to be modified.
+	dev_list=$(grep ^device part.cfg | cut -d'=' -f2)
+	for dev in $dev_list; do
+		[ -b $dev ] && break
+	done
 
-do_main $@ 2>&1 | tee -a /tmp/initrdapi.log | sed 's/^/runscript.sh: /'
+	[ ! $dev ] && {
+		log "System device not found in $dev_list"
+		return 1
+	}
+	log "Using system device $dev"
 
-# Note: This code segment should never be reached!
-exit $?
+	# Unmount all partitions from the device to be modified ...
+	devmounts=$(mktemp)
+	grep ^$dev /proc/mounts > $devmounts
+	while read line; do
+		umount $(cut -d' ' -f2 <<< $line);
+	done < $devmounts
+}
+
+do_cleanup() {
+	# Remount all previously unmounted partitions of the device to be modified.
+	if [ -r $devmounts ]; then
+		while read line; do
+			# NOTE:
+			# The device mount takes place in two steps, first as read-only and then as read/write.
+			# This is to avoid mount errors for devices already mounted read-only.
+			mount $(cut -d' ' -f1 <<< $line) $(cut -d' ' -f2 <<< $line) -t $(cut -d' ' -f3 <<< $line) -o ro
+			mount $(cut -d' ' -f1 <<< $line) $(cut -d' ' -f2 <<< $line) -t $(cut -d' ' -f3 <<< $line) -o remount,$(cut -d' ' -f4 <<< $line)
+		done < $devmounts
+		rm $devmounts
+	fi
+
+	# Copy logfile to persistent storage location.
+	cp $logfile $apifile.log
+}
+
+log() {
+	echo "$(basename $apifile): $@"
+	echo "$@" >> $logfile
+}
+
+get_key_val() {
+	echo $2 | tr ', ' '\n' | grep "^$1=" | cut -s -d'=' -f2
+}
+
+################################################################################
+
+APP_NAME="Initial-Device-Partition-Manager"
+
+apifile=$(get_key_val apifile $*)
+logfile=/tmp/$(basename $apifile).log
+
+log "Starting $APP_NAME ..."
+
+do_init && do_main $@
+exit_code=$?
+
+case $exit_code in
+	0)
+		do_cleanup
+		rm $apifile
+		log "Exiting $APP_NAME successfully!"
+		exit 0
+		;;
+	*)
+		do_cleanup
+		log "Exiting $APP_NAME erroneous ($exit_code)!"
+		exit $exit_code
+		;;
+esac
+
+# This code should never be reached!
+exit 1

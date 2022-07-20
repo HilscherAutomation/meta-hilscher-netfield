@@ -1,0 +1,22 @@
+SUMMARY = "Tools for TPM2."
+DESCRIPTION = "tpm2-tools"
+LICENSE = "BSD"
+LIC_FILES_CHKSUM = "file://doc/LICENSE;md5=a846608d090aa64494c45fc147cc12e3"
+SECTION = "tpm"
+
+#PACKAGE_ARCH = "${BUILD_ARCH}"
+BBCLASSEXTEND = "native nativesdk"
+
+#PACKAGES =+ " ${PN}-native"
+
+DEPENDS = "tpm2-abrmd tpm2-tss openssl curl autoconf-archive"
+
+SRC_URI = "https://github.com/tpm2-software/${BPN}/releases/download/${PV}/${BPN}-${PV}.tar.gz"
+
+SRC_URI[sha256sum] = "c0b402f6a7b3456e8eb2445211e2d41c46c7e769e05fe4d8909ff64119f7a630"
+
+inherit autotools pkgconfig bash-completion
+
+S = "${WORKDIR}/tpm2-tools-${PV}"
+
+FILES_${PN}_class_native = "/usr/*"

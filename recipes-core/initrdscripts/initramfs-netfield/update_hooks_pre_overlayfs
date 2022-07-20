@@ -1,0 +1,19 @@
+#!/bin/sh
+
+update_hooks_pre_overlayfs_enabled() {
+	return 0
+}
+
+update_hooks_pre_overlayfs_run() {
+	# Load and run pre-hooks
+	if [ -d "/etc/update-hooks.d/" ] ; then
+		for m in /etc/update-hooks.d/*; do
+			__module=`basename $m | cut -d'-' -f 2`
+
+			# process hook
+			. $m
+
+			eval "${__module}_preoverlay"
+		done
+	fi
+}
