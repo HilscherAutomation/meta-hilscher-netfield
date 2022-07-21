@@ -13,13 +13,13 @@ DEPENDS_remove_class-target += "libdevmapper"
 
 do_install_append() {
     if ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'true', 'false', d)}; then
-        install -d ${D}${sysconfdir}/tmpfiles.d
-        cat <<EOF>> ${D}${sysconfdir}/tmpfiles.d/docker_overlay.conf
+        install -d ${D}${libdir}/tmpfiles.d/
+        cat <<EOF>> ${D}${libdir}/tmpfiles.d/docker_overlay.conf
 d /run/overlay/docker 0755 root root -
 L+ /var/lib/docker - - - - /run/overlay/docker
 EOF
 
-        cat <<EOF>> ${D}${sysconfdir}/tmpfiles.d/docker_netadmin.conf
+        cat <<EOF>> ${D}${libdir}/tmpfiles.d/docker_netadmin.conf
 z ${sysconfdir}/docker/daemon.json 0664 root netadmin
 EOF
 
@@ -47,4 +47,5 @@ EOF
     install -m 0644 ${WORKDIR}/docker.rules ${D}${base_libdir}/udev/rules.d/80-docker.rules
 }
 
-FILES_${PN}_append += "${base_libdir}/udev/rules.d/"
+FILES_${PN}_append += "${base_libdir}/udev/rules.d/ \
+                       ${libdir}/tmpfiles.d"
