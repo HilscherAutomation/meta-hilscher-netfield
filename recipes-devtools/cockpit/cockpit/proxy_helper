@@ -1,0 +1,41 @@
+#!/bin/sh
+
+usage() {
+    cat <<EOF
+Usage:
+    $0 <proxy-config>
+
+Example:
+    $0 '{"no_proxy":"", "http_proxy": "192.168.10.20:8080"}'
+EOF
+}
+
+SYSTEMD_PROXY_CONFIG="/etc/systemd/system.conf.d/10-default-env.conf"
+PROFILE_PROXY_CONFIG="/etc/profile.d/10-proxy.sh"
+
+if [ -z "$1" ]; then
+    usage
+    exit 1
+fi
+
+if ! echo "$1" | jq >/dev/null;then
+    usage
+    exit 2
+fi
+
+# Extract value
+http_proxy=$(echo "$1" | jq -r '.http_proxy // ""')
+https_proxy=$(echo "$1" | jq -r '.https_proxy // ""')
+ftp_proxy=$(echo "$1" | jq -r '.ftp_proxy // ""')
+no_proxy=$(echo "$1" | jq -r '.no_proxy // ""')
+
+cat <<EOF>${SYSTEMD_PROXY_CONFIG}
+[Manager]
+DefaultEnvironment="http_proxy=${http_proxy}" "https_proxy=${https_proxy}" "ftp_proxy=${ftp_proxy}" "no_proxy=${no_proxy}"
+EOF
+
+cat <<EOF>${PROFILE_PROXY_CONFIG}
+#!/bin/sh
+
+export "http_proxy=${http_proxy}" "https_proxy=${https_proxy}" "ftp_proxy=${ftp_proxy}" "no_proxy=${no_proxy}"
+EOF
