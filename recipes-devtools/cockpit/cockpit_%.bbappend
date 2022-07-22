@@ -19,6 +19,7 @@ do_install_append() {
         # Allow netadmin group do call cockpit nework helpers as sudo
         echo "%netadmin ALL=(ALL:ALL) NOPASSWD: /usr/libexec/cockpit/$helper" >> ${D}${sysconfdir}/sudoers.d/cockpit-netadmin
     done
+    chmod 0640 ${D}${sysconfdir}/sudoers.d/cockpit-netadmin
 
     # Cockpit requires write access to timesyncd configuration and netadmin use
     install -d ${D}${sysconfdir}/systemd/timesyncd.conf.d
