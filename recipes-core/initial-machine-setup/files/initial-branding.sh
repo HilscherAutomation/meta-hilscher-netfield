@@ -134,6 +134,9 @@ check_ntp() {
       mkdir -p /etc/systemd/timesyncd.conf.d
       echo "[Time]" > /etc/systemd/timesyncd.conf.d/50-cockpit.conf
       echo "NTP=$serverlist" >> /etc/systemd/timesyncd.conf.d/50-cockpit.conf
+      chown root:timeadmin /etc/systemd/timesyncd.conf.d /etc/systemd/timesyncd.conf.d/50-cockpit.conf
+      chmod 0775 /etc/systemd/timesyncd.conf.d
+      chmod 0664 /etc/systemd/timesyncd.conf.d/50-cockpit.conf
       systemctl restart --no-block systemd-timesyncd
     fi
 

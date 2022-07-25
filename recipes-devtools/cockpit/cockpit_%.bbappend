@@ -27,5 +27,6 @@ do_install_append() {
     cat <<EOF> ${D}${libdir}/tmpfiles.d/cockpit-timesyncd.conf
 d ${sysconfdir}/systemd/timesyncd.conf.d 0775 root timeadmin -
 z ${sysconfdir}/systemd/timesyncd.conf.d 0775 root timeadmin
+z ${sysconfdir}/systemd/timesyncd.conf.d/* 0664 root timeadmin
 EOF
 }

@@ -7,6 +7,7 @@ do_install_append() {
     install -d ${D}${libdir}/tmpfiles.d/
     cat <<EOF>> ${D}${libdir}/tmpfiles.d/dnsmasq_netadmin.conf
 z ${sysconfdir}/dnsmasq.d 0775 root netadmin
+z ${sysconfdir}/dnsmasq.d/* 0664 root netadmin
 EOF
 }
 
