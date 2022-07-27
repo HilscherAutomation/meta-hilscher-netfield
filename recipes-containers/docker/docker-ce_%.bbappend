@@ -20,6 +20,8 @@ L+ /var/lib/docker - - - - /run/overlay/docker
 EOF
 
         cat <<EOF>> ${D}${libdir}/tmpfiles.d/docker_netadmin.conf
+d ${sysconfdir}/docker/ 0775 root netadmin -
+z ${sysconfdir}/docker/ 0775 root netadmin
 z ${sysconfdir}/docker/daemon.json 0664 root netadmin
 EOF
 

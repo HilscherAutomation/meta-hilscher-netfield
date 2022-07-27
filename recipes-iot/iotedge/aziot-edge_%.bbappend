@@ -39,12 +39,15 @@ do_install_append() {
 
     install -d ${D}${sbindir}
     install ${WORKDIR}/iotedge_bridge.sh ${D}${sbindir}/iotedge_bridge
-    install -d ${D}${sysconfdir}/default
-    install -m 0644 ${WORKDIR}/iotedge.default ${D}${sysconfdir}/default/iotedge
+    install -d ${D}${sysconfdir}/default/iotedge
+    install -m 0644 ${WORKDIR}/iotedge.default ${D}${sysconfdir}/default/iotedge/bridge
 
     install -d ${D}${libdir}/tmpfiles.d
     cat <<EOF>> ${D}${libdir}/tmpfiles.d/iotedge_netadmin.conf
-z ${sysconfdir}/default/iotedge 0664 root netadmin
+d ${sysconfdir}/default/iotedge/ 0775 root netadmin -
+z ${sysconfdir}/default/iotedge/ 0775 root netadmin
+z ${sysconfdir}/default/iotedge/bridge 0664 root netadmin
+z ${sysconfdir}/docker/ 0775 root netadmin -
 z ${sysconfdir}/docker/iotedge.json 0664 root netadmin
 EOF
 

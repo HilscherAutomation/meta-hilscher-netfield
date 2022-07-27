@@ -2,8 +2,8 @@
 
 BRIDGE_IP="172.16.0.1/16"
 
-if [ -e "/etc/default/iotedge" ]; then
-	. /etc/default/iotedge
+if [ -f "/etc/default/iotedge/bridge" ]; then
+	. /etc/default/iotedge/bridge
 fi
 
 if [ "${1}" = "create" ]; then
