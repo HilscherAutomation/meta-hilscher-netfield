@@ -31,7 +31,15 @@ do_install_append() {
 
   install -d ${D}${sysconfdir}/logrotate.d
   install -m 0644 ${WORKDIR}/nginx.logrotate ${D}${sysconfdir}/logrotate.d/nginx
+
+  # Allow netadmin group to modify basic nginx settings
+  install -d ${D}${libdir}/tmpfiles.d/
+  cat <<EOF> ${D}${libdir}/tmpfiles.d/nginx-netadmin.conf
+z ${sysconfdir}/nginx 0775 root netadmin
+z ${sysconfdir}/nginx/nginx.conf 0664 root netadmin
+EOF
 }
+FILES_${PN}_append += "${libdir}/tmpfiles.d/nginx-netadmin.conf"
 
 PACKAGES =+ "${PN}-conf"
 RDEPENDS_${PN}_append += "${PN}-conf"
