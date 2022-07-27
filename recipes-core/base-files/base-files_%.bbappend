@@ -5,6 +5,14 @@ SRC_URI_append += "file://mqtt-config.json"
 do_install_append() {
     install -d ${D}${sysconfdir}/gateway
     install -m0644 ${WORKDIR}/mqtt-config.json ${D}${sysconfdir}/gateway/
+
+    # Install tmpfiles.d fragment to adjust user rights on gateway setting files
+    install -d ${D}${libdir}/tmpfiles.d/
+    cat <<EOF> ${D}${libdir}/tmpfiles.d/gateway-settings.conf
+d ${sysconfdir}/gateway/  0775 root netadmin -
+z ${sysconfdir}/gateway/  0775 root netadmin
+z ${sysconfdir}/gateway/* 0664 root netadmin
+EOF
 }
 
 do_install_basefilesissue () {
