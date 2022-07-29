@@ -10,7 +10,7 @@ GO_INSTALL = "${GO_IMPORT}"
 SRC_URI = "git://${GO_IMPORT};protocol=https;nobranch=1 \
            file://${BPN}.service \
            file://authz.rego"
-SRCREV="3d71d2a929e241c214a1a217971eca6b4735447c"
+SRCREV="f609c4313f9a9c101e1f90434b0641ab66999fcb"
 
 inherit go-mod systemd
 
@@ -29,6 +29,12 @@ do_install_append() {
 
     install -d ${D}${systemd_system_unitdir}
     install -m 0644 ${WORKDIR}/${BPN}.service ${D}${systemd_system_unitdir}
+
+    install -d ${D}${sysconfdir}/default
+    cat <<EOF>${D}${sysconfdir}/default/${PN}
+# Pass additional options to opa-docker-authz (e.g. -log-only-denied)
+#ADD_OPTS="-log-only-denied"
+EOF
 }
 
 FILES_${PN} += "${systemd_system_unitdir}"
