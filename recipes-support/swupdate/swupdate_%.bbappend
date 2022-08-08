@@ -13,7 +13,11 @@ SWUPDATE_SIGN ??= "${PLATFORM_SIGN}"
 SWUPDATE_KEYDIR ??= "${PLATFORM_KEYDIR}"
 SWUPDATE_KEYNAME ??= "${PLATFORM_KEYNAME}"
 
+export SWU_VER="${PV}"
+
 SRC_URI_append += " \
+	file://raw_file_skip_dev_null.patch \
+	file://pass_swupdate_version.patch \
 	${@bb.utils.contains('SWUPDATE_SIGN', '1', 'file://enable_signed_images.cfg', 'file://enable_hashed_images.cfg', d)} \
 	file://enable_download.cfg \
 	file://swupdate-args.sh \

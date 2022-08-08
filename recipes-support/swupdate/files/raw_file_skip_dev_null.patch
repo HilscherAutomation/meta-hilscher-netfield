@@ -1,0 +1,29 @@
+Skip file copying if /dev/null is passed. In previous versions it did not throw and error,
+but since fsync was added it throws the following error:
+
+| Status: 4 message: ERROR : Error writing /dev/null to disk: Invalid argument
+
+diff --git a/handlers/raw_handler.c b/handlers/raw_handler.c
+index bac1161..aecb183 100644
+--- a/handlers/raw_handler.c
++++ b/handlers/raw_handler.c
+@@ -295,6 +295,11 @@ static int install_raw_file(struct img_type *img,
+ 		}
+ 	}
+ 
++	if(strncmp(tmp_path, "/dev/null", sizeof(tmp_path)) == 0) {
++		ret = 0;
++		goto exit_out;
++	}
++
+ 	fdout = openfileoutput(tmp_path);
+ 	if (fdout < 0)
+ 		return fdout;
+@@ -314,6 +319,7 @@ static int install_raw_file(struct img_type *img,
+ 
+ 	close(fdout);
+ 
++exit_out:
+ 	if (strtobool(dict_get_value(&img->properties, "atomic-install"))) {
+ 		TRACE("Renaming file %s to %s", tmp_path, path);
+ 		if(rename(tmp_path, path)) {
