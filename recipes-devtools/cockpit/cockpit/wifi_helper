@@ -7,3 +7,5 @@ fi
 
 countryline="options cfg80211 ieee80211_regdom=${1}"
 echo "$countryline" > /etc/modprobe.d/cfg80211.conf
+
+iw reg set "${1}"

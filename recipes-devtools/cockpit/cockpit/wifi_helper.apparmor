@@ -29,4 +29,8 @@ include <tunables/global>
   /dev/tty                          rw,
   /usr/libexec/cockpit/wifi_helper  r,
   /etc/modprobe.d/cfg80211.conf     rwk,
+
+  capability sys_module,
+  capability net_admin,
+  /usr/sbin/iw rix,
 }
