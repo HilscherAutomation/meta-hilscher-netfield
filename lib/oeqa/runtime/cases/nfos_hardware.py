@@ -9,10 +9,10 @@ class BaseTest(OERuntimeTestCase):
     ''' ======================================== '''
     dev_list_netfield_compact_x8m_revX = (
         'gpio@30200000', 'gpio@30210000', 'gpio@30220000', 'gpio@30230000', 'gpio@30240000',
-        '@30860000', 'serial@30880000', 'serial@30890000',
+        'serial@30860000', 'serial@30880000',
         'i2c@30a20000', 'i2c@30a30000', 'i2c@30a50000' ,
-        'spi@30820000', 'spi@30840000',
-        'usb@32e50000',
+        'spi@30820000',
+        'usb@32e40000', 'usb@32e50000',
         'ethernet@30be0000',
         'pinctrl@30330000',
     )
@@ -113,8 +113,7 @@ class BaseTest(OERuntimeTestCase):
 
     ''' ======================================== '''
     gpio_list_netfield_compact_x8m_revX = (
-        'gpiochip0', 'gpiochip32', 'gpiochip64', 'gpiochip96', 'gpiochip128', 'gpiochip494', 'gpiochip496',
-        'gpio496', 'gpio497', 'gpio498', 'gpio499', 'gpio500', 'gpio501', 'gpio502', 'gpio503', 'gpio504',
+        'gpiochip0', 'gpiochip32', 'gpiochip64', 'gpiochip96', 'gpiochip128',
     )
     gpio_list_niot_e_nfl90_q2n16_n_revX = (
         'gpiochip0', 'gpiochip32', 'gpiochip64', 'gpiochip96', 'gpiochip128',
