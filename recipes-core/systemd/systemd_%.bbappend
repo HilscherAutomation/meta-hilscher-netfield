@@ -4,6 +4,7 @@ RDEPENDS_${PN}_append += "systemd-machine-units"
 
 SRC_URI_append += "file://disable_predictable_network_names.patch \
     file://pass_unit_name_on_enable_disable.patch \
+    file://allow_readlog_for_netadmin.patch \
 "
 
 # Default servers to add to initial configuration
