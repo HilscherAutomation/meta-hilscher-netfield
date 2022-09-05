@@ -1,0 +1,14 @@
+SWU_VER is set to empty, as "git describe" seems to be called in wrong directory,
+so set it externally
+diff -aurN a/Makefile.flags b/Makefile.flags
+--- a/Makefile.flags	2022-08-08 14:27:45.513184510 +0200
++++ b/Makefile.flags	2022-08-08 14:37:44.092406930 +0200
+@@ -6,8 +6,6 @@
+ # Build system
+ # ==========================================================================
+ 
+-SWU_VER = $(shell git describe --tags --always --dirty)
+-export SWU_VER
+ SKIP_STRIP ?= n
+ 
+ ifneq ($(CC),clang)

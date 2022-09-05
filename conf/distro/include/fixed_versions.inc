@@ -1,0 +1,1 @@
+PREFERRED_VERSION_swupdate = "2022.05"
