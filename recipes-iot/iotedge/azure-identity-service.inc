@@ -59,6 +59,14 @@ do_compile() {
     mkdir -p ${B}/tmp
     export TMPDIR="${B}/tmp"
     cd ${S}
+
+    # HACK: some platforms don't support soft-float which might be required by bindgen
+    #       which is used during build
+    if [ ! -e "${STAGING_INCDIR}/gnu/stubs-soft.h" ] && [ -e "${STAGING_INCDIR}/gnu/stubs-hard.h" ]; then
+        echo "HACK: Adding symlink to use hardfloat-stubs, even when softfloat is requested"
+        ln -s stubs-hard.h ${STAGING_INCDIR}/gnu/stubs-soft.h
+    fi
+
     oe_runmake
     # Generate 3rd Party Notices
     export platform="${HOST_SYS}"
