@@ -17,7 +17,7 @@ backup_devs="/dev/mapper/data-SNAPSHOT"
 while getopts hfc:l:p: opt; do
    case $opt in
        h) help; exit 0;;
-       f) backup_devs="$backup_devs /dev/disk/by-bootmode/active";;
+       f) backup_devs="$backup_devs /dev/disk/by-label/system"; mount_system=1;;
        c) add_options="${add_options} -z $OPTARG";;
        l) comment="$OPTARG";;
        p) add_options="${add_options} -c $OPTARG";;
@@ -51,8 +51,24 @@ if ! lvcreate -l100%FREE -s -n SNAPSHOT /dev/mapper/data-data; then
     exit 1
 fi
 
+# fsarchiver tries to mount the partition ro, which fails on netFIELDOS,
+# so mount it ro before and unmount afterwards
+if [ "$mount_system" = "1" ]; then
+    tmpdir=$(mktemp -d)
+    if mount /dev/disk/by-label/system $tmpdir; then
+       mount -o remount,ro $tmpdir;
+    else
+       mount -o ro /dev/disk/by-label/system $tmpdir
+    fi
+fi
+
 fsarchiver savefs $archive $backup_devs -o -e "${EXCLUDE_TARGETS}" $add_options -j "$(grep -c ^processor /proc/cpuinfo)"
 ret=$?
+
+if [ "$mount_system" = "1" ]; then
+    umount $tmpdir
+    rmdir $tmpdir
+fi
 
 lvremove -qf /dev/mapper/data-SNAPSHOT
 
