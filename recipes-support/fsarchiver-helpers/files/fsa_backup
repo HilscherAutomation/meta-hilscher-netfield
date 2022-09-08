@@ -44,7 +44,7 @@ if [ "$(dirname "$archive")" = "." ]; then
 	archive="/mnt/backup/$archive"
 fi
 
-EXCLUDE_TARGETS="/etc/apparmor.d/cache.d,/etc/machine-id,/var/log,/var/lib/NetworkManager/*.lease,/var/lib/NetworkManager/secret_key,/var/lib/NetworkManager/timestamps,/etc/udev/hwdb.bin,/opt/containerd/,/opt/upnpd/,/lost+found"
+EXCLUDE_TARGETS="/etc/apparmor.d/cache.d,/etc/machine-id,/var/log,/var/lib/NetworkManager/*.lease,/var/lib/NetworkManager/secret_key,/var/lib/NetworkManager/timestamps,/etc/udev/hwdb.bin,/opt/containerd/,/opt/upnpd/,/var/lib/tpm/,/lost+found"
 
 [ -e /dev/mapper/data-SNAPSHOT ] && lvremove -qf /dev/mapper/data-SNAPSHOT
 if ! lvcreate -l100%FREE -s -n SNAPSHOT /dev/mapper/data-data; then

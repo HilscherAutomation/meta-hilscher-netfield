@@ -1,0 +1,10 @@
+[Unit]
+Description=Software TPM 2.0 Server
+
+[Service]
+ExecStartPre=/bin/mkdir -p /mnt/backup/nvd/swtpm
+ExecStartPre=/usr/bin/swtpm_setup --tpmstate /mnt/backup/nvd/swtpm --tpm2 --createek --decryption --display --not-overwrite
+ExecStart=swtpm chardev --vtpm-proxy --tpm2 --tpmstate dir=/mnt/backup/nvd/swtpm --pid file=/run/swtpm.pid --flags not-need-init
+
+[Install]
+WantedBy=multi-user.target

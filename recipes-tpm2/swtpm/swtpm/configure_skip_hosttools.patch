@@ -1,0 +1,52 @@
+diff -aurN a/configure.ac b/configure.ac
+--- a/configure.ac	2022-09-08 13:19:52.752675242 +0200
++++ b/configure.ac	2022-09-08 13:37:10.887050671 +0200
+@@ -182,24 +182,6 @@
+ AC_CHECK_LIB(c, clock_gettime, LIBRT_LIBS="", LIBRT_LIBS="-lrt")
+ AC_SUBST([LIBRT_LIBS])
+ 
+-AC_PATH_PROG([TCSD], tcsd)
+-if test "x$TCSD" = "x"; then
+-    have_tcsd=no
+-    AC_MSG_WARN([tcsd could not be found; typically need it for tss user account and tests])
+-else
+-    have_tcsd=yes
+-fi
+-AM_CONDITIONAL([HAVE_TCSD], test "$have_tcsd" != "no")
+-
+-dnl We either need netstat (more common across systems) or 'ss' for test cases
+-AC_PATH_PROG([NETSTAT], [netstat])
+-if test "x$NETSTAT" = "x"; then
+-	AC_PATH_PROG([SS], [ss])
+-	if test "x$SS" = "x"; then
+-		AC_MSG_ERROR(['netstat' and 'ss' tools are missing for tests: net-tools OR iproute/iproute2 package])
+-	fi
+-fi
+-
+ AC_MSG_CHECKING([for whether to build with CUSE interface])
+ AC_ARG_WITH([cuse],
+             AS_HELP_STRING([--with-cuse],[build with CUSE interface]),
+@@ -475,23 +457,6 @@
+             [TSS_GROUP="tss"]
+ )
+ 
+-case $have_tcsd in
+-yes)
+-	AC_MSG_CHECKING([whether TSS_USER $TSS_USER is available])
+-	if ! test $(id -u $TSS_USER); then
+-		AC_MSG_ERROR(["$TSS_USER is not available"])
+-	else
+-		AC_MSG_RESULT([yes])
+-	fi
+-	AC_MSG_CHECKING([whether TSS_GROUP $TSS_GROUP is available])
+-	if ! test $(id -g $TSS_GROUP); then
+-		AC_MSG_ERROR(["$TSS_GROUP is not available"])
+-	else
+-		AC_MSG_RESULT([yes])
+-	fi
+-	;;
+-esac
+-
+ AC_SUBST([TSS_USER])
+ AC_SUBST([TSS_GROUP])
+ 
