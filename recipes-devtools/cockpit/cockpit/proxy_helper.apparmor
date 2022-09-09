@@ -33,6 +33,8 @@ include <tunables/global>
   /{var/volatile/,}tmp/{,**}         rwk,
   /bin/cat{,.coreutils}              rix,
   /usr/bin/jq                        rix,
+  /sbin/shutdown                     rix,
+  /bin/systemctl                     rix,
 
   /etc/systemd/system.conf.d/10-default-env.conf rwk,
   /etc/profile.d/10-proxy.sh                     rwk,

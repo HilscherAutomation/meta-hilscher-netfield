@@ -6,10 +6,14 @@ PROFILE_PROXY_CONFIG="/etc/profile.d/10-proxy.sh"
 usage() {
     cat <<EOF
 Usage:
-    $0 <proxy-config>
+    Set proxy config:
+        $0 -s <proxy-config>
+    Reboot:
+        $0 -r
 
 Example:
-    $0 '{"no_proxy":"", "http_proxy": "192.168.10.20:8080"}'
+    $0 -s '{"no_proxy":"", "http_proxy": "192.168.10.20:8080"}'
+    $0 -r
 EOF
 }
 
@@ -40,10 +44,34 @@ export "http_proxy=${http_proxy}" "https_proxy=${https_proxy}" "ftp_proxy=${ftp_
 EOF
 }
 
+if [ $# -eq 0 ]; then
+    do_usage="1"
+fi
 
-if [ -z "$1" ]; then
+while getopts "hrs:" arg; do
+  case $arg in
+    h)
+      do_usage="1"
+      ;;
+    r)
+      do_reboot="1"
+      ;;
+    s)
+      proxy_settings="$OPTARG"
+      do_proxy_settings="1"
+      ;;
+  esac
+done
+
+if [ "$do_usage" = "1" ]; then
     usage
     exit 1
 fi
 
-set_proxy_config "$1"
+if [ "$do_proxy_settings" = "1" ]; then
+    set_proxy_config "$proxy_settings"
+fi
+
+if [ "$do_reboot" = "1" ]; then
+    shutdown --reboot now
+fi
