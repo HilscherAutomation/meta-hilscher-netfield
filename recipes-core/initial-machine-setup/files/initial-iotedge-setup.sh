@@ -95,7 +95,7 @@ type = "docker"
 
 [agent.config]
 image = "mcr.microsoft.com/azureiotedge-agent:1.2"
-createOptions = { HostConfig = { Binds = ["/var/lib/aziot/storage/edgeagent:/iotedge/storage"] } }
+createOptions = { HostConfig = { Binds = ["/var/lib/aziot/storage:/iotedge/storage"] } }
 
 [agent.env]
 "storageFolder" = "/iotedge/storage"
