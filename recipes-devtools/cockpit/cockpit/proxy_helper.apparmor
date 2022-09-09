@@ -28,6 +28,8 @@ include <tunables/global>
 
   /dev/tty                           rw,
   /usr/libexec/cockpit/proxy_helper  r,
+  /usr/bin/dirname.*                 rix,
+  /bin/mkdir.*                       rix,
   /{var/volatile/,}tmp/{,**}         rwk,
   /bin/cat{,.coreutils}              rix,
   /usr/bin/jq                        rix,
