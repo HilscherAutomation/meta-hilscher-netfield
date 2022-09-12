@@ -4,7 +4,8 @@ PartOf=iotedge-docker.service
 
 [Socket]
 ListenStream=/run/iotedge-docker.sock
-SocketMode=0666
+ExecStartPost=/usr/bin/setfacl -m g:docker-readonly:rw- /run/iotedge-docker.sock
+SocketMode=0660
 SocketUser=root
 SocketGroup=docker
 

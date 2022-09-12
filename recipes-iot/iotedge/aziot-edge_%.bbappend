@@ -17,6 +17,8 @@ SRC_URI_append += "file://iotedge-docker.service \
 "
 
 RDEPENDS_${PN}_append += "bridge-utils yq"
+# acl is required to set ACL in docker.socket
+RDEPENDS_${PN}_append += "acl"
 
 SYSTEMD_SERVICE_${PN}_append += "iotedge-docker.service iotedge-docker.socket iotedge.slice"
 
