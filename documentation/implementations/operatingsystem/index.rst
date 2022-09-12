@@ -9,6 +9,7 @@ Operating System
    initramfs-framework/index
    filesystem/index
    softwareupdate/index
+   permissions/index
 
 .. only::  subproject and html
 
