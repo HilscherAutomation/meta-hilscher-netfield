@@ -21,14 +21,12 @@ class HilscherTarget(OESSHTarget):
 
     ''' Wait until the target device has booted (if we have just power cycled it). '''
     def wait_until_booted(self):
-        bb.verbnote("Waiting for %s (%s)" % (self.target_ip, self.ip))
+        bb.verbnote("Waiting for SSH daemon on %s (%s)" % (self.target_ip, self.ip))
 
         time.sleep(30)
 
         try:
-            cmd = pexpect.spawn("ping " + self.ip, timeout=120)
-            cmd.expect("64 bytes")
-            cmd.close()
+            pexpect.run('/bin/sh -c "while ! ssh root@' + self.ip + ' exit; do echo Waiting for SSH ...; done"', timeout=120)
         except:
             bb.fatal("Waiting for %s (%s) timed out!" % (self.target_ip, self.ip))
 
