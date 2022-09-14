@@ -36,3 +36,6 @@ z ${sysconfdir}/systemd/timesyncd.conf.d 0775 root timeadmin
 z ${sysconfdir}/systemd/timesyncd.conf.d/* 0664 root timeadmin
 EOF
 }
+
+# Required to patch toml
+RDEPENDS_${PN}_append += "python3-toml"
