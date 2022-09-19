@@ -335,6 +335,7 @@
 										"items":{ "$ref": "#/definitions/ipv4" }
 									},
 									"gateway": { "$ref": "#/definitions/ipv4" },
+									"metric": { "type": "integer" },
 									"routes": {
 										"type": "array",
                                         "uniqueItems": true,
