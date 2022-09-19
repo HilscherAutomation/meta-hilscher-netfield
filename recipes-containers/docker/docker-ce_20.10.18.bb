@@ -24,9 +24,9 @@ SRC_URI = "\
 	file://hi.Dockerfile \
 	"
 
-SRCREV="a89b84221c8560e7a3dee2a653353429e7628424"
+SRCREV="e42327a6d3c55ceda3bd5475be7aae6036d02db3"
 
-LIBNETWORK_COMMIT="f6ccccb1c082a432c2a5814aaedaca56af33d9ea"
+LIBNETWORK_COMMIT="0dde5c895075df6e3630e76f750a447cf63f4789"
 require libnetwork.inc
 
 # CGO does not play well with thumb -> https://patches.openembedded.org/patch/144011/
