@@ -32,6 +32,9 @@ do_configure_prepend() {
 }
 
 do_install_append() {
+    # Prepend udev rule with number, so we can override them correctly
+    mv ${D}${nonarch_base_libdir}/udev/rules.d/tpm-udev.rules ${D}${nonarch_base_libdir}/udev/rules.d/60-tpm-udev.rules
+
     # Remove /run as it is created on startup
     rm -rf ${D}/run
 }
