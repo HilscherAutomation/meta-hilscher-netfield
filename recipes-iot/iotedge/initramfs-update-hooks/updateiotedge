@@ -27,6 +27,19 @@ updateiotedge_postoverlay() {
 		fi
 	fi
 
+	# Check for "bad" HostConfig bind mount, which are usually inserted by iotedge config import as follows:
+	#    [agent.config]
+	#    image = "mcr.microsoft.com/azureiotedge-agent:1.2"
+	#    createOptions = { HostConfig = { Binds = ["/iotedge/storage:/iotedge/storage"] } }
+	#
+	# This results in failure to start:
+	#  HTTP 500 Internal Server Error: error while creating mount source path '/iotedge/storage': mkdir /iotedge: read-only file system
+	if [ -e "${ROOTFS_DIR}/etc/aziot/config.toml" ]; then
+		sed -e 's@"/iotedge/storage:/iotedge/storage"@"/var/lib/aziot/storage:/iotedge/storage"@g' \
+		    -i "${ROOTFS_DIR}/etc/aziot/config.toml"
+		chroot "${ROOTFS_DIR}" iotedge config apply
+	fi
+
 	# Add edgeagentuser if not existing
 	if ! grep -q "edgeagentuser:x:13622" ${ROOTFS_DIR}/etc/passwd; then
 		chroot "${ROOTFS_DIR}" useradd -g iotedge -c "edgeAgent user" -ms /sbin/nologin -u 13622 edgeagentuser

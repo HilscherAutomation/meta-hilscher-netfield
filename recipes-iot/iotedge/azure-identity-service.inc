@@ -26,7 +26,8 @@ USERADD_PARAM_${PN} = " \
 "
 GROUPADD_PARAM_${PN} = "-r docker;-r iotedge;"
 
-DEPENDS += "cbindgen-native bindgen-native clang-native jq-native"
+DEPENDS += "cbindgen-native bindgen-native clang-native jq-native \
+            tpm2-tss"
 
 SRC_URI += " \
     file://makefile_override_target.patch \
@@ -34,21 +35,18 @@ SRC_URI += " \
     file://makefile_install_without_build.patch \
     file://third_party_pass_platform.patch \
     file://third_party_skip_download.patch \
-    file://umock_use_sysroot_headers.patch \
     https://github.com/hannobraun/inotify/raw/52c18c527fe227b329f8428d73a1c732f2d56ce5/LICENSE;downloadfilename=inotify-LICENSE;name=inotifylicense \
     https://github.com/notify-rs/notify/raw/e0982ffc760bc0e34544d2a7c9d10cdba65183d9/LICENSE;downloadfilename=notify-LICENSE;name=notifylicense \
 "
 SRC_URI[inotifylicense.sha256sum] = "7f78b31de4e7a3e2ac8de40e2b409eda313f03637aa62b8416fbde9bdc5ce4c9"
 SRC_URI[notifylicense.sha256sum] = "e0456cbab4f7b5e7203e678faff37eadbdfef02e822db3b7a52a1dd9d3dc514a"
 
-inherit cmake
-OECMAKE_SOURCEPATH="${S}/tpm/aziot-tpm-sys/azure-iot-hsm-c"
 EXTRA_OEMAKE="RELEASE=1 CARGO_TARGET=${HOST_SYS} RUSTFLAGS='${RUSTLIB} ${RUST_DEBUG_REMAP}' \
     localstatedir=${localstatedir} sysconfdir=${sysconfdir} unitdir=${systemd_system_unitdir}"
 
-do_configure() {
-    cargo_common_do_configure
-    cmake_do_configure
+do_configure_prepend() {
+    # Delete tpm2-tss as we are using the one provided by meta-hilscher-netfield
+    rm -rf ${S}/third-party/tpm2-tss
 }
 
 do_compile() {
@@ -56,13 +54,24 @@ do_compile() {
     export LLVM_CONFIG_PATH="${STAGING_LIBDIR_NATIVE}/llvm-rust/bin/llvm-config"
     export LIBCLANG_PATH="${STAGING_LIBDIR_NATIVE}"
     export FORCE_NO_UNITTEST="yes"
+
+    cd ${B}
     mkdir -p ${B}/tmp
     export TMPDIR="${B}/tmp"
     cd ${S}
+
+    # HACK: some platforms don't support soft-float which might be required by bindgen
+    #       which is used during build
+    if [ ! -e "${STAGING_INCDIR}/gnu/stubs-soft.h" ] && [ -e "${STAGING_INCDIR}/gnu/stubs-hard.h" ]; then
+        echo "HACK: Adding symlink to use hardfloat-stubs, even when softfloat is requested"
+        ln -s stubs-hard.h ${STAGING_INCDIR}/gnu/stubs-soft.h
+    fi
+
     oe_runmake
     # Generate 3rd Party Notices
     export platform="${HOST_SYS}"
-    cp ${WORKDIR}/*-LICENSE ${S}
+    cp ${WORKDIR}/inotify-LICENSE ${CARGO_HOME}/bitbake/inotify-0.7.1/LICENSE-ISC
+    cp ${WORKDIR}/notify-LICENSE ${CARGO_HOME}/bitbake/notify-4.0.17/LICENSE-CC0
     contrib/third-party-notices.sh > THIRD-PARTY-NOTICES
 }
 
