@@ -1,0 +1,11 @@
+#!/bin/sh
+
+if [ -z "$1" ]; then
+    echo "Usage: $0 <country-code>"
+    exit 1
+fi
+
+countryline="options cfg80211 ieee80211_regdom=${1}"
+echo "$countryline" > /etc/modprobe.d/cfg80211.conf
+
+iw reg set "${1}"

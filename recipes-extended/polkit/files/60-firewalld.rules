@@ -1,0 +1,38 @@
+polkit.addRule(function(action, subject) {
+  if (action.id.indexOf("org.fedoraproject.FirewallD1.") == 0 &&
+        subject.active &&
+        subject.isInGroup ("netadmin")) {
+    return polkit.Result.YES;
+  }
+});
+
+// Support for start/stop/restart of firewalld
+polkit.addRule(function(action, subject) {
+  if (action.id == "org.freedesktop.systemd1.manage-units" &&
+        action.lookup("unit") == "firewalld.service" &&
+        ["start", "stop", "restart"].includes(action.lookup("verb")) &&
+        subject.active &&
+        subject.isInGroup ("netadmin")) {
+    return polkit.Result.YES;
+  }
+});
+
+// Support for enable/disable of firewalld
+polkit.addRule(function(action, subject) {
+  if (action.id == "org.freedesktop.systemd1.manage-unit-files" &&
+        action.lookup("unit") == "firewalld.service" &&
+        ["enable", "disable"].includes(action.lookup("verb")) &&
+        subject.active &&
+        subject.isInGroup ("netadmin")) {
+    return polkit.Result.YES;
+  }
+});
+
+// enable/disable internally calls daemon-reload so allow it
+polkit.addRule(function(action, subject) {
+  if (action.id == "org.freedesktop.systemd1.reload-daemon" &&
+        subject.active &&
+        subject.isInGroup ("netadmin")) {
+    return polkit.Result.YES;
+  }
+});

@@ -17,6 +17,8 @@ SRC_URI_append += "file://iotedge-docker.service \
 "
 
 RDEPENDS_${PN}_append += "bridge-utils yq"
+# acl is required to set ACL in docker.socket
+RDEPENDS_${PN}_append += "acl"
 
 SYSTEMD_SERVICE_${PN}_append += "iotedge-docker.service iotedge-docker.socket iotedge.slice"
 
@@ -39,8 +41,17 @@ do_install_append() {
 
     install -d ${D}${sbindir}
     install ${WORKDIR}/iotedge_bridge.sh ${D}${sbindir}/iotedge_bridge
-    install -d ${D}${sysconfdir}/default
-    install -m 0644 ${WORKDIR}/iotedge.default ${D}${sysconfdir}/default/iotedge
+    install -d ${D}${sysconfdir}/default/iotedge
+    install -m 0644 ${WORKDIR}/iotedge.default ${D}${sysconfdir}/default/iotedge/bridge
+
+    install -d ${D}${libdir}/tmpfiles.d
+    cat <<EOF>> ${D}${libdir}/tmpfiles.d/iotedge_netadmin.conf
+d ${sysconfdir}/default/iotedge/ 0775 root netadmin -
+z ${sysconfdir}/default/iotedge/ 0775 root netadmin
+z ${sysconfdir}/default/iotedge/bridge 0664 root netadmin
+z ${sysconfdir}/docker/ 0775 root netadmin -
+z ${sysconfdir}/docker/iotedge.json 0664 root netadmin
+EOF
 
     install -d ${D}${base_libdir}/udev/rules.d/
     install -m 0644 ${WORKDIR}/iotedge.rules ${D}${base_libdir}/udev/rules.d/80-iotedge.rules

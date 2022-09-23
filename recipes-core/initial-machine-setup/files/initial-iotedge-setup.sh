@@ -32,6 +32,8 @@ if [ -z "$(cat /etc/gateway/settings.json 2>/dev/null)" ]; then
   "remote-access": "$remoteaccess"
 }
 EOF
+    chown -R root:netadmin /etc/gateway/
+    chmod 0664 /etc/gateway/settings.json
     sync
 fi
 

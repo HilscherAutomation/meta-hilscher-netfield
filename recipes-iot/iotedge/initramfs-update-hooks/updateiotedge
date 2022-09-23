@@ -31,4 +31,16 @@ updateiotedge_postoverlay() {
 	if ! grep -q "edgeagentuser:x:13622" ${ROOTFS_DIR}/etc/passwd; then
 		chroot "${ROOTFS_DIR}" useradd -g iotedge -c "edgeAgent user" -ms /sbin/nologin -u 13622 edgeagentuser
 	fi
+
+	# Bridge config has moved, so update location
+	if [ -f "${ROOTFS_DIR}/etc/default/iotedge" ]; then
+		mv ${ROOTFS_DIR}/etc/default/iotedge ${ROOTFS_DIR}/etc/default/iotedge.tmp
+		mkdir -p ${ROOTFS_DIR}/etc/default/iotedge
+		chmod 0775 ${ROOTFS_DIR}/etc/default/iotedge
+
+		mv ${ROOTFS_DIR}/etc/default/iotedge.tmp ${ROOTFS_DIR}/etc/default/iotedge/bridge
+		chmod 0664 ${ROOTFS_DIR}/etc/default/iotedge/bridge
+
+		chroot "${ROOTFS_DIR}" chown root:netadmin -R /etc/default/iotedge
+	fi
 }

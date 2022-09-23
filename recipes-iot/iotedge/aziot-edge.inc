@@ -62,7 +62,7 @@ do_install_append() {
 PACKAGES="${PN}-dev ${PN}"
 RDEPENDS_${PN} = "docker openssl procps azure-identity-service"
 FILES_${PN} = "${bindir} ${libexecdir} ${sysconfdir} ${libdir} ${localstatedir}"
-FILES_${PN}-dev = "${libdir}"
+FILES_${PN}-dev = "${libdir}/rust"
 INHIBIT_PACKAGE_DEBUG_SPLIT="1"
 PROVIDES="iotedge"
 RPROVIDES_${PN}="iotedge"

@@ -1,0 +1,10 @@
+// Support for restart of nginx.service (required by cockpit plugin)
+polkit.addRule(function(action, subject) {
+  if (action.id == "org.freedesktop.systemd1.manage-units" &&
+        action.lookup("unit") == "nginx.service" &&
+        action.lookup("verb") == "restart" &&
+        subject.active &&
+        subject.isInGroup ("netadmin")) {
+    return polkit.Result.YES;
+  }
+});

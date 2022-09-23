@@ -1,0 +1,241 @@
+From b9c5c3b1af9c9ed1c2581e841df0ae333b53d99e Mon Sep 17 00:00:00 2001
+From: Michael Trensch <mtrensch@hilscher.com>
+Date: Tue, 19 Jul 2022 11:27:22 +0200
+Subject: [PATCH] systemd does not pass unit name and verb on enable/disable to
+ policykit validation, making it difficult to allow enable/disable of special
+ services (e.g. firewalld for netadmin users).
+
+Start/Stop calls do deliver these details.
+
+This patch adds these details to all calls for domain "manage-unit-files".
+---
+ src/core/dbus-manager.c | 79 +++++++++++++++++++++++++----------------
+ src/core/dbus.c         |  4 +--
+ src/core/dbus.h         |  2 +-
+ 3 files changed, 52 insertions(+), 33 deletions(-)
+
+diff --git a/src/core/dbus-manager.c b/src/core/dbus-manager.c
+index c751e84253..5aa230218e 100644
+--- a/src/core/dbus-manager.c
++++ b/src/core/dbus-manager.c
+@@ -2004,9 +2004,11 @@ static int method_enable_unit_files_generic(
+                 Manager *m,
+                 int (*call)(UnitFileScope scope, UnitFileFlags flags, const char *root_dir, char *files[], UnitFileChange **changes, size_t *n_changes),
+                 bool carries_install_info,
++                char *verb,
+                 sd_bus_error *error) {
+ 
+         _cleanup_strv_free_ char **l = NULL;
++        char **unit;
+         UnitFileChange *changes = NULL;
+         size_t n_changes = 0;
+         UnitFileFlags flags;
+@@ -2025,11 +2027,14 @@ static int method_enable_unit_files_generic(
+ 
+         flags = unit_file_bools_to_flags(runtime, force);
+ 
+-        r = bus_verify_manage_unit_files_async(m, message, error);
+-        if (r < 0)
+-                return r;
+-        if (r == 0)
+-                return 1; /* No authorization for now, but the async polkit stuff will call us again when it has it */
++        STRV_FOREACH(unit, l) {
++                const char *details[5] = { "verb", verb, "unit", *unit, NULL };
++                r = bus_verify_manage_unit_files_async(m, message, error, details);
++                if (r < 0)
++                        return r;
++                if (r == 0)
++                        return 1; /* No authorization for now, but the async polkit stuff will call us again when it has it */
++        }
+ 
+         r = call(m->unit_file_scope, flags, NULL, l, &changes, &n_changes);
+         if (r < 0)
+@@ -2039,15 +2044,15 @@ static int method_enable_unit_files_generic(
+ }
+ 
+ static int method_enable_unit_files(sd_bus_message *message, void *userdata, sd_bus_error *error) {
+-        return method_enable_unit_files_generic(message, userdata, unit_file_enable, true, error);
++        return method_enable_unit_files_generic(message, userdata, unit_file_enable, true, "enable", error);
+ }
+ 
+ static int method_reenable_unit_files(sd_bus_message *message, void *userdata, sd_bus_error *error) {
+-        return method_enable_unit_files_generic(message, userdata, unit_file_reenable, true, error);
++        return method_enable_unit_files_generic(message, userdata, unit_file_reenable, true, "reenable", error);
+ }
+ 
+ static int method_link_unit_files(sd_bus_message *message, void *userdata, sd_bus_error *error) {
+-        return method_enable_unit_files_generic(message, userdata, unit_file_link, false, error);
++        return method_enable_unit_files_generic(message, userdata, unit_file_link, false, "link", error);
+ }
+ 
+ static int unit_file_preset_without_mode(UnitFileScope scope, UnitFileFlags flags, const char *root_dir, char **files, UnitFileChange **changes, size_t *n_changes) {
+@@ -2055,16 +2060,17 @@ static int unit_file_preset_without_mode(UnitFileScope scope, UnitFileFlags flag
+ }
+ 
+ static int method_preset_unit_files(sd_bus_message *message, void *userdata, sd_bus_error *error) {
+-        return method_enable_unit_files_generic(message, userdata, unit_file_preset_without_mode, true, error);
++        return method_enable_unit_files_generic(message, userdata, unit_file_preset_without_mode, true, "preset", error);
+ }
+ 
+ static int method_mask_unit_files(sd_bus_message *message, void *userdata, sd_bus_error *error) {
+-        return method_enable_unit_files_generic(message, userdata, unit_file_mask, false, error);
++        return method_enable_unit_files_generic(message, userdata, unit_file_mask, false, "mask", error);
+ }
+ 
+ static int method_preset_unit_files_with_mode(sd_bus_message *message, void *userdata, sd_bus_error *error) {
+ 
+         _cleanup_strv_free_ char **l = NULL;
++        char **unit;
+         UnitFileChange *changes = NULL;
+         size_t n_changes = 0;
+         Manager *m = userdata;
+@@ -2094,11 +2100,14 @@ static int method_preset_unit_files_with_mode(sd_bus_message *message, void *use
+                         return -EINVAL;
+         }
+ 
+-        r = bus_verify_manage_unit_files_async(m, message, error);
+-        if (r < 0)
+-                return r;
+-        if (r == 0)
+-                return 1; /* No authorization for now, but the async polkit stuff will call us again when it has it */
++        STRV_FOREACH(unit, l) {
++                const char *details[5] = { "verb", "preset", "unit", *unit, NULL };
++                r = bus_verify_manage_unit_files_async(m, message, error, details);
++                if (r < 0)
++                        return r;
++                if (r == 0)
++                        return 1; /* No authorization for now, but the async polkit stuff will call us again when it has it */
++        }
+ 
+         r = unit_file_preset(m->unit_file_scope, flags, NULL, l, mm, &changes, &n_changes);
+         if (r < 0)
+@@ -2111,9 +2120,11 @@ static int method_disable_unit_files_generic(
+                 sd_bus_message *message,
+                 Manager *m,
+                 int (*call)(UnitFileScope scope, UnitFileFlags flags, const char *root_dir, char *files[], UnitFileChange **changes, size_t *n_changes),
++                const char *verb,
+                 sd_bus_error *error) {
+ 
+         _cleanup_strv_free_ char **l = NULL;
++        char **unit;
+         UnitFileChange *changes = NULL;
+         size_t n_changes = 0;
+         int r, runtime;
+@@ -2129,11 +2140,14 @@ static int method_disable_unit_files_generic(
+         if (r < 0)
+                 return r;
+ 
+-        r = bus_verify_manage_unit_files_async(m, message, error);
+-        if (r < 0)
+-                return r;
+-        if (r == 0)
+-                return 1; /* No authorization for now, but the async polkit stuff will call us again when it has it */
++        STRV_FOREACH(unit, l) {
++                const char *details[5] = { "verb", verb, "unit", *unit, NULL };
++                r = bus_verify_manage_unit_files_async(m, message, error, details);
++                if (r < 0)
++                        return r;
++                if (r == 0)
++                        return 1; /* No authorization for now, but the async polkit stuff will call us again when it has it */
++        }
+ 
+         r = call(m->unit_file_scope, runtime ? UNIT_FILE_RUNTIME : 0, NULL, l, &changes, &n_changes);
+         if (r < 0)
+@@ -2143,15 +2157,16 @@ static int method_disable_unit_files_generic(
+ }
+ 
+ static int method_disable_unit_files(sd_bus_message *message, void *userdata, sd_bus_error *error) {
+-        return method_disable_unit_files_generic(message, userdata, unit_file_disable, error);
++        return method_disable_unit_files_generic(message, userdata, unit_file_disable, "disable", error);
+ }
+ 
+ static int method_unmask_unit_files(sd_bus_message *message, void *userdata, sd_bus_error *error) {
+-        return method_disable_unit_files_generic(message, userdata, unit_file_unmask, error);
++        return method_disable_unit_files_generic(message, userdata, unit_file_unmask, "unmask", error);
+ }
+ 
+ static int method_revert_unit_files(sd_bus_message *message, void *userdata, sd_bus_error *error) {
+         _cleanup_strv_free_ char **l = NULL;
++        char **unit;
+         UnitFileChange *changes = NULL;
+         size_t n_changes = 0;
+         Manager *m = userdata;
+@@ -2164,11 +2179,14 @@ static int method_revert_unit_files(sd_bus_message *message, void *userdata, sd_
+         if (r < 0)
+                 return r;
+ 
+-        r = bus_verify_manage_unit_files_async(m, message, error);
+-        if (r < 0)
+-                return r;
+-        if (r == 0)
+-                return 1; /* No authorization for now, but the async polkit stuff will call us again when it has it */
++        STRV_FOREACH(unit, l) {
++                const char *details[5] = { "verb", "revert", "unit", *unit, NULL };
++                r = bus_verify_manage_unit_files_async(m, message, error, details);
++                if (r < 0)
++                        return r;
++                if (r == 0)
++                        return 1; /* No authorization for now, but the async polkit stuff will call us again when it has it */
++        }
+ 
+         r = unit_file_revert(m->unit_file_scope, NULL, l, &changes, &n_changes);
+         if (r < 0)
+@@ -2195,7 +2213,8 @@ static int method_set_default_target(sd_bus_message *message, void *userdata, sd
+         if (r < 0)
+                 return r;
+ 
+-        r = bus_verify_manage_unit_files_async(m, message, error);
++        const char *details[5] = { "verb", "set-default", "unit", name, NULL };
++        r = bus_verify_manage_unit_files_async(m, message, error, details);
+         if (r < 0)
+                 return r;
+         if (r == 0)
+@@ -2238,7 +2257,7 @@ static int method_preset_all_unit_files(sd_bus_message *message, void *userdata,
+                         return -EINVAL;
+         }
+ 
+-        r = bus_verify_manage_unit_files_async(m, message, error);
++        r = bus_verify_manage_unit_files_async(m, message, error, NULL);
+         if (r < 0)
+                 return r;
+         if (r == 0)
+@@ -2264,7 +2283,7 @@ static int method_add_dependency_unit_files(sd_bus_message *message, void *userd
+         assert(message);
+         assert(m);
+ 
+-        r = bus_verify_manage_unit_files_async(m, message, error);
++        r = bus_verify_manage_unit_files_async(m, message, error, NULL);
+         if (r < 0)
+                 return r;
+         if (r == 0)
+diff --git a/src/core/dbus.c b/src/core/dbus.c
+index 78b30c5090..9ee38d289f 100644
+--- a/src/core/dbus.c
++++ b/src/core/dbus.c
+@@ -1238,8 +1238,8 @@ int bus_verify_manage_units_async(Manager *m, sd_bus_message *call, sd_bus_error
+         return bus_verify_polkit_async(call, CAP_SYS_ADMIN, "org.freedesktop.systemd1.manage-units", NULL, false, UID_INVALID, &m->polkit_registry, error);
+ }
+ 
+-int bus_verify_manage_unit_files_async(Manager *m, sd_bus_message *call, sd_bus_error *error) {
+-        return bus_verify_polkit_async(call, CAP_SYS_ADMIN, "org.freedesktop.systemd1.manage-unit-files", NULL, false, UID_INVALID, &m->polkit_registry, error);
++int bus_verify_manage_unit_files_async(Manager *m, sd_bus_message *call, sd_bus_error *error, const char** details) {
++        return bus_verify_polkit_async(call, CAP_SYS_ADMIN, "org.freedesktop.systemd1.manage-unit-files", details, false, UID_INVALID, &m->polkit_registry, error);
+ }
+ 
+ int bus_verify_reload_daemon_async(Manager *m, sd_bus_message *call, sd_bus_error *error) {
+diff --git a/src/core/dbus.h b/src/core/dbus.h
+index f1c0fa86c0..3754c5f793 100644
+--- a/src/core/dbus.h
++++ b/src/core/dbus.h
+@@ -26,7 +26,7 @@ int manager_enqueue_sync_bus_names(Manager *m);
+ int bus_foreach_bus(Manager *m, sd_bus_track *subscribed2, int (*send_message)(sd_bus *bus, void *userdata), void *userdata);
+ 
+ int bus_verify_manage_units_async(Manager *m, sd_bus_message *call, sd_bus_error *error);
+-int bus_verify_manage_unit_files_async(Manager *m, sd_bus_message *call, sd_bus_error *error);
++int bus_verify_manage_unit_files_async(Manager *m, sd_bus_message *call, sd_bus_error *error, const char** details);
+ int bus_verify_reload_daemon_async(Manager *m, sd_bus_message *call, sd_bus_error *error);
+ int bus_verify_set_environment_async(Manager *m, sd_bus_message *call, sd_bus_error *error);
+ 
+-- 
+2.25.1
+

@@ -1,0 +1,15 @@
+[Unit]
+Description=Docker OPA policy service
+Before=docker.service
+
+[Service]
+User=root
+Group=docker
+PrivateTmp=yes
+PrivateNetwork=yes
+EnvironmentFile=-/etc/default/opa-docker-authz
+ExecStartPre=/bin/mkdir -p /run/docker/plugins/
+ExecStart=/usr/bin/opa-docker-authz -policy-file /etc/docker/policies/authz.rego ${ADD_OPTS}
+
+[Install]
+WantedBy=multi-user.target
