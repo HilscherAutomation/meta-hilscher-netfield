@@ -89,6 +89,11 @@ check_interfaces() {
           nmcli connection modify "$name" "ipv4.gateway" "$gateway"
       fi
 
+      default_metric=$(get_value "$interface/metric")
+      if [ -n "$gateway" ]; then
+           nmcli connection modify "$name" "ipv4.route-metric" "$default_metric"
+      fi
+
       if [ -d "$interface/dns" ]; then
         for new_dns in $interface/dns/*; do
           ip=$(get_value "$new_dns")

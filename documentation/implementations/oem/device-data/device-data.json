@@ -1,32 +1,32 @@
 {
-	"version": "2",
-	"product_name": "NIOT-E-NFL90-Q2N16-N",
-	"serial_number": "20000",
-	"product_number": "1320400",
-	"date_code": "2020-12-16 13:00:49",
-	"processor_serial_number": "0000000000020038",
-	"mac": "0001C027D5DB",
-	"cifx": {
-		"device_number": "7690103",
-		"serial_number": "23276",
-		"revision_number": "4",
-		"mac": "0002A260B8D4",
-		"date_code": "5160"
-	},
-	"wifi": {
-		"mac": "0"
-	},
-	"bluetooth": {
-		"mac": "0"
-	},
-	"oem_data": {
-		"identification": {
-			"variant": "EVAL",
-			"product_number": "",
-			"serial_number": "",
-			"product_name": "sensorEDGE",
-			"equipment_id": "6175F2CE5A80"
-		},
+        "version": "2",
+        "product_name": "NIOT-E-NFL90-Q2N16-N",
+        "serial_number": "20000",
+        "product_number": "1320400",
+        "date_code": "2020-12-16 13:00:49",
+        "processor_serial_number": "0000000000020038",
+        "mac": "0001C027D5DB",
+        "cifx": {
+                "device_number": "7690103",
+                "serial_number": "23276",
+                "revision_number": "4",
+                "mac": "0002A260B8D4",
+                "date_code": "5160"
+        },
+        "wifi": {
+                "mac": "0"
+        },
+        "bluetooth": {
+                "mac": "0"
+        },
+        "oem_data": {
+        "identification": {
+            "variant": "EVAL",
+            "product_number": "",
+            "serial_number": "",
+            "product_name": "sensorEDGE",
+            "equipment_id": "6175F2CE5A80"
+        },
         "iotedge": {
             "method": "symmetric_key",
             "registration_id": "12345678",
@@ -43,7 +43,7 @@
             "services": {
                 "deviceManager": {
                     "httpsPort": 443,
-                    "httpPort": 80,
+                    "httpPort": 80
                 },
                 "ssh": {
                     "enabled": true,
@@ -64,6 +64,7 @@
                 "address": "120.0.0.1/24",
                 "dns": ["1.1.1.1"],
                 "gateway": "120.0.0.255",
+                "metric": 100,
                 "routes": [{
                     "address": "121.0.0.1/24",
                     "gateway": "120.0.0.255",

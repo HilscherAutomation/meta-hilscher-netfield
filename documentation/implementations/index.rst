@@ -9,6 +9,7 @@ Implementations
    operatingsystem/index
    security/index
    oem/oem-branding
+   oem/device-label
 
 .. only::  subproject and html
 

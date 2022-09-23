@@ -1,0 +1,29 @@
+#!/bin/sh
+
+updatenetworks_preoverlay() {
+	:
+}
+
+NEW_METRICS="eth0:100 eth1:101"
+
+updatenetworks_postoverlay() {
+	echo "Updating network connections ..."
+
+	for tmp_metric in $NEW_METRICS; do
+		new_if=$(echo $tmp_metric | cut -d':' -f1)
+		new_metric=$(echo $tmp_metric | cut -d':' -f2)
+		conn_file="${ROOTFS_DIR}/etc/NetworkManager/system-connections/$new_if"
+
+		if [ ! -e "$conn_file" ]; then
+			echo "Skipping non-existant interface $new_if"
+			continue
+		fi
+
+		act_metric=$(awk -v RS= -v ORS='\n\n' '/\[ipv4\]/' "$conn_file" | grep "route-metric")
+		if [ "$act_metric" = "-1" ] || [ -z "$act_metric" ]; then
+			echo "Updating metric of $new_if from $act_metric -> $new_metric"
+			sed -e "/\[ipv4\]/a route-metric=$new_metric" \
+                            -i "$conn_file"
+		fi
+	done
+}
