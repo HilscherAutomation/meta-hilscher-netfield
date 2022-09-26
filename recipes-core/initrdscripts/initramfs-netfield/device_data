@@ -43,7 +43,7 @@ device_data_run() {
 				__debug "... success => Using $dd as device_data file."
 			}
 		}
-		[ $device_data ] || __debug "... failed! => Using fake device data."
+		[ -n "$device_data" ] || __debug "... failed! => Using fake device data."
 	else
 		__debug "Invalid or missing device data! => Using fake device data."
 	fi
@@ -52,7 +52,7 @@ device_data_run() {
 	load_kernel_module device-data
 
 	# Export device-/fake-data to runtime environment.
-	if [ $device_data ]; then
+	if [ -n "$device_data" ]; then
 		# Replace single backslash with double backslashes (some labels are non-standard JSON)
 		echo -n $device_data |  sed -e 's,\([^\\]\\\)\([^\\]\),\1\\\2,g' > /sys/device_data/export
 	else
