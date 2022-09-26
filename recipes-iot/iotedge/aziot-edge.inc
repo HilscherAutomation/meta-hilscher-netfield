@@ -19,7 +19,7 @@ GROUPADD_PARAM_${PN} = "-r docker;-r systemd-journal;-r aziotcs;-r aziotks;-r az
 
 do_install_append() {
     install -d ${D}${sysconfdir}/aziot/edged/config.d ${D}${sysconfdir}/logrotate.d ${D}${systemd_system_unitdir} \
-               ${D}${localstatedir}/lib/aziot/storage ${D}${localstatedir}/lib/aziot/edged ${D}${localstatedir}/secrets
+               ${D}${localstatedir}/lib/aziot/edged ${D}${localstatedir}/secrets
 
     sed -e 's;@connect_workload_uri@;unix:///run/iotedge/workload.sock;g' \
         -e 's;@connect_management_uri@;unix:///run/iotedge/mgmt.sock;g' \
@@ -42,8 +42,9 @@ do_install_append() {
     chmod 0400 ${D}${sysconfdir}/aziot/edged/config.toml.default
     chmod 0700 ${D}${sysconfdir}/aziot/edged/config.d
 
-    install -d -m 0777 ${D}${localstatedir}/lib/aziot/storage/edgeagent
-    install -d -m 0777 ${D}${localstatedir}/lib/aziot/storage/edgehub
+    install -d -m 0777 ${D}${localstatedir}/lib/aziot/storage
+    install -d -m 0777 ${D}${localstatedir}/lib/aziot/storage/edgeAgent
+    install -d -m 0777 ${D}${localstatedir}/lib/aziot/storage/edgeHub
 
     install -m 0644 ${S}/contrib/config/linux/logrotate ${D}${sysconfdir}/logrotate.d/aziot-edge
 
