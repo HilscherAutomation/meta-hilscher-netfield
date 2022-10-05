@@ -152,3 +152,27 @@ The following example sets up eth0 to be the main interface (default metric bein
             }
         }
     }
+
+Use custom DNS settings for docker
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When using docker it is preferred to have static DNS entries, as those provided via DHCP may
+not be used inside docker, depending on link state during docker startup. A custom device-label
+allows to preset the default docker DNS servers
+
+The following example sets up docker to use Cloudflare and Google DNS.
+
+.. code-block:: json
+
+    {
+        "oem_data": {
+            "branding": {
+                "services": {
+                    "docker": {
+                        "dns": ["1.1.1.1", "8.8.8.8"]
+                    }
+                }
+            }
+        }
+    }
+
