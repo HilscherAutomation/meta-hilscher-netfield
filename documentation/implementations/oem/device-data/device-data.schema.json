@@ -188,6 +188,24 @@
             "registration_id": {
               "type": "string",
               "pattern": "^.*$"
+            },
+            "tpm": {
+              "type": "object",
+              "required": [],
+              "properties": {
+                "device": {
+                  "type": "string",
+                  "default": "device:/dev/tpmrm0"
+                },
+                "owner_auth": {
+                  "type": "string",
+                  "default": ""
+                },
+                "endorsement_auth": {
+                  "type": "string",
+                  "default": ""
+                }
+              }
             }
           }
         },
