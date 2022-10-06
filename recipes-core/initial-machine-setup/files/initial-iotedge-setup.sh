@@ -38,6 +38,12 @@ EOF
 fi
 
 do_tpm_onboarding() {
+    if [ -e "/var/platform/device_data/oem_data/iotedge/tpm/device" ]; then
+        tpm_device=$(cat /var/platform/device_data/oem_data/iotedge/tpm/device)
+    else
+        tpm_device="device:/dev/tpmrm0"
+    fi
+
     cat <<EOF>/etc/aziot/config.toml
 # DPS TPM provisioning configuration
 [provisioning]
@@ -48,7 +54,26 @@ id_scope = "$scope_id"
 [provisioning.attestation]
 method = "tpm"
 registration_id = "$registration_id"
+
+[tpm]
+tcti = "$tpm_device"
+
 EOF
+
+    tpm_authorization=""
+
+    if [ -e "/var/platform/device_data/oem_data/iotedge/tpm/endorsement_auth" ]; then
+        tpm_authorization="${tpm_authorization}endorsement = \"$(cat /var/platform/device_data/oem_data/iotedge/tpm/endorsement_auth)\"\n"
+    fi
+
+    if [ -e "/var/platform/device_data/oem_data/iotedge/tpm/owner_auth" ]; then
+        tpm_authorization="${tpm_authorization}owner = \"$(cat /var/platform/device_data/oem_data/iotedge/tpm/owner_auth)\"\n"
+    fi
+
+    if [ -n "$tpm_authorization" ]; then
+        echo "[tpm.hierarchy_authorization]" >> /etc/aziot/config.toml
+        echo "$tpm_authorization" >> /etc/aziot/config.toml
+    fi
 }
 
 do_symmetric_key_onboarding() {
