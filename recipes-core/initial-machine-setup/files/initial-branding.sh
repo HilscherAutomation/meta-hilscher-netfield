@@ -52,6 +52,28 @@ EOF
   else
     systemctl enable --now --no-block docker
   fi
+
+  docker_dns=""
+  if [ -d "/var/platform/device_data/oem_data/branding/services/docker/dns" ]; then
+    for new_dns in /var/platform/device_data/oem_data/branding/services/docker/dns/*; do
+      ip=$(get_value "$new_dns")
+      [ -z "$ip" ] && continue
+      [ -z "$docker_dns" ] && docker_dns="\"$ip\"" || docker_dns="$docker_dns \"$ip\""
+    done
+  fi
+
+  if [ -n "$docker_dns" ]; then
+      docker_dns="[$(echo "$docker_dns" | tr ' ' ',')]"
+      for f in /etc/docker/daemon.json /etc/docker/iotedge.json; do
+          cat "$f" | jq -M ".dns=$docker_dns" | tee "$f" > /dev/null
+      done
+
+      if [ "$docker_enabled" = "true" ]; then
+          systemctl restart --no-block docker
+      fi
+      systemctl restart --no-block iotedge-docker
+  fi
+
 }
 
 check_interfaces() {

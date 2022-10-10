@@ -298,6 +298,12 @@
                     "enabled": {
                       "type": "boolean",
                       "default": true
+                    },
+                    "dns": {
+                      "type": "array",
+                      "uniqueItems": true,
+                      "default": [],
+                      "items":{ "$ref": "#/definitions/ipv4" }
                     }
                   }
                 }
