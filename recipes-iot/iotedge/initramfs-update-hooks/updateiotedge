@@ -45,6 +45,14 @@ updateiotedge_postoverlay() {
 		chroot "${ROOTFS_DIR}" useradd -g iotedge -c "edgeAgent user" -ms /sbin/nologin -u 13622 edgeagentuser
 	fi
 
+	# Adjust certificate and key permissions for CA
+	if [ -d "${ROOTFS_DIR}/etc/ssl/private/iotedge-ca" ]; then
+		chroot "${ROOTFS_DIR}" chown aziotks:aziotks /etc/ssl/private/iotedge-ca/privkey.pem
+		chroot "${ROOTFS_DIR}" chmod 0640 /etc/ssl/private/iotedge-ca/privkey.pem
+		chroot "${ROOTFS_DIR}" chown aziotcs:aziotcs $/etc/ssl/private/iotedge-ca/cert.pem
+		chroot "${ROOTFS_DIR}" chmod 0644 /etc/ssl/private/iotedge-ca/cert.pem
+	fi
+
 	# Bridge config has moved, so update location
 	if [ -f "${ROOTFS_DIR}/etc/default/iotedge" ]; then
 		mv ${ROOTFS_DIR}/etc/default/iotedge ${ROOTFS_DIR}/etc/default/iotedge.tmp
