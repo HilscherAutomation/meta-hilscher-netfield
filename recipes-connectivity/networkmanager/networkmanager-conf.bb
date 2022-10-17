@@ -8,7 +8,9 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 SRC_URI_append += "file://eth0 \
                    file://eth1 \
                    file://cifx0 \
-                   file://wifi_permanent_mac"
+                   file://wifi_permanent_mac \
+                   file://static-arp \
+"
 
 do_install() {
     install -m 0755 -d ${D}${sysconfdir}/NetworkManager/system-connections
@@ -20,7 +22,11 @@ do_install() {
     install -m 0644 ${WORKDIR}/wifi_permanent_mac ${D}${datadir}/NetworkManager/wifi_permanent_mac.conf
     install -d ${D}${sysconfdir}/NetworkManager/conf.d
     ln -s ${datadir}/NetworkManager/wifi_permanent_mac.conf ${D}${sysconfdir}/NetworkManager/conf.d/00-wifi_permanent_mac.conf
+
+    install -d ${D}${sysconfdir}/NetworkManager/dispatcher.d
+    install ${WORKDIR}/static-arp ${D}${sysconfdir}/NetworkManager/dispatcher.d/02-static-arp
 }
 
 PACKAGES="${PN}"
 FILES_${PN} = "${sysconfdir} ${datadir}"
+RDEPENDS_${PN} = "net-tools"

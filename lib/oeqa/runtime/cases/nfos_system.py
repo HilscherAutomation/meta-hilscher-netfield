@@ -60,3 +60,8 @@ class BaseTest(OERuntimeTestCase):
                 ''' TODO: Implementing a LVM validation (PV and LV). '''
 
         self.assertEqual(errors, 0, 'Invalid or missing partitions!\n')
+
+    def test_arp_support(self):
+        cmd = 'arp'
+        status, output = self.target.run(cmd)
+        self.assertEqual(status, 0, 'Error running arp command!\n')

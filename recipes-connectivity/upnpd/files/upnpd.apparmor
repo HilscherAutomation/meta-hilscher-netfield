@@ -43,6 +43,8 @@
   # Allow reading nginx port
   /etc/nginx/nginx.conf r,
   # Allow ifconfig readout
+  capability dac_read_search,
+  /sbin/ifconfig{,.net-tools} rix,
   @{PROC}/@{pid}/net/if_inet6 r,
   @{PROC}/@{pid}/net/dev r,
   # Allow cutting ip address
