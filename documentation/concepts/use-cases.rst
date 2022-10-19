@@ -127,9 +127,6 @@ Basic Features
    * (EFI systems only, read-only)
      /sys/firmware/efi/efivars/hilscher-23682453-5d09-4e17-a1a6-f5efb21996d9
 
-     * niot-e-vm-en / intel: Generate serial / product number in platform_init
-       (efi/hmi-xxx) and pass fake device label
-
    **NOTE:** Devicelabel is bound to device via MAC address of eth0
  * Remote access via SSH / device manager web interface
  * *(optional)* Cloud attaching to netfield.io via azure-iot services
