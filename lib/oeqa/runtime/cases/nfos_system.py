@@ -3,6 +3,7 @@ from oeqa.core.decorator.depends import OETestDepends
 from oeqa.runtime.decorator.package import OEHasPackage
 
 import re
+import time
 
 class BaseTest(OERuntimeTestCase):
 
@@ -65,3 +66,38 @@ class BaseTest(OERuntimeTestCase):
         cmd = 'arp'
         status, output = self.target.run(cmd)
         self.assertEqual(status, 0, 'Error running arp command!\n')
+
+    def test_backup(self):
+        TEST_FILE='/home/admin/test_file'
+        BACKUP_FILE='test.fsa'
+
+        self.target.run('rm -f ' + TEST_FILE)
+
+        # Create backup
+        cmd = "fsa_backup -p '$(pwd) $(date)' -l 'This is a comment with spaces' " + BACKUP_FILE
+        status, output = self.target.run(cmd)
+        self.assertEqual(status, 0, 'Error executing backup (%s)!\n' % output)
+
+        # Write temporary file that should vanish after restore
+        self.target.run('touch ' + TEST_FILE)
+
+        # Query backup info
+        cmd = "fsa_info -p '$(pwd) $(date)' " + BACKUP_FILE
+        status, output = self.target.run(cmd)
+        self.assertEqual(status, 0, 'Error querying backup info (%s)!\n' % output)
+        self.assertIn('comment=This is a comment with spaces', output, 'Wrong comment in output')
+
+        # Perform restore
+        cmd = "fsa_restore -p '$(pwd) $(date)' " + BACKUP_FILE
+        status, output = self.target.run(cmd)
+        self.assertIn('Rebooting in 5 seconds to restore backup', output, 'Error executing restore (%s)!' % output)
+
+        time.sleep(15)
+        self.target.wait_until_booted()
+
+        # Check if testfile has vanished
+        status, output = self.target.run('cat ' + TEST_FILE)
+        self.assertNotEqual(status, 0, 'Restore was not executed, testfile still existing after restore!\n')
+
+        # Delete backup file
+        self.target.run('rm -f /mnt/backup/' + BACKUP_FILE)

@@ -1,23 +1,23 @@
 #!/bin/sh
 
-function help() {
-	echo "Usage: $(basename ${0}) [options] <archive.fsa>"
+help() {
+	echo "Usage: $(basename "${0}") [options] <archive.fsa>"
 	echo ""
 	echo "Options:"
 	echo " -p <password> : Password protect archive (6-64 chars)"
 	echo ""
-	echo "  Example: $(basename ${0}) -p "password" 20190724.fsa"
+	echo "  Example: $(basename "${0}") -p 'password' 20190724.fsa"
 }
 
 while getopts hfp: opt; do
    case $opt in
        h) help; exit 0;;
-       p) password="$OPTARG";;
+       p) password="$OPTARG" ;;
        *) help; exit 1;;
    esac
 done
-
-archive=${@:$OPTIND:1}
+shift "$(( OPTIND - 1 ))"
+archive="${1}"
 
 if [ -z "$archive" ]; then
 	help
@@ -30,8 +30,12 @@ if [ ! -e "/mnt/backup/$archive" ]; then
 fi
 
 # Check archive contents
-[ -n "$password" ] && arg_password="-c $password"
-arch_content=$(fsarchiver archinfo /mnt/backup/$archive $arg_password 2>&1)
+if [ -z "$password" ]; then
+    arch_content=$(fsarchiver archinfo /mnt/backup/"$archive" 2>&1)
+else
+    arch_content=$(fsarchiver archinfo /mnt/backup/"$archive" -c "$password" 2>&1)
+fi
+
 if [ $? -ne 0 ]; then
     echo "Error parsing archive $archive (Invalid archive or wrong password)"
     echo "Output: $arch_content"
@@ -39,6 +43,6 @@ if [ $? -ne 0 ]; then
 fi
 
 # Output label variables
-arch_label=$(echo "$arch_content" | grep 'Archive label:' | cut -d ":" -f2- | tr -d "\t ")
+arch_label=$(echo "$arch_content" | grep 'Archive label:' | cut -d ":" -f2- | sed -e 's/^[\t ]*//')
 output=$(echo "$arch_label" | tr ';' '\n')
 echo "$output"

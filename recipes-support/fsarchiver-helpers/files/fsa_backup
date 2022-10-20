@@ -1,7 +1,7 @@
 #!/bin/sh
 
-function help() {
-	echo "Usage: $(basename ${0}) [options] <archive.fsa>"
+help() {
+	echo "Usage: $(basename "${0}") [options] <archive.fsa>"
 	echo ""
 	echo "Options:"
 	echo " -f            : Full backup including firmware"
@@ -9,37 +9,38 @@ function help() {
 	echo " -p <password> : Password protect archive (6-64 chars)"
 	echo " -c <0-9>      : Compress archive with compression level 0..9 (default=3)"
 	echo ""
-	echo "  Example: $(basename ${0}) -l "My Comment" 20190724.fsa"
+	echo "  Example: $(basename "${0}") -l 'My Comment' 20190724.fsa"
 }
 
 backup_devs="/dev/mapper/data-SNAPSHOT"
+compression="3"
 
 while getopts hfc:l:p: opt; do
    case $opt in
        h) help; exit 0;;
        f) backup_devs="$backup_devs /dev/disk/by-label/system"; mount_system=1;;
-       c) add_options="${add_options} -z $OPTARG";;
+       c) compression="$OPTARG";;
        l) comment="$OPTARG";;
-       p) add_options="${add_options} -c $OPTARG";;
+       p) password="$OPTARG";;
        *) help; exit 1;;
    esac
 done
+shift "$(( OPTIND - 1 ))"
 
 DEVICE_DATA="machine=$(cat /etc/hwrevision | cut -d ' ' -f1)"
 DEVICE_DATA="$DEVICE_DATA;hwrev=$(cat /etc/hwrevision | cut -d ' ' -f2)"
 DEVICE_DATA="$DEVICE_DATA;firmware=$(cat /firmware.version)"
 DEVICE_DATA="$DEVICE_DATA;vendor=$(cat /firmware.vendor_id 2>/dev/null)"
 DEVICE_DATA="$DEVICE_DATA;comment=$comment"
-add_options="${add_options} -L $DEVICE_DATA"
 
-archive=${@:$OPTIND:1}
+archive="${1}"
 
 if [ -z "$archive" ]; then
 	help
 	exit 1
 fi
 
-if [ "$(dirname $archive)" = "." ]; then
+if [ "$(dirname "$archive")" = "." ]; then
 	archive="/mnt/backup/$archive"
 fi
 
@@ -55,19 +56,31 @@ fi
 # so mount it ro before and unmount afterwards
 if [ "$mount_system" = "1" ]; then
     tmpdir=$(mktemp -d)
-    if mount /dev/disk/by-label/system $tmpdir; then
-       mount -o remount,ro $tmpdir;
+    if mount /dev/disk/by-label/system "$tmpdir"; then
+       mount -o remount,ro "$tmpdir";
     else
-       mount -o ro /dev/disk/by-label/system $tmpdir
+       mount -o ro /dev/disk/by-label/system "$tmpdir"
     fi
 fi
 
-fsarchiver savefs $archive $backup_devs -o -e "${EXCLUDE_TARGETS}" $add_options -j "$(grep -c ^processor /proc/cpuinfo)"
+if [ -z "$password" ]; then
+    fsarchiver savefs "$archive" $backup_devs -o -e "${EXCLUDE_TARGETS}" \
+                      -z "$compression" \
+                      -L "$DEVICE_DATA" \
+                      -j "$(grep -c ^processor /proc/cpuinfo)"
+else
+    fsarchiver savefs "$archive" $backup_devs -o -e "${EXCLUDE_TARGETS}" \
+                      -z "$compression" \
+                      -L "$DEVICE_DATA" \
+                      -c "$password" \
+                      -j "$(grep -c ^processor /proc/cpuinfo)"
+fi
+
 ret=$?
 
 if [ "$mount_system" = "1" ]; then
-    umount $tmpdir
-    rmdir $tmpdir
+    umount "$tmpdir"
+    rmdir "$tmpdir"
 fi
 
 lvremove -qf /dev/mapper/data-SNAPSHOT

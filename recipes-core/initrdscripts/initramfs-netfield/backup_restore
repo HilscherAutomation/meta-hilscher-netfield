@@ -17,7 +17,7 @@ backup_restore_run() {
 			restore=$(backup_get_var "$mp/.restore" "restore")
 			archive=$(backup_get_var "$mp/.restore" "archive")
 			password=$(backup_get_var "$mp/.restore" "password")
-			type=$(backup_get_var "$mp/.restore" "$type")
+			type=$(backup_get_var "$mp/.restore" "type")
 			if [ "$restore" = "1" ]; then
 				# id0 is always data backup
 				dest="id=0,dest=/dev/mapper/data-data"
