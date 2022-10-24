@@ -27,6 +27,9 @@ PACKAGE_INSTALL_append += "fsarchiver"
 # required for firmware update process
 PACKAGE_INSTALL_append += "rsync"
 
+# Add tpm tools to initramfs for provisioning tpm in production process
+PACKAGE_INSTALL_append += "${@bb.utils.contains('MACHINE_FEATURES', 'tpm2', 'tpm2-tools', '', d)}"
+
 delete_unwanted_cifx_files() {
     # Remove unneeded cifX stuff which is pulled in by libcifx. Also remove plugins as we don't want SPI devices here
     rm -rf ${IMAGE_ROOTFS}/opt/cifx/deviceconfig
