@@ -30,11 +30,13 @@ PACKAGE_INSTALL_append += "rsync"
 # Add tpm tools to initramfs for provisioning tpm in production process
 PACKAGE_INSTALL_append += "${@bb.utils.contains('MACHINE_FEATURES', 'tpm2', 'tpm2-tools', '', d)}"
 
+# tools required during production
+PACKAGE_INSTALL_append += "cifx-data-collector ethtool"
+
 delete_unwanted_cifx_files() {
-    # Remove unneeded cifX stuff which is pulled in by libcifx. Also remove plugins as we don't want SPI devices here
+    # Remove unneeded cifX stuff which is pulled in by libcifx.
     rm -rf ${IMAGE_ROOTFS}/opt/cifx/deviceconfig
     rm -rf ${IMAGE_ROOTFS}/opt/cifx/FW
-    rm -rf ${IMAGE_ROOTFS}/opt/cifx/plugins
     rm ${IMAGE_ROOTFS}/lib/udev/rules.d/80-hilscher*
     rm ${IMAGE_ROOTFS}/etc/init.d/cifxeth
 }
