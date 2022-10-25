@@ -6,7 +6,7 @@ WEBDIR=$(dirname $0)
 NAME=$(hostname)
 SERIALNO=$(cat /var/platform/device_data/serial_number)
 PRODNAME=$(cat /var/platform/device_data/product_name)
-IP=$(/sbin/ifconfig $interface | grep -o 'inet addr:[0-9.]*' | cut -d: -f2)
+IP=$(/sbin/ifconfig $interface | grep -o 'inet [0-9.]*' | cut -d ' ' -f2)
 
 PORT=$(cat /etc/nginx/nginx.conf | grep listen | grep -v ssl | sed -e 's/.*:\([0-9]\+\).*/\1/g')
 

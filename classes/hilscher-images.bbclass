@@ -31,7 +31,7 @@ create_recovery_initrd_api() {
   cp ${image_wic} ${WORKDIR}/firmware_api/firmware
 
   echo ${DATE} > ${WORKDIR}/firmware_api/firmware/timestamp
-  echo $FULL_FW_VERSION > ${WORKDIR}/firmware_api/firmware.version
+  echo ${FULL_FW_VERSION} > ${WORKDIR}/firmware_api/firmware.version
 
   tar -czf "${WORKDIR}/${RECOVERY_INITRD_API}" -C ${WORKDIR}/firmware_api/ .
   openssl_sign_wrapper "${PLATFORM_KEY_NAME}" "sha512" "${WORKDIR}/${RECOVERY_INITRD_API}" "merge"

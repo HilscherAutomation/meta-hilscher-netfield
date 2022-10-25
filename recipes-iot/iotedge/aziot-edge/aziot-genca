@@ -7,100 +7,32 @@ today=$(date +%s)
 lastday=$(date +%s -d 01/01/2038)
 maxvalidity=$((($lastday - $today) / 86400))
 
-check_and_generate_key_and_cert() {
-    path="$1"
-    subject="$2"
-    crt_ext="$3"
-    if [ ! -e "$path/privkey.pem" ]; then
-        openssl genpkey \
-                -algorithm RSA -pkeyopt rsa_keygen_bits:2048 \
-                -out $path/privkey.pem
-        chgrp iotedge $path/privkey.pem
-        chmod g+r $path/privkey.pem
-    fi
-    if [ ! -e "$path/pubkey.pem" ]; then
-        openssl rsa -in $path/privkey.pem -pubout > $path/pubkey.pem
-    fi
+generate_ca_key_and_cert() {
+    subject="$1"
 
-    key_modulus=$(openssl rsa -noout -modulus -in $path/privkey.pem 2> /dev/null)
-    cert_modulus=$(openssl x509 -noout -modulus -in $path/cert.pem 2> /dev/null)
-    if [ "$key_modulus" != "$cert_modulus" ]; then
-        if [ "$crt_ext" = "v3_ca" ]; then
-            # root CA (self-signed)
-            openssl req \
-                    -new -x509 \
-                    -key $path/privkey.pem \
-                    -subj "$subject" \
-                    -days $maxvalidity \
-                    -sha512 \
-                    -extensions "v3_ca" \
-                    -out $path/cert.pem
-        else
-            # Create CSR
-            openssl req \
-                    -key $path/privkey.pem \
-                    -out $path/csr.pem \
-                    -new \
-                    -subj "$subject" \
-                    -sha512
+    mkdir -p ${KEY_LOCATION_CA}
 
-            # CA-sign CSR
-            tmpdir=$(mktemp -d)
-            cat <<EOF> $tmpdir/config
-[ca]
-default_ca    = CA_default
+    openssl genpkey \
+            -algorithm RSA -pkeyopt rsa_keygen_bits:2048 \
+            -out ${KEY_LOCATION_CA}/privkey.pem
 
-[ CA_default ]
-# Directory and file locations.
-dir           = $tmpdir
-certs         = $tmpdir/certs
-crl_dir       = $tmpdir/crl
-new_certs_dir = $tmpdir/newcerts
-database      = $tmpdir/index.txt
-serial        = $tmpdir/serial
-RANDFILE      = $tmpdir/.rnd
-default_md    = sha512
-policy        = policy_loose
+    chown aziotks:aziotks ${KEY_LOCATION_CA}/privkey.pem
+    chmod 0640 ${KEY_LOCATION_CA}/privkey.pem
 
-[ policy_loose ]
-# Allow the intermediate CA to sign a more diverse range of certificates.
-countryName             = optional
-stateOrProvinceName     = optional
-localityName            = optional
-organizationName        = optional
-organizationalUnitName  = optional
-commonName              = supplied
-emailAddress            = optional
+    openssl rsa -in ${KEY_LOCATION_CA}/privkey.pem -pubout > ${KEY_LOCATION_CA}/pubkey.pem
 
-[ v3_intermediate_ca ]
-# Extensions for a typical intermediate CA.
-subjectKeyIdentifier = hash
-authorityKeyIdentifier = keyid:always,issuer:always
-basicConstraints = critical, CA:true
-keyUsage = critical, digitalSignature, cRLSign, keyCertSign
-EOF
-            touch $tmpdir/index.txt
-            mkdir -p $tmpdir/certs $tmpdir/crl $tmpdir/newcerts
-            hexdump -n 4 -e '1/4 "%08X""\n"' /dev/urandom > $tmpdir/serial
-            echo "unique_subject = yes" > $tmpdir/index.txt.attr
+    # root CA (self-signed)
+    openssl req \
+            -new -x509 \
+            -key ${KEY_LOCATION_CA}/privkey.pem \
+            -subj "$subject" \
+            -days $maxvalidity \
+            -sha512 \
+            -extensions "v3_ca" \
+            -out ${KEY_LOCATION_CA}/cert.pem
 
-            openssl ca \
-                    -batch \
-                    -config "$tmpdir/config" \
-                    -extensions "$crt_ext" \
-                    -days $maxvalidity \
-                    -cert ${KEY_LOCATION_CA}/cert.pem \
-                    -keyfile ${KEY_LOCATION_CA}/privkey.pem -keyform PEM \
-                    -in $path/csr.pem \
-                    -out $path/cert.pem \
-                    -outdir $tmpdir
-
-            # Add local-owner-ca certificate to intermediate certificate to be able to verify chain in iotedged
-            cat ${KEY_LOCATION_CA}/cert.pem >> $path/cert.pem
-
-            rm -rf $tmpdir
-        fi
-    fi
+    chown aziotcs:aziotcs ${KEY_LOCATION_CA}/cert.pem
+    chmod 0644 ${KEY_LOCATION_CA}/cert.pem
 }
 
 if [ ! -e "/etc/aziot/config.toml" ]; then
@@ -108,28 +40,48 @@ if [ ! -e "/etc/aziot/config.toml" ]; then
 	exit 0
 fi
 
-if grep "\[edge_ca\]" /etc/aziot/config.toml; then
-	echo "Custom certificates detected. Assuming already patched"
-	exit 0
+update_config_toml="1"
+if grep -q "\[edge_ca\]" /etc/aziot/config.toml; then
+	echo "Custom certificates detected. Assuming already patched config.toml"
+	update_config_toml="0"
 fi
 
-mkdir -p ${KEY_LOCATION_CA}
+update_keys="0"
 
-check_and_generate_key_and_cert "${KEY_LOCATION_CA}" "/CN=$(hostname)-local-owner-ca" "v3_ca"
-chown aziotks:aziotks ${KEY_LOCATION_CA}/privkey.pem
-chmod 0640 ${KEY_LOCATION_CA}/privkey.pem
-chown aziotcs:aziotcs ${KEY_LOCATION_CA}/cert.pem
-chmod 0644 ${KEY_LOCATION_CA}/cert.pem
+size_cert=$(stat -c %s ${KEY_LOCATION_CA}/cert.pem 2>/dev/null || echo "0")
+size_key=$(stat -c %s ${KEY_LOCATION_CA}/privkey.pem 2>/dev/null || echo "0")
+if [ "$size_cert" = "0" ] || [ "$size_key" = "0" ]; then
+	echo "No valid CA key and certificate found, re-generating"
+	update_keys="1"
+elif ! openssl rsa -in ${KEY_LOCATION_CA}/privkey.pem -check -noout >/dev/null 2>&1; then
+	echo "Invalid private key for CA, re-generating"
+	update_keys="1"
+else
+	cert_modulus=$(openssl x509 -noout -modulus -in ${KEY_LOCATION_CA}/cert.pem 2>/dev/null)
+	key_modulus=$(openssl rsa -noout -modulus -in ${KEY_LOCATION_CA}/privkey.pem 2>/dev/null)
+	if [ "$key_modulus" != "$cert_modulus" ]; then
+		echo "Private key and certificate do not match, re-generating"
+		update_keys="1"
+	else
+		echo "Found valid CA key and certificate. Skipping generation"
+	fi
+fi
 
-# Adjust super config
-cat <<EOF>>/etc/aziot/config.toml
+if [ "$update_keys" = "1" ]; then
+	generate_ca_key_and_cert "/CN=$(hostname)-local-owner-ca"
+fi
+
+if [ "$update_config_toml" = "1" ]; then
+	# Adjust super config
+	cat <<EOF>>/etc/aziot/config.toml
 
 [edge_ca]
 cert = "file://${KEY_LOCATION_CA}/cert.pem"
 pk = "file://${KEY_LOCATION_CA}/privkey.pem"
 EOF
 
-# Delete previously generated CA certificates (if any)
-rm -f /var/lib/aziot/certd/certs/* /var/lib/aziot/keyd/keys/*
+	# Delete previously generated CA certificates (if any)
+	rm -f /var/lib/aziot/certd/certs/* /var/lib/aziot/keyd/keys/*
 
-OMIT_SERVICE_RESTART=1 iotedge config apply
+	OMIT_SERVICE_RESTART=1 iotedge config apply
+fi

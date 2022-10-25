@@ -24,7 +24,9 @@ S = "${WORKDIR}/tpm2-tss-engine-${PV}"
 PACKAGES += "${PN}-engines ${PN}-engines-staticdev ${PN}-bash-completion"
 #PACKAGES += "${PN}-engines ${PN}-engines-staticdev"
 
-FILES_${PN}-dev = "${libdir}/engines-1.1/tpm2tss.so ${includedir}/*"
-FILES_${PN}-engines = "${libdir}/engines-1.1/lib*.so*"
+FILES_${PN}-dev = "${includedir}/*"
+# tpm2tss.so is a symlink required to make -engine tpm2tss work in openssl
+INSANE_SKIP_${PN}-engines="dev-so"
+FILES_${PN}-engines = "${libdir}/engines-1.1/"
 FILES_${PN}-engines-staticdev = "${libdir}/engines-1.1/libtpm2tss.a"
 FILES_${PN}-bash-completion += "${datadir}/bash-completion/completions"

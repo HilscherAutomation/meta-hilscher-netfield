@@ -4,15 +4,21 @@ backup_restore_enabled() {
 	return 0
 }
 
+backup_get_var() {
+	grep "^${2}=" "$1" | cut -d '=' -f2-
+}
+
 backup_restore_run() {
 	dev=$(blkid | grep "LABEL=\"backup\"" | cut -d ":" -f1)
 	if [ -b "$dev" ]; then
-		mp=$(mktemp -d) && mount -o ro $dev $mp
+		mp=$(mktemp -d) && mount -o ro "$dev" "$mp"
 
 		if [ -e "$mp/.restore" ]; then
-			. $mp/.restore
+			restore=$(backup_get_var "$mp/.restore" "restore")
+			archive=$(backup_get_var "$mp/.restore" "archive")
+			password=$(backup_get_var "$mp/.restore" "password")
+			type=$(backup_get_var "$mp/.restore" "type")
 			if [ "$restore" = "1" ]; then
-				[ -n "$password" ] && arg_password="-c $password"
 				# id0 is always data backup
 				dest="id=0,dest=/dev/mapper/data-data"
 				if [ "$type" = "full" ]; then
@@ -22,9 +28,15 @@ backup_restore_run() {
 					# Full restore requires reboot as kernel might have changed
 					reboot="1"
 				fi
-				fsarchiver restfs $mp/$archive $arg_password -j "$(grep -c ^processor /proc/cpuinfo)" $dest
+
+				if [ -n "$password" ]; then
+					fsarchiver restfs "$mp"/"$archive" -c "$password" -j "$(grep -c ^processor /proc/cpuinfo)" "$dest"
+				else
+					fsarchiver restfs "$mp"/"$archive" -j "$(grep -c ^processor /proc/cpuinfo)" "$dest"
+				fi
+
 				# Delete restore request file.
-				mount -o remount,rw $dev $mp && rm $mp/.restore && mount -o remount,ro $dev $mp
+				mount -o remount,rw "$dev" "$mp" && rm "$mp"/.restore && mount -o remount,ro "$dev" "$mp"
 
 				if [ "$reboot" = "1" ]; then
 					__debug "System is rebooting!"
@@ -37,6 +49,6 @@ backup_restore_run() {
 			fi
 		fi
 
-		umount $mp && rmdir $mp
+		umount "$mp" && rmdir "$mp"
 	fi
 }

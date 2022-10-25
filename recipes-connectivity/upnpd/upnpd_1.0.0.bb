@@ -48,7 +48,7 @@ do_install() {
   echo 'UPNPD_PRESENTATION_PORT="-1"' >> ${D}${sysconfdir}/default/upnpd
 }
 PACKAGES =+ "${PN}-conf"
-RDEPENDS_${PN} += "${PN}-conf"
+RDEPENDS_${PN} += "${PN}-conf net-tools"
 
 FILES_${PN}-conf = "/opt/upnpd/netiotdevicedesc.xml"
 FILES_${PN}     += "/opt/upnpd/upnpd /opt/upnpd/upnpd.sh"
