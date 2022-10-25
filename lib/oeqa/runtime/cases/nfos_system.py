@@ -101,3 +101,14 @@ class BaseTest(OERuntimeTestCase):
 
         # Delete backup file
         self.target.run('rm -f /mnt/backup/' + BACKUP_FILE)
+
+    def test_zram(self):
+        cmd = 'zramctl -o NAME,DISKSIZE'
+        status, output = self.target.run(cmd)
+        self.assertEqual(status, 0, 'Error querying zram (%s)' % output)
+        self.assertIn('/dev/zram0', output, 'Unable to find required zram device (%s)' % output)
+
+        cmd = 'swapon'
+        status, output = self.target.run(cmd)
+        self.assertEqual(status, 0, 'Error querying swap (%s)' % output)
+        self.assertIn('/dev/zram0', output, 'Unexpected swap configuration (%s)' % output)
