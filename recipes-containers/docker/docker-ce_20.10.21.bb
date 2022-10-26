@@ -24,7 +24,7 @@ SRC_URI = "\
 	file://hi.Dockerfile \
 	"
 
-SRCREV="03df974ae9e6c219862907efdd76ec2e77ec930b"
+SRCREV="3056208812eb5e792fa99736c9167d1e10f4ab49"
 
 LIBNETWORK_COMMIT="0dde5c895075df6e3630e76f750a447cf63f4789"
 require libnetwork.inc
