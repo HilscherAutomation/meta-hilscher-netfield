@@ -1,0 +1,11 @@
+[Unit]
+Description=Renew nginx TLS certificate
+Requires=nginx-certificate.service
+
+[Timer]
+Unit=nginx-certificate.service
+OnCalendar=daily
+Persistent=true
+
+[Install]
+WantedBy=timers.target

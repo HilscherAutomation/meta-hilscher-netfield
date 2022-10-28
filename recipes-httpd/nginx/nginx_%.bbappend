@@ -4,6 +4,8 @@ SRC_URI_append += " \
 	file://nginx_gen_ssl_cert \
 	file://90.hardening.conf \
 	file://nginx.logrotate \
+	file://nginx-certificate.service \
+	file://nginx-certificate.timer \
 	"
 
 APPARMOR_PROFILES="${PN}.apparmor:usr.sbin.nginx"
@@ -11,6 +13,8 @@ inherit apparmor
 
 PACKAGECONFIG_append += "http2 http_sub"
 PACKAGECONFIG[http_sub] = "--with-http_sub_module,,"
+
+SYSTEMD_SERVICE_${PN}_append += "nginx-certificate.timer nginx-certificate.service"
 
 do_install_append() {
   install -m 755 -d ${D}/etc/nginx/ssl ${D}/etc/ssl/services/nginx
@@ -21,8 +25,10 @@ do_install_append() {
 
   if ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'true', 'false', d)}; then
     install ${WORKDIR}/nginx_gen_ssl_cert ${D}${sbindir}
-    sed -i -e 's,@BASESBINDIR@,${base_sbindir},g' \
-           ${D}${systemd_unitdir}/system/nginx.service
+    sed -e 's,@SBINDIR@,${sbindir},g' ${WORKDIR}/nginx-certificate.service \
+           > ${D}${systemd_unitdir}/system/nginx-certificate.service
+    chmod 0644 ${D}${systemd_unitdir}/system/nginx-certificate.service
+    install -m 0644 ${WORKDIR}/nginx-certificate.timer ${D}${systemd_unitdir}/system/
   fi
 
   for add_conf in 90.hardening.conf; do
