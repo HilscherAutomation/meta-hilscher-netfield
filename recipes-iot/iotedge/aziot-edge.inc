@@ -15,6 +15,7 @@ inherit useradd
 USERADD_PACKAGES="${PN}"
 USERADD_PARAM_${PN} = "--system --no-create-home --home-dir /var/lib/aziot/edged --shell /sbin/nologin --user-group --groups docker,systemd-journal,aziotcs,aziotks,aziotid,aziottpm iotedge;"
 USERADD_PARAM_${PN} += "-g iotedge -s /sbin/nologin edgeagentuser;"
+USERADD_PARAM_${PN} += "-g iotedge -s /sbin/nologin edgehubuser;"
 GROUPADD_PARAM_${PN} = "-r docker;-r systemd-journal;-r aziotcs;-r aziotks;-r aziotid; -r aziottpm"
 
 do_install_append() {
