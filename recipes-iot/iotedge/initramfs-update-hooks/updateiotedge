@@ -45,6 +45,11 @@ updateiotedge_postoverlay() {
 		chroot "${ROOTFS_DIR}" useradd -g iotedge -c "edgeAgent user" -ms /sbin/nologin -u 13622 edgeagentuser
 	fi
 
+	# Add edgehubuser if not existing
+        if ! grep -q "edgehubuser:x:13623" ${ROOTFS_DIR}/etc/passwd; then
+		chroot "${ROOTFS_DIR}" useradd -g iotedge -c "edgeHub user" -ms /sbin/nologin -u 13623 edgehubuser
+	fi
+
 	# Adjust certificate and key permissions for CA
 	if [ -d "${ROOTFS_DIR}/etc/ssl/private/iotedge-ca" ]; then
 		chroot "${ROOTFS_DIR}" chown aziotks:aziotks /etc/ssl/private/iotedge-ca/privkey.pem
