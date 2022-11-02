@@ -431,6 +431,74 @@ Each created network will be derived from "172.51.0.1/16" pool with
 a prefix of 24, resulting in the first bridge being assigned a
 "172.51.0.1/24", the second a "172.51.1.1/24" and so on.
 
+Use TPM 2.0 for iotedge onboarding
+----------------------------------
+
+First of all you need a hardware with a TPM 2.0 which is properly setup with an endorsement key (EK)
+and a storage root key (SRK) created as follows:
+
+.. code-block::
+   :caption: TPM provisioning
+
+   # Reset the TPM
+   tpm2_clear
+
+   # Create Endorsement Key
+   tpm2_createek -c ek.ctx
+   tpm2_evictcontrol -c ek.ctx 0x81010001
+   tpm2_readpublic -c ek.ctx -o ek.pub
+   tpm2_flushcontext -t
+   tpm2_flushcontext -l
+   tpm2_flushcontext -s
+
+   # Create Storage Root Key
+   tpm2_createprimary -C o -g sha256 -c srk.ctx -Grsa2048:aes128cfb -a "fixedtpm|fixedparent|sensitivedataorigin|userwithauth|noda|restricted|decrypt"
+   tpm2_evictcontrol -C o -c srk.ctx 0x81000001
+   tpm2_readpublic -c srk.ctx -o srk.pub
+   tpm2_flushcontext -t
+   tpm2_flushcontext -l
+   tpm2_flushcontext -s
+
+Second you will need to create a DPS device in Microsoft Azure using the base64 encoded EK public key
+and a unique registration id.
+
+.. code-block::
+   :caption: Cloud endorsement key
+
+   base64 ek.pub
+
+Third you must adjust iotedge configuration as follows:
+
+.. code-block::
+   :caption: /etc/aziot/config.toml
+
+   [tpm]
+   tcti = "device:/dev/tpmrm0"
+   # # Authorization values for use of the endorsement and owner hierarchies, if
+   # # necessary. By default, these are empty strings.
+   # [tpm.hierarchy_authorization]
+   # endorsement = "hello"
+   # owner = "world"
+   [provisioning]
+   source = "dps"
+   global_endpoint = "https://global.azure-devices-provisioning.net"
+   id_scope = "<scope_id>"
+   [provisioning.attestation]
+   method = "tpm"
+   registration_id = "<registrationid>"
+
+Last you need to apply the configuration
+
+.. code-block::
+   :caption: Apply configuration
+
+   sudo iotedge config apply
+   sudo systemctl enable aziot-edged
+
+.. Note::
+   It is possible to use netFIELDOS on a virtual machine with VirtualBox 7.x
+   which supports a virtual TPM 2.0 inside virtual machines.
+
 
 Indices
 =======
