@@ -60,6 +60,9 @@ IMAGE_INSTALL += "initial-machine-setup"
 # 3G
 IMAGE_INSTALL += "${@bb.utils.contains('MACHINE_FEATURES', '3g', 'modemmanager mobile-broadband-provider-info', '', d)}"
 
+# CAN (busybox ip cannot setup CAN interface)
+IMAGE_INSTALL += "iproute2"
+
 # Parallel bzip2 support for faster backup, requires "real" tar (busybox does not work)
 IMAGE_INSTALL += "pbzip2 tar"
 
