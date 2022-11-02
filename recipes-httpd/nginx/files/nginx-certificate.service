@@ -1,0 +1,10 @@
+[Unit]
+Description=Renew nginx TLS certificate
+Wants=nginx-certificate.timer
+
+[Service]
+Type=oneshot
+ExecStart=@SBINDIR@/nginx_gen_ssl_cert
+
+[Install]
+WantedBy=multi-user.target

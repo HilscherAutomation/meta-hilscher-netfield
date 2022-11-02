@@ -4,6 +4,14 @@ install_path="/etc/ssl/services/nginx/"
 hostname=$(hostname)
 cert_subj="/CN=${hostname}/O=self-signed certificate/"
 
+reload_nginx()
+{
+  if [ -e /run/nginx/nginx.pid ]; then
+    echo "<3>Informing nginx of new certificate"
+    nginx -s reload
+  fi
+}
+
 generate_selfsigned_keys()
 {
   openssl req -nodes -x509 -newkey rsa:4096 -keyout ${install_path}key.pem \
@@ -11,6 +19,7 @@ generate_selfsigned_keys()
               -sha512 \
               -subj "${cert_subj}" 2> /dev/null
   sync
+  reload_nginx
 }
 
 generate_selfsigned_cert()
@@ -24,6 +33,7 @@ generate_selfsigned_cert()
                -out ${install_path}cert.pem 2> /dev/null
   rm -f /tmp/nginx_vendor-cert.csr
   sync
+  reload_nginx
 }
 
 key_modulus=$(openssl rsa -noout -modulus -in ${install_path}key.pem 2> /dev/null)
@@ -39,6 +49,12 @@ else
     if [ "${key_modulus}" != "${cert_modulus}" ]; then
       echo "<3>private keys <-> certificate mismatch. Regenerating self-signed keys"
       generate_selfsigned_cert
+    elif openssl verify -CAfile ${install_path}cert.pem ${install_path}cert.pem >/dev/null; then
+      # It's self signed so check validity (renew if expires within 7 days)
+      if ! openssl x509 -enddate -noout -in ${install_path}cert.pem -checkend $((7*24*60*60)) >/dev/null; then
+        echo "<3>Certificate will expire soon. Regenerating self-signed cerficate from key"
+        generate_selfsigned_cert
+      fi
     fi
   fi
 fi
