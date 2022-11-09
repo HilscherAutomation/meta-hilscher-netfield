@@ -18,7 +18,7 @@ compression="3"
 while getopts hfc:l:p: opt; do
    case $opt in
        h) help; exit 0;;
-       f) backup_devs="$backup_devs /dev/disk/by-label/system"; mount_system=1;;
+       f) backup_devs="$backup_devs /dev/disk/by-label/system /dev/disk/by-label/boot"; mount_system=1;;
        c) compression="$OPTARG";;
        l) comment="$OPTARG";;
        p) password="$OPTARG";;
@@ -56,11 +56,13 @@ fi
 # so mount it ro before and unmount afterwards
 if [ "$mount_system" = "1" ]; then
     tmpdir=$(mktemp -d)
-    if mount /dev/disk/by-label/system "$tmpdir"; then
-       mount -o remount,ro "$tmpdir";
+    mkdir -p "$tmpdir"/boot "$tmpdir"/system
+    if mount /dev/disk/by-label/system "$tmpdir"/system; then
+       mount -o remount,ro "$tmpdir"/system;
     else
-       mount -o ro /dev/disk/by-label/system "$tmpdir"
+       mount -o ro /dev/disk/by-label/system "$tmpdir"/system
     fi
+    mount -o ro /dev/disk/by-label/boot "$tmpdir"/boot
 fi
 
 if [ -z "$password" ]; then
@@ -79,8 +81,9 @@ fi
 ret=$?
 
 if [ "$mount_system" = "1" ]; then
-    umount "$tmpdir"
-    rmdir "$tmpdir"
+    umount "$tmpdir"/system
+    umount "$tmpdir"/boot
+    rm -rf "$tmpdir"
 fi
 
 lvremove -qf /dev/mapper/data-SNAPSHOT

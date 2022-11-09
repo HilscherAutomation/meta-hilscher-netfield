@@ -87,7 +87,7 @@ fi
 
 # Execute restore
 fs_count=$(echo "$arch_content" | grep "Filesystems count" | cut -d ":" -f2- | tr -d "\t ")
-[ "$fs_count" = "2" ] && type="full" ||  type="data"
+[ "$fs_count" = "1" ] && type="data" ||  type="full"
 
 cat <<EOF> /mnt/backup/.restore
 restore=1
