@@ -25,14 +25,34 @@ backup_restore_run() {
 					system_dev=$(blkid | grep "LABEL=\"system\"" | cut -d ":" -f1)
 					dest="$dest id=1,dest=$system_dev"
 
+					# Older backups may not contain the boot partition
+					if [ -n "$password" ]; then
+						arch_info=$(fsarchiver archinfo -c "$password" "$mp"/"$archive" 2>&1)
+					else
+						arch_info=$(fsarchiver archinfo "$mp"/"$archive" 2>&1)
+					fi
+					num_ids=$(echo "$arch_info" | grep "Filesystems count:" | cut -d ':' -f2- | tr -d '\t ')
+					if [ "$num_ids" -gt 2 ]; then
+						boot_dev=$(blkid | grep "LABEL=\"boot\"" | cut -d ":" -f1)
+						dest="$dest id=2,dest=$boot_dev"
+					fi
+
 					# Full restore requires reboot as kernel might have changed
 					reboot="1"
+
+					# Full restore requires unmount of system partition
+					umount "$boot_mp"
 				fi
 
 				if [ -n "$password" ]; then
-					fsarchiver restfs "$mp"/"$archive" -c "$password" -j "$(grep -c ^processor /proc/cpuinfo)" "$dest"
+					fsarchiver restfs "$mp"/"$archive" -c "$password" -j "$(grep -c ^processor /proc/cpuinfo)" $dest
 				else
-					fsarchiver restfs "$mp"/"$archive" -j "$(grep -c ^processor /proc/cpuinfo)" "$dest"
+					fsarchiver restfs "$mp"/"$archive" -j "$(grep -c ^processor /proc/cpuinfo)" $dest
+				fi
+
+				# Perform platform specific restore (e.g. bootloader)
+				if [ -e "/usr/sbin/platform_restore" ]; then
+					/usr/sbin/platform_restore "$type"
 				fi
 
 				# Delete restore request file.
