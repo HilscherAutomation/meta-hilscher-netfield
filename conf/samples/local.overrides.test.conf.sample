@@ -13,6 +13,7 @@ TEST_SUITES += " \
 	nfos_firmware \
 	nfos_hardware \
 	nfos_system \
+	nfos_user_group_permissions \
 "
 
 TEST_SERVER_IP ?= "tbd"
