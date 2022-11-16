@@ -88,6 +88,7 @@ check_interfaces() {
       case $mode in
         auto)
           nmcli connection modify "$name" "ipv4.method" "auto" "ipv4.addresses" "" "ipv4.gateway" "" "ipv4.dns" ""
+          post_step="restart"
           ;;
         manual)
           address=$(get_value "$interface/address")
@@ -96,9 +97,11 @@ check_interfaces() {
             continue
           fi
           nmcli connection modify "$name" "ipv4.method" "manual" "ipv4.addresses" "$address" "ipv4.gateway" "" "ipv4.dns" ""
+          post_step="restart"
           ;;
         disabled)
           nmcli connection modify "$name" "ipv4.method" "disabled" "ipv4.addresses" "" "ipv4.gateway" "" "ipv4.dns" ""
+          post_step="down"
           ;;
         *)
           echo "!Unknown mode '$mode' for connection '$name' to brand. Skipping!"
@@ -139,6 +142,17 @@ check_interfaces() {
           fi
         done
       fi
+
+      case "$post_step" in
+        restart)
+          nmcli c down "$name"
+          nmcli c up "$name"
+          ;;
+        down)
+          nmcli c down "$name"
+          ;;
+      esac
+
     done
   fi
 }
