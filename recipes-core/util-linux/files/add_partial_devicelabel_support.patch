@@ -58,7 +58,7 @@ diff -aurN a/term-utils/agetty.c b/term-utils/agetty.c
 +		if(strncmp(product_number, USE_CLOUD_ID, strlen(USE_CLOUD_ID)) == 0)
 +		{
 +			char* hardware_id=read_text_file("/mnt/backup/nvd/hardware_id");
-+			fprintf(ie->output, "%s", hardware_id);
++			fprintf(ie->output, "%s", hardware_id ? hardware_id : "unknown (will be set during onboarding)");
 +			free(hardware_id);
 +		} else {
 +			char* serial_number  = read_text_file("/var/platform/device_data/serial_number");
