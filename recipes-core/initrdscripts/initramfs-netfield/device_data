@@ -61,7 +61,7 @@ device_data_run() {
 		[ -e "/proc/device-tree/model" ] && productname=$(cat /proc/device-tree/model)
 		[ -e "/sys/class/dmi/id/product_name" ] && productname=$(cat /sys/class/dmi/id/product_name)
 		[ -e "/forced_productname" ] && productname=$(cat /forced_productname)
-		[ -e "/forced_productnumber" ] && add_dl_data=",\"product_number\":\"$(cat /force_productnumber)\""
+		[ -e "/forced_productnumber" ] && add_dl_data=",\"product_number\":\"$(cat /forced_productnumber)\""
 
 		fallback_serial="MAC:$mac"
 
