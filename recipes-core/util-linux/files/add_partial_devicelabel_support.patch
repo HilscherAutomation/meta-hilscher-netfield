@@ -37,7 +37,7 @@ diff -aurN a/term-utils/agetty.c b/term-utils/agetty.c
  #ifdef AGETTY_RELOAD
  static void open_netlink(void)
  {
-@@ -2757,6 +2786,49 @@
+@@ -2757,6 +2786,57 @@
  		}
  		break;
  	}
@@ -53,26 +53,34 @@ diff -aurN a/term-utils/agetty.c b/term-utils/agetty.c
 +	case 'I': /* print hardware ID */
 +	{
 +		const int MAX_SN_LEN=12, MAX_PN_LEN=12;
++		const char* USE_CLOUD_ID="FFFFFFFFFFFF";
 +		char* product_number = read_text_file("/var/platform/device_data/product_number");
-+		char* serial_number  = read_text_file("/var/platform/device_data/serial_number");
-+		const char *padding  = "000000000000";
-+		int sn_padding = 0, pn_padding = 0;
-+		int sn_offset = 0;
++		if(strncmp(product_number, USE_CLOUD_ID, strlen(USE_CLOUD_ID)) == 0)
++		{
++			char* hardware_id=read_text_file("/mnt/backup/nvd/hardware_id");
++			fprintf(ie->output, "%s", hardware_id ? hardware_id : "unknown (will be set during onboarding)");
++			free(hardware_id);
++		} else {
++			char* serial_number  = read_text_file("/var/platform/device_data/serial_number");
++			const char *padding  = "000000000000";
++			int sn_padding = 0, pn_padding = 0;
++			int sn_offset = 0;
 +
-+		if(serial_number && strlen(serial_number) > MAX_SN_LEN)
-+			sn_offset = strlen(serial_number) - MAX_SN_LEN;
-+		else
-+			sn_padding = MAX_SN_LEN - strlen(serial_number);
++			if(serial_number && strlen(serial_number) > MAX_SN_LEN)
++				sn_offset = strlen(serial_number) - MAX_SN_LEN;
++			else
++				sn_padding = MAX_SN_LEN - strlen(serial_number);
 +
-+		if(product_number && strlen(product_number) < MAX_PN_LEN)
-+			pn_padding = MAX_PN_LEN - strlen(product_number);
++			if(product_number && strlen(product_number) < MAX_PN_LEN)
++				pn_padding = MAX_PN_LEN - strlen(product_number);
 +
-+		fprintf(ie->output, "%*.*s%.*s-%*.*s%.*s",
-+			pn_padding, pn_padding, padding, MAX_PN_LEN, product_number ? product_number : "000000000000",
-+			sn_padding, sn_padding, padding, MAX_SN_LEN, serial_number  ? serial_number + sn_offset : "000000000000");
++			fprintf(ie->output, "%*.*s%.*s-%*.*s%.*s",
++				pn_padding, pn_padding, padding, MAX_PN_LEN, product_number ? product_number : "000000000000",
++				sn_padding, sn_padding, padding, MAX_SN_LEN, serial_number  ? serial_number + sn_offset : "000000000000");
 +
++			free(serial_number);
++		}
 +		free(product_number);
-+		free(serial_number);
 +		break;
 +	}
 +	case 'P': /* print product name */

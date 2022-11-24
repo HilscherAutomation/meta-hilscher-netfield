@@ -61,30 +61,9 @@ device_data_run() {
 		[ -e "/proc/device-tree/model" ] && productname=$(cat /proc/device-tree/model)
 		[ -e "/sys/class/dmi/id/product_name" ] && productname=$(cat /sys/class/dmi/id/product_name)
 		[ -e "/forced_productname" ] && productname=$(cat /forced_productname)
+		[ -e "/forced_productnumber" ] && add_dl_data=",\"product_number\":\"$(cat /forced_productnumber)\""
 
 		fallback_serial="MAC:$mac"
-
-		# NOTE:
-		# Since there are no device labels for virtual machines, the efivar hmi-* is used to provide
-		# additional unique informations about the machine.
-		# These are required for onboarding devices to the cloud.
-		# NOTE:
-		# Maybe this can be deleted in the future!
-		if [ -e "/sys/firmware/efi/efivars/hmi-45cd6521-a671-4782-8119-c29a709d2574" ]; then
-			machine_id="$(cat /sys/firmware/efi/efivars/hmi-45cd6521-a671-4782-8119-c29a709d2574 | tail -c +5)"
-			modulus=$(openssl x509 -noout -modulus -in /proc/sys/srm/owner-cert | cut -d "=" -f2)
-			machine_id=$(echo $machine_id | openssl aes-256-cbc -nosalt -a -d -k "$modulus" -pbkdf2)
-			if [ $? -ne 0 ]; then
-				add_dl_data=',"product_number":"!!TAMPERED!!"'
-				fallback_serial="!!TAMPERED!!"
-				chattr -i /sys/firmware/efi/efivars/hmi-45cd6521-a671-4782-8119-c29a709d2574
-				rm -f /sys/firmware/efi/efivars/hmi-45cd6521-a671-4782-8119-c29a709d2574
-			else
-				add_dl_data=',"machine_id":"'"$machine_id"'"'
-				add_dl_data="${add_dl_data},"'"product_number":"'"$(echo $machine_id | head -c 12)"'"'
-				fallback_serial="$(echo $machine_id | tail -c 13)"
-			fi
-		fi
 
 		echo -n '{"product_name":"'"${productname}"'","serial_number":"'"${fallback_serial}"'"'"${add_dl_data}"'}' > /sys/device_data/export
 	fi
