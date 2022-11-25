@@ -55,7 +55,7 @@ diff -aurN a/term-utils/agetty.c b/term-utils/agetty.c
 +		const int MAX_SN_LEN=12, MAX_PN_LEN=12;
 +		const char* USE_CLOUD_ID="FFFFFFFFFFFF";
 +		char* product_number = read_text_file("/var/platform/device_data/product_number");
-+		if(strncmp(product_number, USE_CLOUD_ID, strlen(USE_CLOUD_ID)) == 0)
++		if( (NULL != product_number) && (strncmp(product_number, USE_CLOUD_ID, strlen(USE_CLOUD_ID)) == 0))
 +		{
 +			char* hardware_id=read_text_file("/mnt/backup/nvd/hardware_id");
 +			fprintf(ie->output, "%s", hardware_id ? hardware_id : "unknown (will be set during onboarding)");
