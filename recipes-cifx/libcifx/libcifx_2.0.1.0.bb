@@ -71,6 +71,8 @@ do_install_append() {
     install -m 0644 ${WORKDIR}/80-hilscher-netx-spi.rules ${D}${nonarch_base_libdir}/udev/rules.d/
 
     install -d ${D}/opt/cifx/plugins/netx-spm/
+    # Delete delete spi configuration from driver as we bring our own
+    rm ${D}/opt/cifx/plugins/netx-spm/*
     spi_ports="${CIFX_SPI_CONFIGS}"
     idx=0
     for tmp_config in $spi_ports; do
