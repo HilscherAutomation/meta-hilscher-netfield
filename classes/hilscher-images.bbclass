@@ -34,7 +34,7 @@ create_recovery_initrd_api() {
   echo ${FULL_FW_VERSION} > ${WORKDIR}/firmware_api/firmware.version
 
   tar -czf "${WORKDIR}/${RECOVERY_INITRD_API}" -C ${WORKDIR}/firmware_api/ .
-  openssl_sign_wrapper "${PLATFORM_KEY_NAME}" "sha512" "${WORKDIR}/${RECOVERY_INITRD_API}" "merge"
+  openssl_sign_wrapper "${PLATFORM_KEYNAME}" "sha512" "${WORKDIR}/${RECOVERY_INITRD_API}" "merge"
 
   cp "${WORKDIR}/${RECOVERY_INITRD_API}.signed" "${DEPLOY_DIR_IMAGE}/recovery-initrd-api.signed"
 
