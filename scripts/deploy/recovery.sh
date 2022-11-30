@@ -91,7 +91,7 @@ backup_nvd ()
 
 			if [ -d "$mp/nvd" ]; then
 				vmsg "Creating backup file ${label}_nvd.tar ..."
-				tar cf ${label}_nvd.tar -C $mp nvd
+				tar cf /tmp/${label}_nvd.tar -C $mp nvd
 				vmsg "... done"
 			else
 				vmsg "No 'nvd' directory found on partition ${label}."
@@ -115,11 +115,11 @@ restore_nvd ()
 	vgscan --mknodes ${LVM_OPTS} > /dev/null
 
 	for label in backup; do
-		if [ -e ${label}_nvd.tar ]; then
+		if [ -e "/tmp/${label}_nvd.tar" ]; then
 			if dev=$(blkid -L $label); then
 				mp=$(mktemp -d) && mount $dev $mp
 				vmsg "Restoring backup file ${label}_nvd.tar ..."
-				tar xf ${label}_nvd.tar -C $mp
+				tar xf "/tmp/${label}_nvd.tar" -C $mp
 				vmsg "... done"
 				umount $mp && rmdir $mp
 			else
