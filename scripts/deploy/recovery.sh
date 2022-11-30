@@ -73,12 +73,22 @@ backup_nvd ()
 {
 	local mp
 
+	mkdir -p /tmp/rescue
+	mount $(blkid -L rescue) /tmp/rescue
+
 	vgchange -ay ${LVM_OPTS} > /dev/null
 	vgscan --mknodes ${LVM_OPTS} > /dev/null
 
 	for label in backup; do
 		if dev=$(blkid -L $label); then
-			mp=$(mktemp -d) && mount -o ro $dev $mp
+			mp=$(mktemp -d) && mount $dev $mp
+
+			if [ -e "/tmp/rescue/nvd/device_data" ] && [ ! -e "$mp/nvd/device_data" ]; then
+				vmsg "Moving production device data to final location"
+				mkdir -p "$mp/nvd"
+				mv /tmp/rescue/nvd/device_data $mp/nvd/device_data
+			fi
+
 			if [ -d "$mp/nvd" ]; then
 				vmsg "Creating backup file ${label}_nvd.tar ..."
 				tar cf ${label}_nvd.tar -C $mp nvd
@@ -93,6 +103,8 @@ backup_nvd ()
 	done
 
 	vgchange -an ${LVM_OPTS} > /dev/null
+
+	umount /tmp/rescue
 }
 
 restore_nvd ()
