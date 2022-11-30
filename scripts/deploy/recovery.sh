@@ -87,6 +87,8 @@ backup_nvd ()
 				vmsg "Moving production device data to final location"
 				mkdir -p "$mp/nvd"
 				mv /tmp/rescue/nvd/device_data $mp/nvd/device_data
+				rmdir /tmp/rescue/nvd
+				sync
 			fi
 
 			if [ -d "$mp/nvd" ]; then
@@ -105,6 +107,7 @@ backup_nvd ()
 	vgchange -an ${LVM_OPTS} > /dev/null
 
 	umount /tmp/rescue
+	rmdir /tmp/rescue
 }
 
 restore_nvd ()
