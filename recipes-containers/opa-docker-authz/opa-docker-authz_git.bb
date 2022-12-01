@@ -33,7 +33,7 @@ do_install_append() {
     install -d ${D}${sysconfdir}/default
     cat <<EOF>${D}${sysconfdir}/default/${PN}
 # Pass additional options to opa-docker-authz (e.g. -log-only-denied)
-#ADD_OPTS="-log-only-denied"
+ADD_OPTS="-log-only-denied"
 EOF
 }
 
