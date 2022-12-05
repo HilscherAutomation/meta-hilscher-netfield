@@ -9,7 +9,6 @@ DEFAULT_RULESET="\
     30-nispom.rules \
     30-ospp-v42-1-create-failed.rules 30-ospp-v42-1-create-success.rules \
     30-ospp-v42-2-modify-failed.rules 30-ospp-v42-2-modify-success.rules \
-    30-ospp-v42-3-access-failed.rules 30-ospp-v42-3-access-success.rules \
     30-ospp-v42-4-delete-failed.rules 30-ospp-v42-4-delete-success.rules \
     30-ospp-v42-5-perm-change-failed.rules   \
     30-ospp-v42-5-perm-change-success.rules  \
