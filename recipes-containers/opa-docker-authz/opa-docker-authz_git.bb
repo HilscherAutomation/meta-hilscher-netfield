@@ -15,7 +15,7 @@ SRCREV="f609c4313f9a9c101e1f90434b0641ab66999fcb"
 inherit go-mod systemd
 
 SYSTEMD_PACKAGES="${PN}"
-SYSTEMD_SERVICES_${PN} = "${BPN}.service"
+SYSTEMD_SERVICE_${PN} = "${BPN}.service"
 
 inherit apparmor
 APPARMOR_PROFILES="${BPN}.apparmor:usr.bin.${BPN}"
