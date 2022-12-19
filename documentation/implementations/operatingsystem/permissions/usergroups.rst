@@ -1,3 +1,5 @@
+.. _special_usergroups_and_their_permissions:
+
 ========================================
 Special usergroups and their permissions
 ========================================
