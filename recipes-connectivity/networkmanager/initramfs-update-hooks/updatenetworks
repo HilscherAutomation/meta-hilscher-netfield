@@ -4,7 +4,7 @@ updatenetworks_preoverlay() {
 	:
 }
 
-NEW_METRICS="eth0:100 eth1:101"
+NEW_METRICS="eth0:90 eth1:110"
 
 updatenetworks_postoverlay() {
 	echo "Updating network connections ..."

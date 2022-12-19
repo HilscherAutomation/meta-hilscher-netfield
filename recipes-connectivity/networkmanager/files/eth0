@@ -12,7 +12,7 @@ mac-address-blacklist=
 [ipv4]
 dns-search=
 method=auto
-route-metric=100
+route-metric=90
 
 [ipv6]
 addr-gen-mode=stable-privacy
