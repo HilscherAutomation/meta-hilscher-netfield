@@ -10,6 +10,7 @@ SRC_URI_append += "file://firewalld.conf       \
                    file://disable_logfile.patch\
                    file://0001-This-patch-adds-all-enabled-input-ports-into-FWDI_-z.patch \
                    file://firewalld_setup_docker \
+                   file://optimize_nm_integration.patch \
 "
 
 do_install_append() {
@@ -17,6 +18,8 @@ do_install_append() {
 
     rm -f ${D}${nonarch_libdir}/firewalld/zones/*
     cp ${WORKDIR}/zones/* ${D}${nonarch_libdir}/firewalld/zones/
+
+    rm ${D}${bindir}/firewall-offline-cmd
 
     # Setup direct docker chains
     install -d ${D}${sbindir}
