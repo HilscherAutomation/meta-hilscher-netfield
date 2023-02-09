@@ -112,3 +112,63 @@ class BaseTest(OERuntimeTestCase):
         status, output = self.target.run(cmd)
         self.assertEqual(status, 0, 'Error querying swap (%s)' % output)
         self.assertIn('/dev/zram0', output, 'Unexpected swap configuration (%s)' % output)
+
+    def test_firewall(self):
+
+        def firewall_reset_zone(interface):
+            # Reset firewall zone
+            cmd = 'nmcli c mod %s connection.zone ""' % interface
+            status, output = self.target.run(cmd)
+            self.assertEqual(status, 0, 'Error resetting firewall zone on %s (%s)' % (interface, output))
+
+            status, output = self.target.run('firewall-cmd --reload')
+            self.assertEqual(status, 0, 'Error reloading firewall (%s)' % output)
+
+        def firewall_check_zone(interface, zone):
+            # Set firewall zone via firewalld
+            cmd = 'firewall-cmd --add-interface=%s --permanent --zone=%s' % (interface, zone)
+            status, output = self.target.run(cmd)
+            self.assertEqual(status, 0, 'Error setting firewall zone to %s on %s (%s)' % (zone, interface, output))
+            self.assertIn('The interface is under control of NetworkManager, setting zone to', output, 'Unexpected result (%s)' % output)
+
+            status, output = self.target.run('firewall-cmd --runtime-to-permanent')
+            self.assertEqual(status, 0, 'Error permanently saving firewall configuration (%s)' % output)
+
+            # Check if settings are available in NetworkManager
+            cmd = 'nmcli c show %s | grep connection.zone | tr -s " " | cut -d " " -f2' % interface
+            status, output = self.target.run(cmd)
+            self.assertEqual(status, 0, 'Error querying zone for interface %s (%s)' % (interface, output))
+            self.assertIn(zone, output, 'Unexpected zone on interface %s (%s)' % (interface, output))
+
+            # Check if settings are available from firewall-cmd
+            status, output = self.target.run('firewall-cmd --list-interface --zone=%s' % zone)
+            self.assertEqual(status, 0, 'Error querying interfaces for zone (%s)' % output)
+            self.assertIn(interface, output, 'Interface %s not found in zone %s on firewalld (%s)' % (interface, zone, output))
+
+            # Check if settings are available via dbus
+            cmd = ('dbus-send --system --dest=org.fedoraproject.FirewallD1 '
+                   '--print-reply --type=method_call '
+                   '/org/fedoraproject/FirewallD1 '
+                   'org.fedoraproject.FirewallD1.zone.getZoneOfInterface '
+                   'string:"%s"' % interface)
+            status, output = self.target.run(cmd)
+            self.assertEqual(status, 0, 'Error querying interfaces from FirewallD via dbus (%s)' % output)
+            self.assertIn('string "%s"' % zone, output, 'Wrong zone queried via dbus from interface %s (%s)' % (interface, output))
+
+        for interface in ["eth0", "eth1"]:
+            # Check if interface is available (some devices only have a single ethernet interface
+            status, output = self.target.run('test -e /sys/class/net/'+interface)
+            if status != 0:
+                # Skip unavailable interface
+                bb.warn("Skipping unavailable interface %s" % interface)
+                continue
+
+            # Reset firewall zone
+            firewall_reset_zone(interface)
+
+            # Check all trusted zones (otherwise we may lockout ourself
+            for zone in ["trusted", "nat_trusted"]:
+                firewall_check_zone(interface, zone)
+
+            # Reset firewall zone
+            firewall_reset_zone(interface)
