@@ -34,6 +34,9 @@ IMAGE_INSTALL += "auditd"
 # Swap on ZRAM
 IMAGE_INSTALL += "zram"
 
+# Install OOM monitor, as kernel OOM might be too late
+IMAGE_INSTALL += "earlyoom"
+
 # TPM
 IMAGE_INSTALL += "${@bb.utils.contains('MACHINE_FEATURES', 'tpm', 'tpm-tools trousers', '', d)}"
 IMAGE_INSTALL += "${@bb.utils.contains('MACHINE_FEATURES', 'tpm2', 'packagegroup-security-tpm2', '', d)}"

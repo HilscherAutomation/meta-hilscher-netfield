@@ -1,0 +1,12 @@
+diff -aurN a/earlyoom.service.in b/earlyoom.service.in
+--- a/earlyoom.service.in	2023-02-16 13:04:38.679924702 +0100
++++ b/earlyoom.service.in	2023-02-16 14:12:34.274388731 +0100
+@@ -20,5 +20,8 @@
+ TasksMax=10
+ MemoryMax=50M
+ 
++OOMScoreAdjust=-1000
++Nice=-20
++
+ [Install]
+ WantedBy=multi-user.target

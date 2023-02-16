@@ -35,6 +35,9 @@ SRC_URI_append += "file://enable_hidraw.cfg"
 # Enable ZRAM to be used as swap
 SRC_URI_append += "file://enable_zram.cfg"
 
+# Enable cpu/memore pressure info to be used by user-space OOM killers
+SRC_URI_append += "file://enable_pressure_info.cfg"
+
 SRC_URI_append += "file://kernel_hardening.cfg \
                    file://netfilter_addon.cfg  \
                    file://nftables_addon.cfg"
