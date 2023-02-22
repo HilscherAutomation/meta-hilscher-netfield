@@ -25,11 +25,10 @@ cat << EOF > "$tmpdir"/exec.sh
     apt install -y python3-pip jq
     pip3 install yq
 
-    cargo install --git https://github.com/meta-rust/cargo-bitbake --tag v0.3.16
+    cargo install --locked --git https://github.com/meta-rust/cargo-bitbake --tag v0.3.16
     for tmp_package in $PACKAGES_TO_EXTRACT; do
         dir=\$(echo "\$tmp_package" | cut -d ':' -f1)
         package=\$(echo "\$tmp_package" | cut -d ':' -f2)
-        sed -i -e 's@\(^edition = .*\)@\1\nhomepage = "https://github.com/azure/iotedge"@' /iotedge/"\$dir"/"\$package"/Cargo.toml
         sed -i -e 's@\(^edition = .*\)@\1\nrepository = "https://github.com/azure/iotedge"@' /iotedge/"\$dir"/"\$package"/Cargo.toml
 	if [ ! -e "/iotedge/"\$dir"/rust-toolchain.toml" ]; then
             echo "1.58.0" > /iotedge/"\$dir"/rust-toolchain
@@ -68,7 +67,7 @@ cat << EOF > "$tmpdir"/exec.sh
 EOF
 
 chmod +x "$tmpdir"/exec.sh
-docker run -it --rm -v "$tmpdir":/iotedge rust:1.58 /iotedge/exec.sh
+docker run -it --rm -v "$tmpdir":/iotedge rust:1.62 /iotedge/exec.sh
 
 # Prepare recipe and patch it according to our build
 for tmp_package in $PACKAGES_TO_EXTRACT; do
