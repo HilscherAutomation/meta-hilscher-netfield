@@ -10,6 +10,7 @@ SRC_URI_append += "file://eth0 \
                    file://cifx0 \
                    file://wifi_permanent_mac \
                    file://static-arp \
+                   file://hostname_change \
 "
 
 do_install() {
@@ -25,6 +26,7 @@ do_install() {
 
     install -d ${D}${sysconfdir}/NetworkManager/dispatcher.d
     install ${WORKDIR}/static-arp ${D}${sysconfdir}/NetworkManager/dispatcher.d/02-static-arp
+    install ${WORKDIR}/hostname_change ${D}${sysconfdir}/NetworkManager/dispatcher.d/03-hostname-changed
 }
 
 PACKAGES="${PN}"

@@ -148,6 +148,7 @@ meta-hilscher-netfield/lib/oeqa/runtime/cases/nfos_system.py
       **test_backup**, "Test backup/restore functionality."
       **test_zram**, "Test if ``/dev/zram0`` is used for swap memory."
       **test_firewall**, "Test if firewall zones are correctly assigned (**Note**: When using multiple interfaces, only eth0 shall have link up)"
+      **test_hostname_change**, "Test if hostname changes are properly reflected in /etc/hosts for local lookups, e.g. by containers."
 
 meta-hilscher-netfield/lib/oeqa/runtime/cases/nfos_user_group_permissions.py
    .. csv-table::
