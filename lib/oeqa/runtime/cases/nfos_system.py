@@ -172,3 +172,27 @@ class BaseTest(OERuntimeTestCase):
 
             # Reset firewall zone
             firewall_reset_zone(interface)
+
+    def test_hostname_change(self):
+        status, output = self.target.run('hostname')
+        self.assertEqual(status, 0, 'Error querying old hostname (%s)' % output)
+        old_hostname = output
+
+        def set_and_check_hostname(new_hostname):
+            cmd = 'hostnamectl set-hostname %s' % new_hostname
+            status, output = self.target.run(cmd)
+            self.assertEqual(status, 0, 'Error setting new host name (%s)' % output)
+
+            # Give dispatcher some time
+            time.sleep(0.5)
+
+            cmd = 'cat /etc/hosts'
+            status, output = self.target.run(cmd)
+            self.assertEqual(status, 0, 'Error reading hosts file (%s)' % output)
+            self.assertIn('127.0.1.1 %s' % new_hostname, output, 'Unexpected hostname in /etc/hosts (%s)' % (output))
+
+
+        for hostname in ['new-hostname', 'changed-hostname']:
+            set_and_check_hostname(hostname);
+
+        set_and_check_hostname(old_hostname);

@@ -1,0 +1,14 @@
+#!/bin/sh
+
+IFACE="$1"
+ACTION="$2"
+
+if [ "$ACTION" = "hostname" ]; then
+	new_hostname="$(hostname)"
+
+	if grep -qE "^127.0.1.1" /etc/hosts; then
+		sed -i -e "s@^127.0.1.1.*@127.0.1.1 ${new_hostname}@g" /etc/hosts
+	else
+		echo "127.0.1.1 ${new_hostname}" >> /etc/hosts
+	fi
+fi
