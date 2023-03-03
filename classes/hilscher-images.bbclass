@@ -122,6 +122,15 @@ netfield_create_recovery_zip() {
   cp ${DEPLOY_DIR_IMAGE}/boot-script-fit/fitImage-boot-recovery.scr ${WORKDIR}/usb_zip/boot-fit.scr
   cp ${DEPLOY_DIR_IMAGE}/fitImage-core-image-minimal-initramfs*.bin ${WORKDIR}/usb_zip/Image
 
+  local files_to_copy="${ADDITIONAL_USB_FILES}"
+  for add_usb_file in $files_to_copy; do
+    local src_file=$(echo "$add_usb_file" | cut -d ';' -f1)
+    local dst_file=$(echo "$add_usb_file" | cut -d ';' -f2)
+    [ -z "$dst_file" ] && dst_file=$(basename $src_file)
+    mkdir -p ${WORKDIR}/usb_zip/$(dirname $dst_file)
+    cp ${DEPLOY_DIR_IMAGE}/$src_file ${WORKDIR}/usb_zip/$dst_file
+  done
+
   # Copy bootloader
   [ -e ${DEPLOY_DIR_IMAGE}/boot-files/bootx64.efi ] && {
     mkdir -p ${WORKDIR}/usb_zip/EFI/BOOT
