@@ -18,8 +18,8 @@ DESCRIPTION = "Linux container runtime \
  subtle and/or glaring issues. \
  "
 
-SRC_URI = "git://github.com/docker/cli.git;protocol=https;branch=20.10"
-SRCREV="baeda1f82a10204ec5708d5fbba130ad76cfee49"
+SRC_URI = "git://github.com/docker/cli.git;protocol=https;branch=23.0"
+SRCREV="a5ee5b1dfc9b8f08ed9e020bb54fc18550173ef6"
 
 # CGO does not play well with thumb -> https://patches.openembedded.org/patch/144011/
 TUNE_CCARGS_remove += "-mthumb"

@@ -1,6 +1,6 @@
 require go-common.inc
 
-FILESEXTRAPATHS_prepend := "${FILE_DIRNAME}/go:"
+FILESEXTRAPATHS:prepend := "${FILE_DIRNAME}/go:"
 
 LIC_FILES_CHKSUM = "file://LICENSE;md5=5d4950ecb7b26d2c5e4e7b4e0dd74707"
 
@@ -15,5 +15,4 @@ SRC_URI += "\
     file://0001-src-cmd-dist-buildgo.go-do-not-hardcode-host-compile.patch \
     file://filter-build-paths.patch \
 "
-SRC_URI[main.sha256sum] = "9467e33b819f71bebb21fb0ee1dd6794fd2244ae94907a984286712f9839a944"
-
+SRC_URI[main.sha256sum] = "8e486e8e85a281fc5ce3f0bedc5b9d2dbf6276d7db0b25d3ec034f313da0375f"

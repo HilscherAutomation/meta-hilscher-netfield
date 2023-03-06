@@ -19,15 +19,12 @@ DESCRIPTION = "Linux container runtime \
  "
 
 SRC_URI = "\
-	git://github.com/moby/moby.git;protocol=https;branch=20.10 \
+	git://github.com/moby/moby.git;protocol=https;branch=23.0 \
 	file://docker.init \
 	file://hi.Dockerfile \
 	"
 
-SRCREV="3056208812eb5e792fa99736c9167d1e10f4ab49"
-
-LIBNETWORK_COMMIT="0dde5c895075df6e3630e76f750a447cf63f4789"
-require libnetwork.inc
+SRCREV="bc3805a0a0d3b5bd3f0e6c69f46ac08dd53377c7"
 
 # CGO does not play well with thumb -> https://patches.openembedded.org/patch/144011/
 TUNE_CCARGS_remove += "-mthumb"
@@ -97,7 +94,6 @@ do_install() {
 	if ${@bb.utils.contains('DISTRO_FEATURES','systemd','true','false',d)}; then
 		install -d ${D}${systemd_unitdir}/system
 		install -m 644 ${S}/contrib/init/systemd/docker.* ${D}/${systemd_unitdir}/system
-		rm ${D}/${systemd_unitdir}/system/docker.service.rpm
 	else
 		install -d ${D}${sysconfdir}/init.d
 		install -m 0755 ${WORKDIR}/docker.init ${D}${sysconfdir}/init.d/docker.init
