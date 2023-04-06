@@ -24,7 +24,7 @@ SRC_URI = "\
 	file://hi.Dockerfile \
 	"
 
-SRCREV="219f21bf07502b447095649b5a2764661737f164"
+SRCREV="59118bff500fc0d95d0560a9788735a8d89568ce"
 
 # CGO does not play well with thumb -> https://patches.openembedded.org/patch/144011/
 TUNE_CCARGS_remove += "-mthumb"
