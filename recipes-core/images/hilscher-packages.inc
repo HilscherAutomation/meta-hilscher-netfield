@@ -74,7 +74,7 @@ IMAGE_INSTALL += "packagegroup-hilscher-base"
 IMAGE_INSTALL += "firewalld"
 
 # netFIELD Specific stuff
-IMAGE_INSTALL += "docker iotedge python3-docker-compose"
+IMAGE_INSTALL += "docker iotedge docker-compose"
 IMAGE_INSTALL += "opa-docker-authz"
 
 # Package management to /opt/apps

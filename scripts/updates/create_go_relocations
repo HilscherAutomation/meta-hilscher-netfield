@@ -1,0 +1,231 @@
+#!/usr/bin/env python3
+
+from html.parser import HTMLParser
+from subprocess import Popen, PIPE
+import json
+import re
+import shutil
+import tempfile
+import time
+import urllib.request
+
+GO_PATH_TRANSLATORS = [
+    re.compile(r'^(?P<root>github.com/[A-Za-z0-9_\-]+/[A-Za-z0-9_\-]+)(/(?P<suffix>[A-Za-z0-9_\-]+))*$'),
+    re.compile(r'^(?P<root>.*)$'),
+]
+
+def run_process(cmd, cwd = None):
+    p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE, cwd = cwd)
+    output, err = p.communicate()
+    if p.returncode != 0:
+        raise Exception('Error running command %s. %s' % (cmd, err))
+    return (output.decode('utf-8'), err.decode('utf-8'))
+
+# Extract requirements
+output, _ = run_process(['go', 'mod', 'edit', '-json'])
+go_mod = json.loads(output)
+
+module_list = []
+used_srcuri_names = []
+
+for required in go_mod['Require']:
+    version = required['Version']
+    modulepath = required['Path']
+    if 'Indirect' in required:
+        indirect = required['Indirect']
+    else:
+        indirect = False
+
+    # Check for replacements of current remote
+    for replace in go_mod['Replace']:
+        if replace['Old']['Path'] == modulepath:
+            modulepath = replace['New']['Path']
+            if 'Version' in replace['New']:
+                version = replace['New']['Version']
+            break
+
+    # Translate / split modulepath
+    for translator in GO_PATH_TRANSLATORS:
+        m = translator.match(modulepath)
+        if m:
+            root = m.group('root')
+            break
+    else:
+        raise Exception('Unable to gather root module path for %s' % modulepath)
+
+    srcuri_name = modulepath.split('/')[-1]
+    # Make srcuri_name unique
+    if srcuri_name in used_srcuri_names:
+        srcuri_name = srcuri_name + version.replace('-', '_').replace('.', '_')
+        if srcuri_name in used_srcuri_names:
+            raise Exception('Unable to generate unique module name for %s' % modulepath);
+
+    used_srcuri_names.append(srcuri_name)
+
+    # Try to extract location of repository
+    req = urllib.request.Request('https://' + root + '?go-get=1')
+    resp = None
+    retrycount = 0
+    while resp is None:
+        try:
+            resp = urllib.request.urlopen(req);
+        except urllib.request.HTTPError as e:
+            retrycount += 1
+            time.sleep(2)
+            if retrycount > 5:
+                raise
+
+    class GoImportHTMLParser(HTMLParser):
+
+        def __init__(self):
+            super().__init__()
+            self.__srv = []
+
+        def handle_starttag(self, tag, attrs):
+            if tag == 'meta' and list(filter(lambda a: (a[0] == 'name' and a[1] == 'go-import'), attrs)):
+                content = list(filter(lambda a: (a[0] == 'content'), attrs))
+                if content:
+                    self.__srv = content[0][1].split()
+
+        @property
+        def rootpath(self):
+            return self.__srv[0]
+
+        @property
+        def vcs(self):
+            return self.__srv[1]
+
+        @property
+        def repourl(self):
+            return self.__srv[2]
+
+    parser = GoImportHTMLParser()
+    parser.feed(resp.read().decode('utf-8'))
+    parser.close()
+
+    repo = parser.repourl
+    # TODO: Evaluate parser.vcs, currently we assume git
+
+    # Get commit hash of repository
+    repoversion = version.replace('+incompatible', '')
+
+    m = re.match(r'.*-(?P<shorthash>[A-Fa-f0-9]{12})$', repoversion)
+    if m is None:
+        output = None
+        retrycount = 0
+        while output is None:
+            try:
+                output, _ = run_process(['git', 'ls-remote', repo])
+            except:
+                retrycount += 1
+                time.sleep(2)
+                if retrycount > 5:
+                    raise
+
+        last_path_elem = modulepath.split('/')[-1]
+        for lsremote in output.splitlines():
+            if lsremote.endswith(last_path_elem + '/' + repoversion + '^{}'):
+                hash = lsremote.split('\t')[0]
+                break
+            elif lsremote.endswith(last_path_elem + '/' + repoversion):
+                hash = lsremote.split('\t')[0]
+            elif lsremote.endswith(repoversion):
+                hash = lsremote.split('\t')[0]
+        if hash is None:
+            raise Exception('Unable to extract hash for module %s version %s' % (modulepath, version))
+    else:
+         # Translate short hash to long hash
+         tmpdir = tempfile.mkdtemp()
+         run_process(['git', 'clone', '--bare', repo, tmpdir])
+         hash, _ = run_process(['git', 'rev-parse', m.group('shorthash')], tmpdir)
+         hash = hash.rstrip('\n')
+         shutil.rmtree(tmpdir)
+
+    module_list.append({
+        'repo': repo,
+        'srcname': srcuri_name,
+        'path': modulepath,
+        'version': version,
+        'hash': hash
+    })
+
+    print('Processed: %s' % modulepath)
+
+# Generate SRC_URIs
+with open('src_uri.inc', 'w') as f:
+    for module in module_list:
+        f.write('#   %s %s\n' % (module['path'], module['version']))
+        f.write('# [1] git ls-remote %s %s\n' % (module['repo'], module['hash']))
+        f.write('SRCREV_%s="%s"\n' % (module['srcname'], module['hash']))
+        f.write('SRC_URI += "%s;name=%s;protocol=https;nobranch=1;destsuffix=${WORKDIR}/${BP}/src/import/vendor.fetch/%s"\n' %
+           (module['repo'].replace('https://', 'git://'), module['srcname'], module['path']))
+        f.write('\n')
+
+# Generate relocations
+with open('relocations.inc', 'w') as f:
+    f.write('export sites=" \\\n')
+    for module in module_list:
+        # Workarounds:
+        #  - moby/sys/<x> must be translated to moby/sys/<x>/<x>
+        #  - otel/exporters/otlp/otlptrace -> otel/exporters/otlp/internal/retry/exporters/otlp/otlptrace:force
+        #  - go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp -> go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc/instrumentation/net/http/otelhttp:force
+        #  - otel/(metric|sdk|trace) -> otel/(metric|sdk|trace)/(metric|sdk|trace)
+        #  - go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc -> +/instrumentation/google.golang.org/grpc/otelgrpc 
+        #  - go.opentelemetry.io/otel/exporters/otlp/internal/retry -> + /exporters/otlp/internal/retry
+        #  - proto/otlp -> proto/otlp/otlp
+        #  - github.com/aws/aws-sdk-go-v2/<x> -> + <x>
+        if '/moby/sys' in module['path']:
+            srcpath=module['path'] + '/' + module['path'].split('/')[-1]
+            f.write('    %s:%s \\\n' %(module['path'], srcpath))
+        elif '/exporters/otlp/' in module['path']:
+            search=re.search('(.*/exporters/otlp/)(.*)', module['path'])
+            srcpath=search.group(1) + 'internal/retry/exporters/otlp/' + search.group(2)
+            f.write('    %s:%s:force \\\n' %(module['path'], srcpath))
+        elif module['path'].startswith('go.opentelemetry.io/contrib/instrumentation/net/http/'):
+            search=re.search('go.opentelemetry.io/contrib/instrumentation(.*)', module['path'])
+            srcpath='go.opentelemetry.io/contrib/instrumentation/' + \
+                    'google.golang.org/grpc/otelgrpc/instrumentation' + \
+                    search.group(1)
+            f.write('    %s:%s:force \\\n' %(module['path'], srcpath))
+        elif module['path'].endswith('otel/metric'):
+            f.write('    %s:%s:force \\\n' %(module['path'], module['path'] + '/metric'))
+        elif module['path'].endswith('otel/sdk'):
+            f.write('    %s:%s:force \\\n' %(module['path'], module['path'] + '/sdk'))
+        elif module['path'].endswith('otel/trace'):
+            f.write('    %s:%s:force \\\n' %(module['path'], module['path'] + '/trace'))
+        elif module['path'].endswith('proto/otlp'):
+            f.write('    %s:%s:force \\\n' %(module['path'], module['path'] + '/otlp'))
+        elif module['path'].endswith('instrumentation/google.golang.org/grpc/otelgrpc'):
+            f.write('    %s:%s:force \\\n' %(module['path'], module['path'] + '/instrumentation/google.golang.org/grpc/otelgrpc'))
+        elif module['path'].endswith('exporters/otlp/internal/retry'):
+            f.write('    %s:%s:force \\\n' %(module['path'], module['path'] + '/exporters/otlp/internal/retry'))
+        elif module['path'].startswith('github.com/aws/aws-sdk-go-v2/'):
+            modpath='/'.join(module['path'].split('/')[3:])
+            srcpath='github.com/aws/aws-sdk-go-v2/' + modpath + '/' + modpath
+            f.write('    %s:%s:force \\\n' %(module['path'], srcpath))
+        else:
+            f.write('    %s:%s \\\n' %(module['path'], module['path']))
+    f.write('"\n')
+    f.write("""
+do_compile_prepend() {
+    cd ${S}/src/import
+    for s in $sites; do
+        site_dest=$(echo $s | cut -d: -f1)
+        site_source=$(echo $s | cut -d: -f2)
+        force_flag=$(echo $s | cut -d: -f3)
+        mkdir -p vendor.copy/$site_dest
+        if [ -n "$force_flag" ]; then
+            echo "[INFO] $site_dest: force copying .go files"
+            rm -rf vendor.copy/$site_dest
+            rsync -a --exclude='vendor/' --exclude='.git/' vendor.fetch/$site_source/ vendor.copy/$site_dest
+        else
+            [ -n "$(ls -A vendor.copy/$site_dest/*.go 2> /dev/null)" ] && { echo "[INFO] vendor.fetch/$site_source -> $site_dest: go copy skipped (files present)" ; true ; } || { echo "[INFO] $site_dest: copying .go files" ; rsync -a --exclude='vendor/' --exclude='.git/' vendor.fetch/$site_source/ vendor.copy/$site_dest ; }
+        fi
+    done
+}
+""")
+
+# Generate vendoring file
+run_process(['go', 'mod', 'vendor'])
+shutil.move('vendor/modules.txt', 'modules.txt')
+shutil.rmtree('vendor')
