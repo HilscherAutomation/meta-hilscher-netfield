@@ -13,6 +13,7 @@ SRC_URI_append += "file://iotedge-docker.service \
                    file://aziot-genca \
                    file://iotedge_config_skip_service_start.patch \
                    file://aziot-generate-local-ca.patch \
+                   file://fix_missing_storage_folder.patch \
                    file://iotedge-docker-config.sh \
 "
 

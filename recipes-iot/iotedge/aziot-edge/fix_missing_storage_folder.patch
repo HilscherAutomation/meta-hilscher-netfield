@@ -1,0 +1,13 @@
+In unknown corner cases the predefined edgeHub/edgeAgent persisent folders vanish from disk
+diff -aurN a/contrib/systemd/debian/aziot-edged.service b/contrib/systemd/debian/aziot-edged.service
+--- a/contrib/systemd/debian/aziot-edged.service	2023-02-27 08:04:22.917893942 +0100
++++ b/contrib/systemd/debian/aziot-edged.service	2023-04-25 11:23:38.473415201 +0200
+@@ -7,6 +7,8 @@
+ 
+ [Service]
+ ExecStartPre=+/usr/libexec/aziot/aziot-genca
++ExecStartPre=+/bin/mkdir -p /var/lib/aziot/storage/edgeAgent /var/lib/aziot/storage/edgeHub
++ExecStartPre=+/bin/chmod 0777 /var/lib/aziot/storage /var/lib/aziot/storage/edgeAgent /var/lib/aziot/storage/edgeHub
+ ExecStart=/usr/libexec/aziot/aziot-edged
+ KillMode=process
+ TimeoutStartSec=600
