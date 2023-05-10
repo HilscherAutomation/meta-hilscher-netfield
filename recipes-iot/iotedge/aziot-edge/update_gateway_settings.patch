@@ -1,0 +1,11 @@
+diff -aurN a/contrib/systemd/debian/aziot-edged.service b/contrib/systemd/debian/aziot-edged.service
+--- a/contrib/systemd/debian/aziot-edged.service	2022-06-10 16:17:43.861061595 +0200
++++ b/contrib/systemd/debian/aziot-edged.service	2022-06-10 16:20:40.613471870 +0200
+@@ -6,6 +6,7 @@
+ ExecStartPre=+/usr/libexec/aziot/aziot-genca
+ ExecStartPre=+/bin/mkdir -p /var/lib/aziot/storage/edgeAgent /var/lib/aziot/storage/edgeHub
+ ExecStartPre=+/bin/chmod 0777 /var/lib/aziot/storage /var/lib/aziot/storage/edgeAgent /var/lib/aziot/storage/edgeHub
++ExecStartPre=+/usr/libexec/aziot/update_gateway_settings
+ ExecStart=/usr/libexec/aziot/aziot-edged
+ KillMode=process
+ TimeoutStartSec=600
