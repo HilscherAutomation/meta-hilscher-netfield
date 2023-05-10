@@ -17,6 +17,7 @@ pkg_postinst_${PN}_prepend() {
     for service in docker.service iotedge-docker.service; do
         sed -i -e 's@dockerd@dockerd --authorization-plugin="${BPN}"@g' \
                -e 's@Requires=@Requires=${BPN}.service @g' \
+               -e 's@After=@After=${BPN}.service @g' \
             $D${systemd_system_unitdir}/$service
     done
 }
