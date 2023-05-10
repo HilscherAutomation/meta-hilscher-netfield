@@ -15,11 +15,15 @@ SRC_URI_append += "file://iotedge-docker.service \
                    file://aziot-generate-local-ca.patch \
                    file://fix_missing_storage_folder.patch \
                    file://iotedge-docker-config.sh \
+                   file://update_gateway_settings.patch \
+                   file://update_gateway_settings \
 "
 
 RDEPENDS_${PN}_append += "bridge-utils yq"
 # acl is required to set ACL in docker.socket
 RDEPENDS_${PN}_append += "acl"
+# bash is required for update_gateway_settings script
+RDEPENDS_${PN}_append += "bash"
 
 SYSTEMD_SERVICE_${PN}_append += "iotedge-docker.service iotedge-docker.socket iotedge.slice"
 
@@ -64,6 +68,9 @@ EOF
 
     # Add script to generate a long-running CA certificate
     install ${WORKDIR}/aziot-genca ${D}${libexecdir}/aziot/
+
+    # Add script to update settings.json when cloud assigns hardwareid
+    install ${WORKDIR}/update_gateway_settings ${D}${libexecdir}/aziot/
 
     # Set default log level to WARN
     install -d ${D}${sysconfdir}/systemd/system/aziot-edged.service.d
