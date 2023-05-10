@@ -346,7 +346,10 @@ exit_code=$?
 case $exit_code in
 	0)
 		do_cleanup
-		rm $apifile
+		# NOTE: To be compatible with 2.3.x there is a second very same version of the
+		#       runscript with the old naming scheme (xxx-initrd-api) - delete both.
+		rm $(dirname $apifile)/initrd-api-part-cfg
+		rm $(dirname $apifile)/part-cfg-initrd-api
 		log "Exiting $APP_NAME successfully!"
 		exit 0
 		;;
