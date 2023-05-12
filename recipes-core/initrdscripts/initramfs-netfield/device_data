@@ -4,14 +4,25 @@ device_data_enabled() {
 	return 0
 }
 
-device_data_run() {
-	# Create temporary module directory
-	moddir=/tmp/$module; mkdir -p $moddir
+migrate_device_data() {
+	# Since V2.4. the device data will be kept only under [backup partition]/nvd/.
 
-	dev=$(blkid -L backup)
-	mp=$(mktemp -d) && mkdir -p $mp && mount -o ro $dev $mp
+	# CASE1:
+	# Old devices may keep the device label still on the rescue partition,
+	# in this case move it to the common dedicated storage location
+	mkdir -p /tmp/rescue
+	mount $(blkid -L rescue) /tmp/rescue
+	if [ -e "/tmp/rescue/nvd/device_data" ] && [ ! -e "$mp/nvd/device_data" ]; then
+		vmsg "Moving production device data to final location"
+		mkdir -p "$mp/nvd"
+		mv /tmp/rescue/nvd/device_data $mp/nvd/device_data
+		rmdir /tmp/rescue/nvd
+		sync
+	fi
+	umount /tmp/rescue
+	rmdir /tmp/rescue
 
-	# NOTE:
+	# CASE2:
 	# As old INTEL devices/firmwares stored the device-label only in efivar,
 	# this migration step is carried out to copy this device-label to a common dedicated storage location.
 	[ ! -r $mp/nvd/device_data ] && {
@@ -23,6 +34,16 @@ device_data_run() {
 		}
 		[ -e /sys/firmware/efi/efivars ] && umount /sys/firmware/efi/efivars
 	}
+}
+
+device_data_run() {
+	# Create temporary module directory
+	moddir=/tmp/$module; mkdir -p $moddir
+
+	dev=$(blkid -L backup)
+	mp=$(mktemp -d) && mkdir -p $mp && mount -o ro $dev $mp
+
+	migrate_device_data
 
 	mac=$(cat /sys/class/net/eth0/address | tr -d ':' | tr "[:lower:]" "[:upper:]")
 	openssl x509 -pubkey -in /proc/sys/srm/owner-cert -noout > $moddir/owner-public.key

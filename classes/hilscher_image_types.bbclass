@@ -198,6 +198,10 @@ WIC_BOOT_TMPDIR = "${WIC_TMPDIR}/boot"
 WIC_RESCUE_TMPDIR = "${WIC_TMPDIR}/rescue"
 WIC_SYSTEM_TMPDIR = "${WIC_TMPDIR}/system"
 
+# For compatibility reasons, as the V2.3.x supports initrd-api files only with a prefix add a copy of initrd-api-part-cfg.
+WIC_SYSTEM_PART_CONTENT_append += "${IMAGE_LINK_NAME}.squashfs boot.cfg fitImage initrd-api-part-cfg initrd-api-part-cfg;part-cfg-initrd-api"
+WIC_BOOT_PART_CONTENT_append += "${IMAGE_BOOT_FILES}"
+
 do_image_wic[depends] += "${HILSCHER_RESCUE_IMAGE}:do_image_complete"
 do_image_wic[depends] += "file-signature-native:do_populate_sysroot"
 do_image_wic[vardeps] += "PLATFORM_SIGN PLATFORM_KEYDIR PLATFORM_KEYNAME"
