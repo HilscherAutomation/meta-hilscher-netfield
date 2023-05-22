@@ -13,9 +13,10 @@ migrate_device_data() {
 	mkdir -p /tmp/rescue
 	mount $(blkid -L rescue) /tmp/rescue
 	if [ -e "/tmp/rescue/nvd/device_data" ] && [ ! -e "$mp/nvd/device_data" ]; then
-		vmsg "Moving production device data to final location"
-		mkdir -p "$mp/nvd"
+		__debug "Moving production device data to final location"
+		mount -o remount,rw $dev $mp && mkdir -p $mp/nvd
 		mv /tmp/rescue/nvd/device_data $mp/nvd/device_data
+		mount -o remount,ro $dev $mp
 		rmdir /tmp/rescue/nvd
 		sync
 	fi
