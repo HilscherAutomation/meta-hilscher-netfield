@@ -24,6 +24,8 @@ RDEPENDS_${PN}_append += "bridge-utils yq"
 RDEPENDS_${PN}_append += "acl"
 # bash is required for update_gateway_settings script
 RDEPENDS_${PN}_append += "bash"
+# toml-cli is required for aziot-genca script
+RDEPENDS_${PN}_append += "toml-cli"
 
 SYSTEMD_SERVICE_${PN}_append += "iotedge-docker.service iotedge-docker.socket iotedge.slice"
 
