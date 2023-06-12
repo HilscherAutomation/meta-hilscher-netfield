@@ -37,7 +37,7 @@ do_assemble_boot_script_fitimage_prepend() {
 	sign_key=$(setup_sign_wrapper_env "${PLATFORM_KEYNAME}")
 
 	case ${SIGN_WRAPPER_MODE} in
-		file)   export UBOOT_MKIMAGE_PARAMS="-k UBOOT_SIGN_KEYDIR}"
+		file)   export UBOOT_MKIMAGE_PARAMS="-k ${UBOOT_SIGN_KEYDIR}"
 			;;
 		pkcs11) #u-boot mkimage expects URL without leading pkcs11:
 			sign_key=$(echo $sign_key | sed -e 's/^pkcs11://')
