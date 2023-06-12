@@ -41,7 +41,10 @@ if [ ! -e "/etc/aziot/config.toml" ]; then
 fi
 
 update_config_toml="1"
-if grep -q "\[edge_ca\]" /etc/aziot/config.toml; then
+
+edge_ca_cert=$(toml get /etc/aziot/config.toml edge_ca.cert)
+edge_ca_key=$(toml get /etc/aziot/config.toml edge_ca.pk)
+if [ -n "$edge_ca_cert" ] && [ -n "$edge_ca_key" ]; then
 	echo "Custom certificates detected. Assuming already patched config.toml"
 	update_config_toml="0"
 fi
@@ -73,12 +76,14 @@ fi
 
 if [ "$update_config_toml" = "1" ]; then
 	# Adjust super config
-	cat <<EOF>>/etc/aziot/config.toml
-
-[edge_ca]
-cert = "file://${KEY_LOCATION_CA}/cert.pem"
-pk = "file://${KEY_LOCATION_CA}/privkey.pem"
-EOF
+	if [ -z "$edge_ca_cert" ]; then
+		toml=$(toml set /etc/aziot/config.toml edge_ca.cert "file://${KEY_LOCATION_CA}/cert.pem")
+		echo -e "$toml" > /etc/aziot/config.toml
+	fi
+	if [ -z "$edge_ca_cert" ]; then
+		toml=$(toml set /etc/aziot/config.toml edge_ca.pk "file://${KEY_LOCATION_CA}/privkey.pem")
+		echo -e "$toml" > /etc/aziot/config.toml
+	fi
 
 	# Delete previously generated CA certificates (if any)
 	rm -f /var/lib/aziot/certd/certs/* /var/lib/aziot/keyd/keys/*
