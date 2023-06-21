@@ -19,12 +19,12 @@ DESCRIPTION = "Linux container runtime \
  "
 
 SRC_URI = "\
-	git://github.com/moby/moby.git;protocol=https;branch=23.0 \
+	git://github.com/moby/moby.git;protocol=https;branch=24.0 \
 	file://docker.init \
 	file://hi.Dockerfile \
 	"
 
-SRCREV="59118bff500fc0d95d0560a9788735a8d89568ce"
+SRCREV="659604f9ee60f147020bdd444b26e4b5c636dc28"
 
 # CGO does not play well with thumb -> https://patches.openembedded.org/patch/144011/
 TUNE_CCARGS_remove += "-mthumb"

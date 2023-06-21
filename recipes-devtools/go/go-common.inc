@@ -19,6 +19,9 @@ S = "${WORKDIR}/go"
 B = "${S}"
 UPSTREAM_CHECK_REGEX = "(?P<pver>\d+(\.\d+)+)\.src\.tar"
 
+# all recipe variants are created from the same product
+CVE_PRODUCT = "go"
+
 INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
 SSTATE_SCAN_CMD = "true"
 
@@ -39,6 +42,6 @@ export GOROOT_FINAL ?= "${libdir}/go"
 
 export GODEBUG = "gocachehash=1"
 
-do_compile:prepend() {
+do_compile_prepend() {
 	BUILD_CC=${BUILD_CC}
 }
