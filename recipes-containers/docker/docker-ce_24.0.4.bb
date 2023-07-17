@@ -20,6 +20,7 @@ DESCRIPTION = "Linux container runtime \
 
 SRC_URI = "\
 	git://github.com/moby/moby.git;protocol=https;branch=24.0 \
+	file://use_yocto_goflags.patch \
 	file://docker.init \
 	file://hi.Dockerfile \
 	"
