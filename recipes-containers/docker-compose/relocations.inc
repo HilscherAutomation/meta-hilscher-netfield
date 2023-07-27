@@ -64,7 +64,6 @@ export sites=" \
     github.com/cespare/xxhash/v2:github.com/cespare/xxhash/v2 \
     github.com/cloudflare/cfssl:github.com/cloudflare/cfssl \
     github.com/containerd/continuity:github.com/containerd/continuity \
-    github.com/containerd/ttrpc:github.com/containerd/ttrpc \
     github.com/containerd/typeurl/v2:github.com/containerd/typeurl/v2 \
     github.com/cucumber/gherkin-go/v19:github.com/cucumber/gherkin-go/v19 \
     github.com/cucumber/messages-go/v16:github.com/cucumber/messages-go/v16 \
@@ -156,6 +155,7 @@ export sites=" \
     go.opentelemetry.io/otel/metric:go.opentelemetry.io/otel/metric/metric:force \
     go.opentelemetry.io/proto/otlp:go.opentelemetry.io/proto/otlp/otlp:force \
     golang.org/x/crypto:golang.org/x/crypto \
+    golang.org/x/exp:golang.org/x/exp \
     golang.org/x/mod:golang.org/x/mod \
     golang.org/x/net:golang.org/x/net \
     golang.org/x/oauth2:golang.org/x/oauth2 \
