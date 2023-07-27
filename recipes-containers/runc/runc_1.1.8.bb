@@ -2,7 +2,7 @@ HOMEPAGE = "https://github.com/opencontainers/runc"
 SUMMARY = "runc container cli tools"
 DESCRIPTION = "runc is a CLI tool for spawning and running containers according to the OCI specification."
 
-SRCREV = "860f061b76bb4fc671f0f9e900f7d80ff93d4eb7"
+SRCREV = "82f18fe0e44a59034f3e1f45e475fa5636e539aa"
 SRC_URI = "git://github.com/opencontainers/runc;protocol=https;branch=release-1.1 \
            file://0001-Makefile-respect-GOBUILDFLAGS-for-runc-and-remove-re.patch \
 "
