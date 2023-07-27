@@ -11,7 +11,7 @@ By default, a default image will be build for a predefined list of machines(plat
   -d <deploy_dir>             Deploy directory (default: "dist")
   -D                          Build a debug image
   -e <extra_image_features>   Add extra image features
-  -f <fw_version>             Firmware version (default: "2.4.0.0")
+  -f <fw_version>             Firmware version (default: "2.5.0.0")
   -i <image>                  Image name to build (default: "netfield-image" or "netfield-image-oem-all" on oem capable machines)
   -p <extra_image_packages>   Add extra image packages
   -P <machine[0..n]>          Space seperated list of machines/platforms to build
@@ -72,7 +72,7 @@ done
 shift $((OPTIND-1))
 
 # Set default values
-FW_VERSION="${fw_version:-"2.4.0.0"}"
+FW_VERSION="${fw_version:-"2.5.0.0"}"
 FW_VERSION="$FW_VERSION${debug_enable:+".debug"}"
 FW_VERSION="$FW_VERSION${fw_suffix:+".$fw_suffix"}"
 BUILD_DIR="${build_dir:-"build"}"

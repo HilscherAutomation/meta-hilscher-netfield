@@ -28,9 +28,9 @@ copyright = u'2022, Group - netX System'
 author = u'Group - netX System'
 
 # The short X.Y version
-version = u'2.4'
+version = u'2.5'
 # The full version, including alpha/beta/rc tags
-release = u'2.4'
+release = u'2.5'
 
 # -- General configuration ---------------------------------------------------
 
