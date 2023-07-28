@@ -78,7 +78,7 @@ do_compile() {
 	export DOCKER_BUILDTAGS="${DOCKER_BUILDTAGS}"
 	export DOCKER_GITCOMMIT="${SRCREV}"
 	export VERSION="${PV}"
-	./hack/make.sh dynbinary
+	./hack/make.sh dynbinary dynbinary-proxy
 }
 
 SYSTEMD_PACKAGES = "${@bb.utils.contains('DISTRO_FEATURES','systemd','${PN}','',d)}"
@@ -91,6 +91,7 @@ INITSCRIPT_PARAMS_${PN} = "${OS_DEFAULT_INITSCRIPT_PARAMS}"
 do_install() {
 	mkdir -p ${D}/${bindir}
 	cp -L ${S}/bundles/dynbinary-daemon/dockerd ${D}/${bindir}/dockerd
+	cp -L ${S}/bundles/dynbinary-proxy/docker-proxy ${D}/${bindir}/docker-proxy
 
 	if ${@bb.utils.contains('DISTRO_FEATURES','systemd','true','false',d)}; then
 		install -d ${D}${systemd_unitdir}/system
