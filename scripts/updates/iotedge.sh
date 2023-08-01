@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/bin/bash -e
+
+SCRIPTDIR=$(readlink -f ${0})
+SCRIPTDIR=$(dirname ${SCRIPTDIR})
 
 if [ -z "$1" ]; then
     echo "Please pass a version $0 1.0.9.4"
@@ -80,22 +83,22 @@ for tmp_package in $PACKAGES_TO_EXTRACT; do
     [ -z "$version" ] && version="git"
     cd - || exit 1
 
-    mv "$tmpdir"/"$dir"/"$package"/"$package"_*.bb recipes-iot/iotedge/"${recipename}"_"$version".bb
+    mv "$tmpdir"/"$dir"/"$package"/"$package"_*.bb "${SCRIPTDIR}"/../../recipes-iot/iotedge/"${recipename}"_"$version".bb
 
     # We need to use the edgelet subdirectory when building
     if echo "$dir"  | grep '/'; then
         basepath=$(basename "$dir")
-        sed -i -e "s@^S = .*@S = \"\${WORKDIR}/git/$basepath\"@" recipes-iot/iotedge/"${recipename}"_"$version".bb
+        sed -i -e "s@^S = .*@S = \"\${WORKDIR}/git/$basepath\"@" "${SCRIPTDIR}"/../../recipes-iot/iotedge/"${recipename}"_"$version".bb
     fi
 
     # Strip generated bogus license and summary stuff
-    sed -i -e '/^# FIXME:/,$d' recipes-iot/iotedge/"${recipename}"_"$version".bb
+    sed -i -e '/^# FIXME:/,$d' "${SCRIPTDIR}"/../../recipes-iot/iotedge/"${recipename}"_"$version".bb
 
     # Use main directory for cargo
-    sed -i -e 's@CARGO_SRC_DIR.*@CARGO_SRC_DIR = "."@g' recipes-iot/iotedge/"${recipename}"_"$version".bb
+    sed -i -e 's@CARGO_SRC_DIR.*@CARGO_SRC_DIR = "."@g' "${SCRIPTDIR}"/../../recipes-iot/iotedge/"${recipename}"_"$version".bb
 
     # Add require of our base stuff
-    echo "require $recipename.inc" >> recipes-iot/iotedge/"${recipename}"_"$version".bb
+    echo "require $recipename.inc" >> "${SCRIPTDIR}"/../../recipes-iot/iotedge/"${recipename}"_"$version".bb
 
     # NOTE: License checksum is not updated. If it changes, the license must be re-checked, as it might have changed
 done
