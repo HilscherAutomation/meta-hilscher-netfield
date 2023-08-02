@@ -24,7 +24,7 @@ index c61418e60..54a10eb42 100644
 --- git.orig/src/import/Makefile
 +++ git.orig/src/import/Makefile
 @@ -112,7 +112,8 @@ endif
- GOPATHS=$(shell echo ${GOPATH} | tr ":" "\n" | tr ";" "\n")
+ GOPATHS=$(shell go env GOPATH | tr ":" "\n" | tr ";" "\n")
  
  TESTFLAGS_RACE=
 -GO_BUILD_FLAGS=
