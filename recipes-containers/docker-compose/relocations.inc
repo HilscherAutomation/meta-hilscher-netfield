@@ -1,6 +1,7 @@
 export sites=" \
     github.com/AlecAivazis/survey/v2:github.com/AlecAivazis/survey/v2 \
     github.com/Microsoft/go-winio:github.com/Microsoft/go-winio \
+    github.com/adrg/xdg:github.com/adrg/xdg \
     github.com/buger/goterm:github.com/buger/goterm \
     github.com/compose-spec/compose-go:github.com/compose-spec/compose-go \
     github.com/containerd/console:github.com/containerd/console \
@@ -166,6 +167,8 @@ export sites=" \
     golang.org/x/tools:golang.org/x/tools \
     google.golang.org/appengine:google.golang.org/appengine \
     google.golang.org/genproto:google.golang.org/genproto \
+    google.golang.org/genproto/googleapis/api:google.golang.org/genproto/googleapis/api/googleapis/api:force \
+    google.golang.org/genproto/googleapis/rpc:google.golang.org/genproto/googleapis/rpc/googleapis/rpc:force \
     google.golang.org/protobuf:google.golang.org/protobuf \
     gopkg.in/inf.v0:gopkg.in/inf.v0 \
     gopkg.in/ini.v1:gopkg.in/ini.v1 \
