@@ -8,7 +8,7 @@ DESCRIPTION = "containerd is a daemon to control runC, built for performance and
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://src/import/LICENSE;md5=1269f40c0d099c21a871163984590d89"
 
-SRCREV = "1677a17964311325ed1c31e2c0a3589ce6d5c30d"
+SRCREV = "7880925980b188f4c97b462f709d0db8e8962aff"
 SRC_URI = "git://github.com/containerd/containerd.git;protocol=https;branch=release/1.7 \
            file://0001-Makefile-allow-GO_BUILD_FLAGS-to-be-externally-speci.patch"
 S = "${WORKDIR}/git"

@@ -5,9 +5,9 @@ LICENSE="Apache-2.0"
 GO_IMPORT="github.com/docker/compose"
 COMPOSE_PKG = "github.com/docker/compose/v2"
 
-SRC_URI="git://${GO_IMPORT};protocol=https;branch=v2 \
+SRC_URI="git://${GO_IMPORT};protocol=https;branch=main \
          file://modules.txt"
-SRCREV="8318f66330358988a058bf611a953f464ab7973f"
+SRCREV="d6f842b042d2f2926901305336527b3eaadf067a"
 
 include src_uri.inc
 

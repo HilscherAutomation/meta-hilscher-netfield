@@ -174,6 +174,7 @@ with open('relocations.inc', 'w') as f:
         #  - go.opentelemetry.io/otel/exporters/otlp/internal/retry -> + /exporters/otlp/internal/retry
         #  - proto/otlp -> proto/otlp/otlp
         #  - github.com/aws/aws-sdk-go-v2/<x> -> + <x>
+        #  - google.golang.org/genproto/googleapis/<x> -> + /googleapis/<x>
         if '/moby/sys' in module['path']:
             srcpath=module['path'] + '/' + module['path'].split('/')[-1]
             f.write('    %s:%s \\\n' %(module['path'], srcpath))
@@ -202,6 +203,10 @@ with open('relocations.inc', 'w') as f:
         elif module['path'].startswith('github.com/aws/aws-sdk-go-v2/'):
             modpath='/'.join(module['path'].split('/')[3:])
             srcpath='github.com/aws/aws-sdk-go-v2/' + modpath + '/' + modpath
+            f.write('    %s:%s:force \\\n' %(module['path'], srcpath))
+        elif module['path'].startswith('google.golang.org/genproto/googleapis/'):
+            modpath='/'.join(module['path'].split('/')[3:])
+            srcpath='google.golang.org/genproto/googleapis/' + modpath + '/googleapis/' + modpath
             f.write('    %s:%s:force \\\n' %(module['path'], srcpath))
         else:
             f.write('    %s:%s \\\n' %(module['path'], module['path']))
