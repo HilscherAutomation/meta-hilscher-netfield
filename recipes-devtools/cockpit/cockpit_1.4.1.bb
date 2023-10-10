@@ -1,24 +1,15 @@
-SRC_URI="git://bitbucket.hilscher.com/scm/ial/cockpit-netiot.git;user=${HILSCHER_BITBUCKET_USER};protocol=https;nobranch=1 \
-         file://use_tarball_version_if_available.patch"
-SRCREV = "6432aa67f7288fa5b0b55d0515426f0a75372835"
+SRC_URI="file://cockpit-netiot-1.4.1.tar.bz2"
+SRC_URI[sha256sum] = "1bad62ea8ea17af5163e44f0952170a1802957a85d0d9cbd8654361aded63c45"
+
+S="${WORKDIR}/cockpit-netiot-${PV}"
 
 LIC_FILES_CHKSUM="file://COPYING;md5=4fbd65380cdd255951079008b364516c"
 
-S="${WORKDIR}/git"
+SRC_URI += "file://use_tarball_version_if_available.patch"
 
 EXTRA_OECONF_append += "${@bb.utils.contains("IMAGE_FEATURES", "debug-tweaks", "--enable-debug", "" ,d)}"
 
 do_configure_prepend() {
-  export HOME="${WORKDIR}"
-
-  username=$(echo ${HILSCHER_BITBUCKET_USER} | cut -d ":" -f1)
-  password=$(echo ${HILSCHER_BITBUCKET_USER} | cut -d ":" -f2)
-  password=$(python3 -c "import sys, urllib.parse as ul; print(ul.unquote_plus('$password'))")
-  echo "machine bitbucket.hilscher.com login $username password $password" > $HOME/.netrc
-
-  git submodule init
-  git submodule update --recursive
-
   echo "${PV}" > ${S}/.tarball
 
   sh autogen.sh ${CONFIGUREOPTS} ${EXTRA_OECONF} $@

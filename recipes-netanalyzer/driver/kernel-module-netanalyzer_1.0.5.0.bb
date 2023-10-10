@@ -6,15 +6,15 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=c85113d9fb28eb2a1504e899037c915d"
 
 inherit module sign-wrapper
 
-SRC_URI = "svn://subversion01.hilscher.local/svn/EmbeddedOS/Drivers/netANALYZER/Linux/tags/;module=V${PV};protocol=https;user=${HILSCHER_SVN_USER};pswd=${HILSCHER_SVN_PSWD};externals=allowed \
-           file://flash_based_support.patch \
-           file://fix_module_unload_of.patch \
-           file://fix_compile_errors.patch \
+require driver_version.inc
+
+SRC_URI += " \
+   file://flash_based_support.patch \
+   file://fix_module_unload_of.patch \
+   file://fix_compile_errors.patch \
 "
 
-SRCREV="12706"
-
-S = "${WORKDIR}/V${PV}/netanalyzer_kernel_mod/"
+S .= "netanalyzer_kernel_mod/"
 
 EXTRA_OEMAKE += "KDIR=${STAGING_KERNEL_DIR}"
 

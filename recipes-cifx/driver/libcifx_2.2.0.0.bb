@@ -5,6 +5,9 @@ LICENSE = "CLOSED"
 inherit cmake
 inherit useradd
 
+require driver_version.inc
+S .= "libcifx/"
+
 DEBIAN_NOAUTONAME_${PN} = "1"
 
 USERADD_PACKAGES = "${PN}"
@@ -20,19 +23,17 @@ RDEPENDS_${PN} += "${@bb.utils.contains('PACKAGECONFIG', 'tun', 'libnl libnl-cli
 
 FILESEXTRAPATHS_append := "${THISDIR}/..:"
 
-SVN_MODULE="tags/V${PV}"
-SRCREV="r13413"
-SRC_URI = "svn://subversion01.hilscher.local/svn/EmbeddedOS/Drivers/cifX/Linux;module=${SVN_MODULE};protocol=https;user=${HILSCHER_SVN_USER};pswd=${HILSCHER_SVN_PSWD};externals=allowed \
-           file://80-hilscher-netx.rules \
-           file://80-hilscher-cifxeth.rules \
-           file://cifxeth \
-           file://80-hilscher-netx-spi.rules \
-           file://cifx.link \
-           file://fix_firmware_init_timing_issue.patch \
-           file://syslog_error_mapping.patch \
-           file://link_state_by_libnl.patch \
-           file://publish_eth_channel_search.patch \
-           file://add_empty_mbx_at_shutdown.patch"
+SRC_URI += " \
+   file://80-hilscher-netx.rules \
+   file://80-hilscher-cifxeth.rules \
+   file://cifxeth \
+   file://80-hilscher-netx-spi.rules \
+   file://cifx.link \
+   file://fix_firmware_init_timing_issue.patch \
+   file://syslog_error_mapping.patch \
+   file://link_state_by_libnl.patch \
+   file://publish_eth_channel_search.patch \
+   file://add_empty_mbx_at_shutdown.patch"
 
 PACKAGECONFIG ?= "${@bb.utils.contains('MACHINE_FEATURES', 'pci', 'pci', '' ,d)} \
                   tun"
@@ -42,7 +43,6 @@ PACKAGECONFIG[pci] = ",-DDISABLE_PCI=ON,libpciaccess,libpciaccess uionetx"
 PACKAGECONFIG[spm] = "-DHWIF=ON -DSPM_PLUGIN=ON"
 PACKAGECONFIG[tun] = "-DVIRTETH=ON"
 
-S = "${WORKDIR}/${SVN_MODULE}/libcifx/"
 
 do_install_append() {
   #bootloader

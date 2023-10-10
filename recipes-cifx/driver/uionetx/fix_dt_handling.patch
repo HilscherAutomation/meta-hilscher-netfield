@@ -1,0 +1,12 @@
+diff -aurN a/uio_netx.c b/uio_netx.c
+--- a/uio_netx.c	2023-03-23 15:21:29.000000000 +0100
++++ b/uio_netx.c	2023-10-11 14:12:32.819421542 +0200
+@@ -816,7 +816,7 @@
+ 	ptr = of_get_property(custom->dev->of_node, "dma", NULL);
+ 	custom->dma_enable = !!!(*(uint32_t*)ptr) ? 1 : 0;
+ #endif
+-	return ARRAY_SIZE(custom->dpm_addr);
++	return mappings;
+ }
+ 
+ static int __devinit netx_dt_probe(struct platform_device *pd)
