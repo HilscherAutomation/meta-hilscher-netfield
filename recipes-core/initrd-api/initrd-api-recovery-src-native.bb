@@ -4,8 +4,6 @@ LICENSE = "CLOSED"
 
 inherit native
 
-BBCLASSEXTEND = "native"
-
 # generic platform specific setup
 SRC_URI = "file://common \
            file://recovery.sh \

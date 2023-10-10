@@ -6,8 +6,6 @@ inherit native hilscher-deploy
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
-BBCLASSEXTEND = "native"
-
 # generic platform specific setup
 SRC_URI = "file://deploy-fastboot \
            file://deploy-wic-bz2 \
