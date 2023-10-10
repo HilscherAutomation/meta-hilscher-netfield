@@ -6,9 +6,9 @@ inherit cargo
 # DEFAULT_PREFERENCE = "-1"
 
 # how to get aziotd could be as easy as but default to a git checkout:
-# SRC_URI += "crate://crates.io/aziotd/1.4.5"
+# SRC_URI += "crate://crates.io/aziotd/1.4.6"
 SRC_URI += "gitsm://github.com/Azure/iot-identity-service;protocol=https;nobranch=1"
-SRCREV = "0116f8407c1356eff566c67b5d15d9d24ebc0ade"
+SRCREV = "e4b08714e1928937746221a8c840ac73b7ce2170"
 S = "${WORKDIR}/git"
 CARGO_SRC_DIR = "."
 
