@@ -6,3 +6,6 @@ EXTRA_OECONF_append += "--dbdir=${localstatedir}/lib/db/dhcpcd"
 do_install_append() {
     sed -i -e 's/^duid/#duid/g' -e 's/^#clientid$/clientid/g' ${D}${sysconfdir}/dhcpcd.conf
 }
+
+FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+SRC_URI_append += "file://fix_hostname_parsing.patch"
