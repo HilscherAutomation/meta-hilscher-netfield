@@ -1,0 +1,16 @@
+If hostname is not passed qith quotes, like NetworkManager does, it may be interpreted as HWADDR.
+
+e.g. Hostname of ABCD will result in DHCP REQUEST to include hostname as binary data 0xAB 0xCD instead
+     of a string
+diff -aurN a/src/if-options.c b/src/if-options.c
+--- a/src/if-options.c	2020-01-27 21:22:21.000000000 +0100
++++ b/src/if-options.c	2023-10-24 08:44:46.272214877 +0200
+@@ -303,7 +303,7 @@
+ 			str++;
+ 			end = p;
+ 		}
+-	} else {
++	} else if(flags == PARSE_HWADDR) {
+ 		l = (size_t)hwaddr_aton(NULL, str);
+ 		if ((ssize_t) l != -1 && l > 1) {
+ 			if (l > slen) {
