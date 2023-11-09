@@ -5,8 +5,8 @@ HILSCHER_EXTRA_ZIP_OPTIONS ??= ""
 
 RECOVERY_INITRD_API ??= "initrd-api-firmware"
 
-DEPENDS_append += "zip-native unzip-native openssl-native squashfs-tools-native coreutils-native"
-DEPENDS_append += "${@bb.utils.contains_any('NETFIELD_IMAGES', 'recovery.swu', 'cpio-native', '', d)}"
+DEPENDS:append = " zip-native unzip-native openssl-native squashfs-tools-native coreutils-native"
+DEPENDS:append = " ${@bb.utils.contains_any('NETFIELD_IMAGES', 'recovery.swu', 'cpio-native', '', d)}"
 
 # NOTE: as long as recovery images are netfield specific we provide image creation and deploy in one step (post-image_complete)
 do_image_complete[prefuncs] += "${@bb.utils.contains_any('NETFIELD_IMAGES', 'recovery.swu recovery.zip', 'create_recovery_initrd_api', '', d)}"
@@ -14,7 +14,7 @@ do_image_complete[prefuncs] += "${@bb.utils.contains_any('NETFIELD_IMAGES', 'rec
 do_image_complete[prefuncs] += "${@bb.utils.contains_any('NETFIELD_IMAGES', 'recovery.zip', 'netfield_create_recovery_zip', '', d)}"
 
 # Make sure recovery.zip is deployed to dist directory
-DEPLOY_EXT_LIST_append += "${@bb.utils.filter('NETFIELD_IMAGES', 'recovery.zip', d)}"
+DEPLOY_EXT_LIST:append = " ${@bb.utils.filter('NETFIELD_IMAGES', 'recovery.zip', d)}"
 
 create_recovery_initrd_api() {
   image_wic="${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.wic.bz2"

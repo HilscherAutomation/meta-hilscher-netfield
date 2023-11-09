@@ -1,4 +1,4 @@
-do_configure_append() {
+do_configure:append() {
     echo "CONFIG_EAP_FAST=y" >> ${B}/.config
 
     # WPA3 support

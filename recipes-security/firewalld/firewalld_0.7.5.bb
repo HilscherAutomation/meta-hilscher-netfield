@@ -28,19 +28,19 @@ PACKAGECONFIG ??= "nftables"
 PACKAGECONFIG[nftables]="--with-nft=${sbindir}/nft,,,nftables"
 
 inherit python3native
-RDEPENDS_${PN}= "python3 python3-core python3-dbus python3-slip-dbus python3-decorator python3-pygobject python3-six \
+RDEPENDS:${PN}= "python3 python3-core python3-dbus python3-slip-dbus python3-decorator python3-pygobject python3-six \
  iptables ebtables ipset bash"
 
 SYSTEMD_PACKAGES="${PN}"
-SYSTEMD_SERVICE_${PN} = "firewalld.service"
+SYSTEMD_SERVICE:${PN} = "firewalld.service"
 
 PACKAGES =+ "${PN}-applet"
 
-FILES_${PN}-applet = "${datadir}/icons  ${datadir}/glib-2.0 ${sysconfdir}/firewall/ ${sysconfdir}/xdg ${bindir}/firewall-applet ${bindir}/firewall-config"
-RDEPENDS_${PN}-applet = "python3"
-FILES_${PN} += "${PYTHON_SITEPACKAGES_DIR} ${datadir}"
+FILES:${PN}-applet = "${datadir}/icons  ${datadir}/glib-2.0 ${sysconfdir}/firewall/ ${sysconfdir}/xdg ${bindir}/firewall-applet ${bindir}/firewall-config"
+RDEPENDS:${PN}-applet = "python3"
+FILES:${PN} += "${PYTHON_SITEPACKAGES_DIR} ${datadir}"
 
-do_install_append() {
+do_install:append() {
     for file in ${D}${bindir}/* ${D}${sbindir}/*; do
         sed -i -e '1s@.*@#!/usr/bin/env python3@' $file
     done

@@ -11,7 +11,7 @@ PACKAGES = " \
 	packagegroup-hilscher-base \
 "
 
-RDEPENDS_packagegroup-hilscher-base = " \
+RDEPENDS:packagegroup-hilscher-base = " \
 	tzdata tzdata-europe \
 	lvm2 \
 	swupdate swupdate-www swupdate-tools \

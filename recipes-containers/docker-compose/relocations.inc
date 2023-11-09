@@ -184,7 +184,7 @@ export sites=" \
     sigs.k8s.io/yaml:sigs.k8s.io/yaml \
 "
 
-do_compile_prepend() {
+do_compile:prepend() {
     cd ${S}/src/import
     for s in $sites; do
         site_dest=$(echo $s | cut -d: -f1)

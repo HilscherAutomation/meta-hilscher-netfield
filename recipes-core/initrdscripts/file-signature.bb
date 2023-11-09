@@ -23,8 +23,8 @@ do_compile() {
 }
 
 # real grep is required for splitting in-line signatures in a fast way (required for large files)
-RDEPENDS_${PN} = "grep"
-RDEPENDS_${PN} += "${@bb.utils.contains('PLATFORM_SIGN', '1', 'openssl-bin', '', d)}"
+RDEPENDS:${PN} = "grep"
+RDEPENDS:${PN} += "${@bb.utils.contains('PLATFORM_SIGN', '1', 'openssl-bin', '', d)}"
 do_install() {
 	install -d ${D}/${sbindir}
 	install -m 744 ${WORKDIR}/verify_file ${D}/${sbindir}
@@ -36,12 +36,12 @@ do_install() {
 	fi
 }
 
-FILES_${PN} = "${sysconfdir} ${sbindir}"
+FILES:${PN} = "${sysconfdir} ${sbindir}"
 
 BBCLASSEXTEND = "native"
 
-RDEPENDS_${PN}_class-native = "${@bb.utils.contains('PLATFORM_SIGN', '1', 'openssl-native', '', d)}"
-do_install_class-native () {
+RDEPENDS:${PN}:class-native = "${@bb.utils.contains('PLATFORM_SIGN', '1', 'openssl-native', '', d)}"
+do_install:class-native () {
 	install -d ${D}/${sbindir}
 	install -m 744 ${WORKDIR}/sign_file ${D}/${sbindir}
 }

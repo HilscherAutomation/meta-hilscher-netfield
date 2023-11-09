@@ -21,4 +21,4 @@ do_install() {
     install ${B}/netanalyzer_demo ${D}/opt/netanalyzer
 }
 
-FILES_${PN} = "/opt"
+FILES:${PN} = "/opt"

@@ -15,6 +15,6 @@ do_create_platform_dir() {
    install -d ${IMAGE_ROOTFS}/var/platform
    install -d ${IMAGE_ROOTFS}/usr/local
 }
-ROOTFS_POSTUNINSTALL_COMMAND_append += "${@bb.utils.contains('NETIOT_ROOT_OVERLAY', '1', '', 'do_create_platform_dir ; do_adjust_fstab ; ', d)}"
+ROOTFS_POSTUNINSTALL_COMMAND:append = " ${@bb.utils.contains('NETIOT_ROOT_OVERLAY', '1', '', 'do_create_platform_dir ; do_adjust_fstab ; ', d)}"
 
 require hdeploy_image.inc

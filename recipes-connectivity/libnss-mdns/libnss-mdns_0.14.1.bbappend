@@ -1,4 +1,4 @@
-pkg_postinst_${PN} () {
+pkg_postinst:${PN} () {
         sed '
                 /^hosts:/ !b
                 /\<mdns\(4\|6\)\?\(_minimal\)\?\>/ b
@@ -6,7 +6,7 @@ pkg_postinst_${PN} () {
                 ' -i $D${sysconfdir}/nsswitch.conf
 }
 
-pkg_prerm_${PN} () {
+pkg_prerm:${PN} () {
         sed '
                 /^hosts:/ !b
                 s/[[:blank:]]\+mdns\(4\|6\)\?\(_minimal\( \)\?\)\?//g

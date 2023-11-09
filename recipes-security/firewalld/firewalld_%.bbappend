@@ -1,6 +1,6 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
-SRC_URI_append += "file://firewalld.conf       \
+SRC_URI:append = " file://firewalld.conf       \
                    file://zones/default.xml    \
                    file://zones/drop.xml       \
                    file://zones/block.xml      \
@@ -13,7 +13,7 @@ SRC_URI_append += "file://firewalld.conf       \
                    file://optimize_nm_integration.patch \
 "
 
-do_install_append() {
+do_install:append() {
     install -m 0644 ${WORKDIR}/firewalld.conf ${D}${sysconfdir}/firewalld
 
     rm -f ${D}${nonarch_libdir}/firewalld/zones/*

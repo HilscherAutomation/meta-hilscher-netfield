@@ -17,12 +17,12 @@ DEPENDS="systemd gperf libcap gperf-native"
 inherit meson useradd
 
 USERADD_PACKAGES="${PN}"
-USERADD_PARAM_${PN}  = "-r -d / -s /bin/nologin -g systemd-journal systemd-journal-netlog"
-GROUPADD_PARAM_${PN} = "-r systemd-journal"
+USERADD_PARAM:${PN}  = "-r -d / -s /bin/nologin -g systemd-journal systemd-journal-netlog"
+GROUPADD_PARAM:${PN} = "-r systemd-journal"
 
-do_install_append() {
+do_install:append() {
     install -d ${D}${systemd_system_unitdir}
     mv ${D}${sysconfdir}/*.service ${D}${systemd_system_unitdir}/
 }
 
-FILES_${PN} += "${systemd_unitdir}"
+FILES:${PN} += "${systemd_unitdir}"

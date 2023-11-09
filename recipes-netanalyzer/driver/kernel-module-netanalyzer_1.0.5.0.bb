@@ -25,7 +25,7 @@ EXTRA_OEMAKE += "INSTALL_MOD_STRIP=1"
 # libelf is required for CONFIG_STACK_VALIDATION=y
 DEPENDS += "elfutils elfutils-native"
 
-do_install_append() {
+do_install:append() {
   # Delete Module.symvers in /usr/include/..
   rm -rf ${D}${exec_prefix}
 
@@ -34,7 +34,7 @@ do_install_append() {
 }
 
 PACKAGES="${PN} netanalyzer-bsl"
-FILES_netanalyzer-bsl = "/lib/firmware"
-RDEPENDS_${PN}="netanalyzer-firmware netanalyzer-bsl"
+FILES:netanalyzer-bsl = "/lib/firmware"
+RDEPENDS:${PN}="netanalyzer-firmware netanalyzer-bsl"
 
 PR="r1"

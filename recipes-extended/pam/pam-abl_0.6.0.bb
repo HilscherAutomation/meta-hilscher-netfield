@@ -1,4 +1,4 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/${BPN}:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/${BPN}:"
 
 LICENSE = "GPLv2"
 LIC_FILES_CHKSUM = "file://pam_abl.c;beginline=1;endline=18;md5=ea2bb433f2e547ec8ab4b1a832437107"
@@ -20,7 +20,7 @@ DEPENDS = "libpam db"
 # set prefix to root otherwise all modules need to know user path
 EXTRA_OECMAKE = "-DUSE_KC=off -DCMAKE_INSTALL_PREFIX=/"
 
-do_install_append() {
+do_install:append() {
 	install -d "${D}/${sysconfdir}/security/"
 	install -m 0744 "${WORKDIR}/pam_abl.conf" "${D}/${sysconfdir}/security"
 
@@ -28,7 +28,7 @@ do_install_append() {
 	install -d "${D}/${localstatedir}/lib/abl/"
 }
 
-FILES_${PN} = "${base_libdir}/* \
+FILES:${PN} = "${base_libdir}/* \
                ${base_bindir}/* \
                ${sysconfdir}/* \
                ${localstatedir}/lib/abl/"

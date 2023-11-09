@@ -20,18 +20,18 @@ PACKAGECONFIG[fapi] = "--enable-fapi,--disable-fapi,curl json-c "
 
 EXTRA_OECONF += "--enable-static --with-udevrulesdir=${nonarch_base_libdir}/udev/rules.d/"
 EXTRA_OECONF += "--with-runstatedir=/run"
-EXTRA_OECONF_remove = " --disable-static"
+EXTRA_OECONF:remove = " --disable-static"
 
 USERADD_PACKAGES = "${PN}"
-GROUPADD_PARAM_${PN} = "--system tss"
-USERADD_PARAM_${PN} = "--system -M -d /var/lib/tpm -s /bin/false -g tss tss"
+GROUPADD_PARAM:${PN} = "--system tss"
+USERADD_PARAM:${PN} = "--system -M -d /var/lib/tpm -s /bin/false -g tss tss"
 
-do_configure_prepend() {
+do_configure:prepend() {
     # do not extract the version number from git
     sed -i -e 's/m4_esyscmd_s(\[git describe --tags --always --dirty\])/${PV}/' ${S}/configure.ac
 }
 
-do_install_append() {
+do_install:append() {
     # Prepend udev rule with number, so we can override them correctly
     mv ${D}${nonarch_base_libdir}/udev/rules.d/tpm-udev.rules ${D}${nonarch_base_libdir}/udev/rules.d/60-tpm-udev.rules
 
@@ -58,35 +58,35 @@ PACKAGES = " \
     libtss2-staticdev \
 "
 
-FILES_libtss2-tcti-device = "${libdir}/libtss2-tcti-device.so.*"
-FILES_libtss2-tcti-device-dev = " \
+FILES:libtss2-tcti-device = "${libdir}/libtss2-tcti-device.so.*"
+FILES:libtss2-tcti-device-dev = " \
     ${includedir}/tss2/tss2_tcti_device.h \
     ${libdir}/pkgconfig/tss2-tcti-device.pc \
     ${libdir}/libtss2-tcti-device.so"
-FILES_libtss2-tcti-device-staticdev = "${libdir}/libtss2-tcti-device.*a"
+FILES:libtss2-tcti-device-staticdev = "${libdir}/libtss2-tcti-device.*a"
 
-FILES_libtss2-tcti-mssim = "${libdir}/libtss2-tcti-mssim.so.*"
-FILES_libtss2-tcti-mssim-dev = " \
+FILES:libtss2-tcti-mssim = "${libdir}/libtss2-tcti-mssim.so.*"
+FILES:libtss2-tcti-mssim-dev = " \
     ${includedir}/tss2/tss2_tcti_mssim.h \
     ${libdir}/pkgconfig/tss2-tcti-mssim.pc \
     ${libdir}/libtss2-tcti-mssim.so"
-FILES_libtss2-tcti-mssim-staticdev = "${libdir}/libtss2-tcti-mssim.*a"
+FILES:libtss2-tcti-mssim-staticdev = "${libdir}/libtss2-tcti-mssim.*a"
 
-FILES_libtss2-mu = "${libdir}/libtss2-mu.so.*"
-FILES_libtss2-mu-dev = " \
+FILES:libtss2-mu = "${libdir}/libtss2-mu.so.*"
+FILES:libtss2-mu-dev = " \
     ${includedir}/tss2/tss2_mu.h \
     ${libdir}/pkgconfig/tss2-mu.pc \
     ${libdir}/libtss2-mu.so"
-FILES_libtss2-mu-staticdev = "${libdir}/libtss2-mu.*a"
+FILES:libtss2-mu-staticdev = "${libdir}/libtss2-mu.*a"
 
-FILES_libtss2 = "${libdir}/libtss2*so.*"
-FILES_libtss2-dev = " \
+FILES:libtss2 = "${libdir}/libtss2*so.*"
+FILES:libtss2-dev = " \
     ${includedir} \
     ${libdir}/pkgconfig \
     ${libdir}/libtss2*so"
-FILES_libtss2-staticdev = "${libdir}/libtss*a"
+FILES:libtss2-staticdev = "${libdir}/libtss*a"
 
-FILES_${PN} = "\
+FILES:${PN} = "\
     ${libdir}/udev \
     /var/lib/tpm2-tss \
     /var/run \
@@ -95,4 +95,4 @@ FILES_${PN} = "\
     ${sysconfdir}/tpm2-tss \
     ${sysconfdir}/sysusers.d"
 
-RDEPENDS_libtss2 = "libgcrypt"
+RDEPENDS:libtss2 = "libgcrypt"

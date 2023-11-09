@@ -22,7 +22,7 @@ SRC_URI = "git://github.com/docker/cli.git;protocol=https;branch=24.0"
 SRCREV="ed223bc820ee9bb7005a333013b86203a9e1bc23"
 
 # CGO does not play well with thumb -> https://patches.openembedded.org/patch/144011/
-TUNE_CCARGS_remove += "-mthumb"
+TUNE_CCARGS:remove = "-mthumb"
 
 # Apache-2.0 for docker
 LICENSE = "Apache-2.0"
@@ -63,13 +63,13 @@ do_install() {
 	install -m 0644 ${S}/contrib/completion/zsh/_docker ${D}${datadir}/zsh/site-functions/
 }
 
-FILES_${PN} += "${datadir}"
+FILES:${PN} += "${datadir}"
 
-FILES_${PN}-bash-completion = "${sysconfdir}/bash_completion.d/"
-RDEPENDS_${PN}-bash-completion += "bash"
+FILES:${PN}-bash-completion = "${sysconfdir}/bash_completion.d/"
+RDEPENDS:${PN}-bash-completion += "bash"
 
-FILES_${PN}-zsh-completion = "${datadir}/zsh/site-functions"
-RDEPENDS_${PN}-zsh-completion += "zsh"
+FILES:${PN}-zsh-completion = "${datadir}/zsh/site-functions"
+RDEPENDS:${PN}-zsh-completion += "zsh"
 
 # go.bbclass uses own unpack routine, which tries to unpack git modules that have a destsuffix
 # as directories, below main source directory, which is not what we want
@@ -86,4 +86,4 @@ python do_unpack() {
 }
 
 PROVIDES="docker-cli"
-RPROVIDES_${PN}="docker-cli"
+RPROVIDES:${PN}="docker-cli"

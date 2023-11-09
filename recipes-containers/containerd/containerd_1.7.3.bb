@@ -82,5 +82,5 @@ do_install() {
     fi
 }
 
-FILES_${PN} += "${systemd_system_unitdir}/*"
-INSANE_SKIP_${PN} += "ldflags already-stripped"
+FILES:${PN} += "${systemd_system_unitdir}/*"
+INSANE_SKIP:${PN} += "ldflags already-stripped"

@@ -19,4 +19,4 @@ inherit autotools pkgconfig bash-completion
 
 S = "${WORKDIR}/tpm2-tools-${PV}"
 
-FILES_${PN}_class_native = "/usr/*"
+FILES:${PN}:class_native = "/usr/*"

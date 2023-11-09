@@ -15,7 +15,7 @@ S = "${WORKDIR}/git"
 BBCLASSEXTEND = "native"
 
 # tini links with -static, so no PIE for us
-SECURITY_CFLAGS_pn-${PN} = "${SECURITY_NO_PIE_CFLAGS}"
+SECURITY_CFLAGS:pn-${PN} = "${SECURITY_NO_PIE_CFLAGS}"
 
 inherit cmake
 
@@ -26,6 +26,6 @@ do_install() {
 
 # Tini is the currently the provider for docker-init
 PROVIDES += "docker-init"
-RPROVIDES_${PN} = "docker-init"
+RPROVIDES:${PN} = "docker-init"
 
-INSANE_SKIP_${PN} = "already-stripped"
+INSANE_SKIP:${PN} = "already-stripped"

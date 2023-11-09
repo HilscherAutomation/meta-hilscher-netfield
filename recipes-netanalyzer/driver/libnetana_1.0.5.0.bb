@@ -8,6 +8,6 @@ require driver_version.inc
 
 S .= "libnetana/"
 
-RDEPENDS_${PN} = "kernel-module-netanalyzer"
+RDEPENDS:${PN} = "kernel-module-netanalyzer"
 
 PR="r1"

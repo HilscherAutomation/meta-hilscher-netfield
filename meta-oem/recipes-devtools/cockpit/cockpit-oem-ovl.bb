@@ -16,9 +16,9 @@ do_install() {
 PACKAGES = "${PN}-remove-docker ${PN}-remove-general-settings ${PN}-remove-iotedge-docker \
             ${PN}-remove-networkservices ${PN}-remove-onboarding ${PN}-remove-terminal"
 
-FILES_${PN}-remove-docker = "${datadir}/cockpit/docker"
-FILES_${PN}-remove-general-settings = "${datadir}/cockpit/generalSettings"
-FILES_${PN}-remove-iotedge-docker = "${datadir}/cockpit/iotedge-docker"
-FILES_${PN}-remove-networkservices = "${datadir}/cockpit/networkservices"
-FILES_${PN}-remove-onboarding = "${datadir}/cockpit/onboard"
-FILES_${PN}-remove-terminal = "${datadir}/cockpit/terminal"
+FILES:${PN}-remove-docker = "${datadir}/cockpit/docker"
+FILES:${PN}-remove-general-settings = "${datadir}/cockpit/generalSettings"
+FILES:${PN}-remove-iotedge-docker = "${datadir}/cockpit/iotedge-docker"
+FILES:${PN}-remove-networkservices = "${datadir}/cockpit/networkservices"
+FILES:${PN}-remove-onboarding = "${datadir}/cockpit/onboard"
+FILES:${PN}-remove-terminal = "${datadir}/cockpit/terminal"

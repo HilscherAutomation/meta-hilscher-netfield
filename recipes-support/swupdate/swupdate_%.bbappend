@@ -1,13 +1,13 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 # As hwrevision is machine specific, swupdate package must be machine specific
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 # helper.lua is using rsync, so make sure it is available
-RDEPENDS_${PN}_append += "rsync"
+RDEPENDS:${PN}:append = " rsync"
 
 # Required by hawkbit.sh
-RDEPENDS_${PN}_append += "jq libconfig-lsconfig"
+RDEPENDS:${PN}:append = " jq libconfig-lsconfig"
 
 SWUPDATE_SIGN ??= "${PLATFORM_SIGN}"
 SWUPDATE_KEYDIR ??= "${PLATFORM_KEYDIR}"
@@ -15,7 +15,7 @@ SWUPDATE_KEYNAME ??= "${PLATFORM_KEYNAME}"
 
 export SWU_VER="${PV}"
 
-SRC_URI_append += " \
+SRC_URI:append = " \
 	file://raw_file_skip_dev_null.patch \
 	file://pass_swupdate_version.patch \
 	${@bb.utils.contains('SWUPDATE_SIGN', '1', 'file://enable_signed_images.cfg', 'file://enable_hashed_images.cfg', d)} \
@@ -32,7 +32,7 @@ SRC_URI_append += " \
 	file://helper.lua \
 "
 
-do_install_prepend() {
+do_install:prepend() {
 	if ${SWUPDATE_MONGOOSE}; then
 		if [ "${@bb.utils.contains('IMAGE_FEATURES', 'debug-tweaks', 'true', 'false',d)}" = "false" ]; then
 			# Disable mongoose webserver
@@ -42,7 +42,7 @@ do_install_prepend() {
 }
 
 do_install[vardeps] += "SWUPDATE_SIGN"
-do_install_append () {
+do_install:append () {
 	board="$(echo ${MACHINE} | sed 's/-rev[0-9]*//')"
 	rev="$(echo ${MACHINE} | grep -oe "-rev[0-9]*" | sed 's/-rev//')"
 	rev="${rev:-0}"

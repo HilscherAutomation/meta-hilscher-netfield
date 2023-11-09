@@ -22,11 +22,11 @@ do_install() {
   install -m 0644 ${WORKDIR}/rescue.service "${D}${systemd_unitdir}/system/rescue-image.service"
 }
 
-FILES_${PN} += "/opt/rescue/prepare_platform.sh"
-FILES_${PN} += "${systemd_unitdir}/system/rescue-image.service"
+FILES:${PN} += "/opt/rescue/prepare_platform.sh"
+FILES:${PN} += "${systemd_unitdir}/system/rescue-image.service"
 
 inherit systemd
-SYSTEMD_SERVICE_${PN} = "rescue-image.service"
+SYSTEMD_SERVICE:${PN} = "rescue-image.service"
 SYSTEMD_AUTO_ENABLE = "enable"
 
-CONFFILES_${PN} = "${sysconfdir}/default/rescue"
+CONFFILES:${PN} = "${sysconfdir}/default/rescue"

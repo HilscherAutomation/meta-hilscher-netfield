@@ -29,23 +29,23 @@ do_install_vendor_specific_files() {
 	echo "${IMAGE_NAME}" > ${IMAGE_ROOTFS}/firmware.vendor_image_name
 	chmod 0444 ${IMAGE_ROOTFS}/firmware.vendor_id ${IMAGE_ROOTFS}/firmware.vendor_image_name
 }
-ROOTFS_POSTUNINSTALL_COMMAND_append += "do_install_vendor_specific_files;"
+ROOTFS_POSTUNINSTALL_COMMAND:append = " do_install_vendor_specific_files;"
 
 ########################################
 # SWU Image
 ########################################
 
 # Create a SWU image based on OEM base images.
-IMAGE_TYPEDEP_swu = "squashfs_signed"
-do_image_swu[nostamp] = "1"
-do_image_swu[depends] = ""
-do_image_swu[vardeps] = "PLATFORM_SIGN PLATFORM_KEYDIR PLATFORM_KEYNAME"
+IMAGE_TYPEDEP:swu = "squashfs_signed"
+do_image:swu[nostamp] = "1"
+do_image:swu[depends] = ""
+do_image:swu[vardeps] = "PLATFORM_SIGN PLATFORM_KEYDIR PLATFORM_KEYNAME"
 DEPENDS += "libconfig-native"
 
 TMPDIR_SWU = "${WORKDIR}/tmpdir_swu"
 TMPDIR_DATA_OEM = "${WORKDIR}/tmpdir_data_oem"
 
-IMAGE_CMD_swu() {
+IMAGE_CMD:swu() {
 	# Create a squashfs file which contains the data-oem partition contents.
 	# ======================================================================
 

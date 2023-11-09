@@ -3,12 +3,12 @@ HOMEPAGE = "https://github.com/Azure/iot-identity-service"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM="file://LICENSE;md5=4f9c2c296f77b3096b6c11a16fa7c66e"
 
-DEPENDS_append += "libstd-rs openssl"
+DEPENDS:append = " libstd-rs openssl"
 
 inherit systemd
 SYSTEMD_AUTO_ENABLE = "enable"
 # NOTE: We are only selecting the socket services to auto-enable them, so they can be socket-activated by aziot-edged
-SYSTEMD_SERVICE_${PN} = " \
+SYSTEMD_SERVICE:${PN} = " \
     aziot-certd.socket \
     aziot-identityd.socket \
     aziot-keyd.socket \
@@ -18,13 +18,13 @@ SYSTEMD_SERVICE_${PN} = " \
 inherit useradd
 USERADD_PACKAGES="${PN}"
 # Users taken from debian/preinst script
-USERADD_PARAM_${PN} = " \
+USERADD_PARAM:${PN} = " \
     --system --no-create-home --home-dir /var/lib/aziot/keyd --shell /sbin/nologin --user-group --groups iotedge aziotks; \
     --system --no-create-home --home-dir /var/lib/aziot/certd --shell /sbin/nologin --user-group --groups iotedge,aziotks aziotcs; \
     --system --no-create-home --home-dir /var/lib/aziot/tpmd --shell /sbin/nologin --user-group --groups iotedge aziottpm; \
     --system --no-create-home --home-dir /var/lib/aziot/identityd --shell /sbin/nologin --user-group --groups iotedge,aziotcs,aziottpm,aziotks aziotid; \
 "
-GROUPADD_PARAM_${PN} = "-r docker;-r iotedge;"
+GROUPADD_PARAM:${PN} = "-r docker;-r iotedge;"
 
 DEPENDS += "cbindgen-native bindgen-native clang-native jq-native \
             tpm2-tss"
@@ -44,7 +44,7 @@ SRC_URI[notifylicense.sha256sum] = "e0456cbab4f7b5e7203e678faff37eadbdfef02e822d
 EXTRA_OEMAKE="RELEASE=1 CARGO_TARGET=${HOST_SYS} RUSTFLAGS='${RUSTLIB} ${RUST_DEBUG_REMAP}' \
     localstatedir=${localstatedir} sysconfdir=${sysconfdir} unitdir=${systemd_system_unitdir}"
 
-do_configure_prepend() {
+do_configure:prepend() {
     # Delete tpm2-tss as we are using the one provided by meta-hilscher-netfield
     rm -rf ${S}/third-party/tpm2-tss
 }
@@ -106,7 +106,7 @@ do_install() {
     chmod 0700 ${D}${localstatedir}/lib/aziot/tpmd
 }
 
-RDEPENDS_${PN} = "aziot-edge"
-FILES_${PN} += "${libdir}"
-FILES_${PN}-dev = "${includedir}"
+RDEPENDS:${PN} = "aziot-edge"
+FILES:${PN} += "${libdir}"
+FILES:${PN}-dev = "${includedir}"
 INHIBIT_PACKAGE_DEBUG_SPLIT="1"

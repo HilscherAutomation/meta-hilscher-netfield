@@ -1,6 +1,6 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
-SRC_URI_append += "file://enable_applets.cfg      \
+SRC_URI:append = " file://enable_applets.cfg      \
                    file://enable_archivers.cfg    \
                    file://enable_diskhandling.cfg \
                    file://enable_hashes.cfg       \

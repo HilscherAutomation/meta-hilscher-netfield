@@ -20,4 +20,4 @@ do_install() {
 }
 
 
-FILES_${PN} = "${systemd_system_unitdir} ${sysconfdir}"
+FILES:${PN} = "${systemd_system_unitdir} ${sysconfdir}"
