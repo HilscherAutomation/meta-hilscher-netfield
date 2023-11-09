@@ -7,9 +7,9 @@ LIC_FILES_CHKSUM="file://COPYING;md5=4fbd65380cdd255951079008b364516c"
 
 SRC_URI += "file://use_tarball_version_if_available.patch"
 
-EXTRA_OECONF_append += "${@bb.utils.contains("IMAGE_FEATURES", "debug-tweaks", "--enable-debug", "" ,d)}"
+EXTRA_OECONF:append = " ${@bb.utils.contains("IMAGE_FEATURES", "debug-tweaks", "--enable-debug", "" ,d)}"
 
-do_configure_prepend() {
+do_configure:prepend() {
   echo "${PV}" > ${S}/.tarball
 
   sh autogen.sh ${CONFIGUREOPTS} ${EXTRA_OECONF} $@

@@ -5,7 +5,7 @@ LIC_FILES_CHKSUM = ""
 
 inherit systemd
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 SRC_URI = "file://initial-hostname.service \
            file://initial-hostname.sh \
@@ -29,7 +29,7 @@ do_install() {
   done
 }
 
-SYSTEMD_SERVICE_${PN} = "initial-hostname.service initial-iotedge-setup.service initial-branding.service"
+SYSTEMD_SERVICE:${PN} = "initial-hostname.service initial-iotedge-setup.service initial-branding.service"
 
-FILES_${PN} = "${base_sbindir}"
-FILES_${PN} += "${systemd_unitdir}/system"
+FILES:${PN} = "${base_sbindir}"
+FILES:${PN} += "${systemd_unitdir}/system"

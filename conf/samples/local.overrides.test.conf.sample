@@ -28,8 +28,8 @@ TEST_TARGET_IP ?= "tbd"
 # A passwordless root ssh-shell is required by yocto test framework.
 
 # This can be done by yocto IMAGE_FEATURES ...
-#EXTRA_IMAGE_FEATURES_append += "empty-root-password allow-empty-password  debug-tweaks"
-#EXTRA_USERS_PARAMS_append += "usermod -s /bin/sh root;"
+#EXTRA_IMAGE_FEATURES:append += " empty-root-password allow-empty-password  debug-tweaks"
+#EXTRA_USERS_PARAMS:append += " usermod -s /bin/sh root;"
 
 # or manually on the test device (DUT) ...
 # sudo usermod -s /bin/sh root

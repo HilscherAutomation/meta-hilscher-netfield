@@ -19,8 +19,8 @@ do_install() {
 
 PACKAGES =+ "${PN}-read-hwinfo"
 DEPENDS = "libcifx"
-RDEPENDS_${PN}-read-hwinfo = "libcifx"
-RDEPENDS_${PN} = "kernel-module-spidev"
+RDEPENDS:${PN}-read-hwinfo = "libcifx"
+RDEPENDS:${PN} = "kernel-module-spidev"
 
-FILES_${PN} = "/opt/cifx/examples/"
-FILES_${PN}-read-hwinfo = "/opt/cifx/examples/cifx_read_hwinfo"
+FILES:${PN} = "/opt/cifx/examples/"
+FILES:${PN}-read-hwinfo = "/opt/cifx/examples/cifx_read_hwinfo"

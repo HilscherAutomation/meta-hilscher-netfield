@@ -102,13 +102,13 @@ do_install_manifest() {
    # Real firmware version is provided by meta-hilscher-distro
    ln -s firmware.version ${IMAGE_ROOTFS}/fw_version
 }
-ROOTFS_POSTUNINSTALL_COMMAND_append += "do_install_manifest ;"
+ROOTFS_POSTUNINSTALL_COMMAND:append = " do_install_manifest ;"
 
 # Setup initial passwords
 inherit extrausers
 EXTRA_USERS_PARAMS += "usermod -s /sbin/nologin root;"
 EXTRA_USERS_PARAMS += "groupadd -g 1000 admin;"
-EXTRA_USERS_PARAMS += "useradd -c 'System Administrator' -u 1000 -P admin -G sudo,docker -s /bin/zsh admin;"
+EXTRA_USERS_PARAMS += "useradd -c 'System Administrator' -u 1000 -p '$(openssl passwd admin)' -G sudo,docker -s /bin/zsh admin;"
 
 # Make sure to not set PermitEmptyPasswords in sshd_config, which does not work with pam_abl
 ssh_allow_empty_password () {
@@ -149,5 +149,5 @@ do_create_audit_privileged_rules() {
   fi
 }
 
-ROOTFS_POSTUNINSTALL_COMMAND_append += "do_create_homes ; do_force_admin_pw_change ;"
-ROOTFS_POSTUNINSTALL_COMMAND_append += "${@bb.utils.contains('DISTRO_FEATURES', 'audit', 'do_create_audit_privileged_rules ;', '', d)}"
+ROOTFS_POSTUNINSTALL_COMMAND:append = " do_create_homes ; do_force_admin_pw_change ;"
+ROOTFS_POSTUNINSTALL_COMMAND:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'audit', 'do_create_audit_privileged_rules ;', '', d)}"

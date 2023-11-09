@@ -8,9 +8,9 @@ LIC_FILES_CHKSUM="file://COPYING;md5=4fbd65380cdd255951079008b364516c"
 
 S="${WORKDIR}/git"
 
-EXTRA_OECONF_append += "${@bb.utils.contains("IMAGE_FEATURES", "debug-tweaks", "--enable-debug", "" ,d)}"
+EXTRA_OECONF:append = " ${@bb.utils.contains("IMAGE_FEATURES", "debug-tweaks", "--enable-debug", "" ,d)}"
 
-do_configure_prepend() {
+do_configure:prepend() {
   export HOME="${WORKDIR}"
 
   username=$(echo ${HILSCHER_BITBUCKET_USER} | cut -d ":" -f1)

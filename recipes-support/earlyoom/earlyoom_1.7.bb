@@ -12,7 +12,7 @@ S="${WORKDIR}/git"
 inherit systemd
 
 SYSTEMD_PACKAGES="${PN}"
-SYSTEMD_SERVICE_${PN} = "${BPN}.service"
+SYSTEMD_SERVICE:${PN} = "${BPN}.service"
 
 EXTRA_OEMAKE="DESTDIR=${D} PREFIX=/usr SYSTEMDUNITDIR=${systemd_system_unitdir}"
 

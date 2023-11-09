@@ -16,7 +16,7 @@ SRC_URI = "file://upnpd \
 S = "${WORKDIR}/upnpd"
 
 DEPENDS        = "libupnp"
-RDEPENDS_${PN} = "libupnp"
+RDEPENDS:${PN} = "libupnp"
 
 APPARMOR_PROFILES="${PN}.apparmor:opt.${PN}.${PN}"
 inherit apparmor
@@ -48,17 +48,17 @@ do_install() {
   echo 'UPNPD_PRESENTATION_PORT="-1"' >> ${D}${sysconfdir}/default/upnpd
 }
 PACKAGES =+ "${PN}-conf"
-RDEPENDS_${PN} += "${PN}-conf net-tools"
+RDEPENDS:${PN} += "${PN}-conf net-tools"
 
-FILES_${PN}-conf = "/opt/upnpd/netiotdevicedesc.xml"
-FILES_${PN}     += "/opt/upnpd/upnpd /opt/upnpd/upnpd.sh"
-FILES_${PN}     += "/opt/upnpd/init-desc"
-FILES_${PN}     += "/opt/upnpd/desc"
-FILES_${PN}     += "${sysconfdir}"
-FILES_${PN}-dbg += "/opt/upnpd/.debug"
+FILES:${PN}-conf = "/opt/upnpd/netiotdevicedesc.xml"
+FILES:${PN}     += "/opt/upnpd/upnpd /opt/upnpd/upnpd.sh"
+FILES:${PN}     += "/opt/upnpd/init-desc"
+FILES:${PN}     += "/opt/upnpd/desc"
+FILES:${PN}     += "${sysconfdir}"
+FILES:${PN}-dbg += "/opt/upnpd/.debug"
 
 inherit systemd
-SYSTEMD_SERVICE_${PN} = "upnpd@.service"
+SYSTEMD_SERVICE:${PN} = "upnpd@.service"
 SYSTEMD_AUTO_ENABLE   = "disable"
 
-CONFFILES_${PN} = "${sysconfdir}/default/upnpd"
+CONFFILES:${PN} = "${sysconfdir}/default/upnpd"

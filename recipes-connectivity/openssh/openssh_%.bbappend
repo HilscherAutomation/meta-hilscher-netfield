@@ -1,11 +1,11 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 # Always enable SSH
 SYSTEMD_AUTO_ENABLE = "enable"
 
-RDEPENDS_${PN}-sshd_append += " libpam "
+RDEPENDS:${PN}-sshd:append += " libpam "
 
-do_install_append() {
+do_install:append() {
     sed -i -e 's/\[Service\]/\[Service\]\nOOMScoreAdjust=-1000/g' \
               ${D}${systemd_system_unitdir}/sshd@.service
 }

@@ -42,6 +42,6 @@ export GOROOT_FINAL ?= "${libdir}/go"
 
 export GODEBUG = "gocachehash=1"
 
-do_compile_prepend() {
+do_compile:prepend() {
 	BUILD_CC=${BUILD_CC}
 }

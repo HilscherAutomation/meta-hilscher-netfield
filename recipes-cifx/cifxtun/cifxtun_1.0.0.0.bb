@@ -10,15 +10,15 @@ SRC_URI = "file://cifxtun.c \
 inherit useradd systemd
 
 SYSTEMD_PACKAGES = "${PN}"
-SYSTEMD_SERVICE_${PN} = "cifxtun.service"
-SYSTEMD_AUTO_ENABLE_${PN} ?= "disable"
+SYSTEMD_SERVICE:${PN} = "cifxtun.service"
+SYSTEMD_AUTO_ENABLE:${PN} ?= "disable"
 
 USERADD_PACKAGES = "${PN}"
-GROUPADD_PARAM_${PN} = "-r cifx"
+GROUPADD_PARAM:${PN} = "-r cifx"
 
 S = "${WORKDIR}"
 
-FILES_${PN} = "/opt/cifx/demo"
+FILES:${PN} = "/opt/cifx/demo"
 
 do_compile() {
   ${CC} ${LDFLAGS} cifxtun.c -o cifxtun -I=/usr/include/cifx -lcifx -lpthread
@@ -36,4 +36,4 @@ do_install() {
   install -m 0644 ${WORKDIR}/cifxtun.service ${D}${systemd_unitdir}/system
 }
 
-FILES_${PN} = "/opt/cifx ${systemd_unitdir}"
+FILES:${PN} = "/opt/cifx ${systemd_unitdir}"

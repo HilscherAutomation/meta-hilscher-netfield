@@ -47,4 +47,4 @@ do_oem_base_definitions() {
         -i ${IMAGE_ROOTFS}${sysconfdir}/nginx/nginx.conf
 }
 
-ROOTFS_POSTUNINSTALL_COMMAND_append += " do_oem_base_definitions ;"
+ROOTFS_POSTUNINSTALL_COMMAND:append = " do_oem_base_definitions ;"

@@ -1,4 +1,4 @@
-do_install_append() {
+do_install:append() {
     # Add --bind-dynamic to service to allow handling hot-pluggable devices, like WiFi, BT, USB adaptors
     sed -i -e 's/--local-service/--local-service --bind-dynamic/g' \
         ${D}${systemd_system_unitdir}/${PN}.service
@@ -11,4 +11,4 @@ z ${sysconfdir}/dnsmasq.d/* 0664 root netadmin
 EOF
 }
 
-FILES_${PN}_append += "${libdir}/tmpfiles.d"
+FILES:${PN}:append = " ${libdir}/tmpfiles.d"

@@ -1,2 +1,2 @@
 
-RDEPENDS_${PN}-client_append += "coreutils"
+RDEPENDS:${PN}-client:append += " coreutils"

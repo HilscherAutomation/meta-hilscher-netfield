@@ -17,4 +17,4 @@ do_install() {
     done
 }
 
-FILES_${PN} = "${sbindir}"
+FILES:${PN} = "${sbindir}"

@@ -1,2 +1,2 @@
-RDEPENDS_packagegroup-base-3g = "modemmanager"
-RDEPENDS_packagegroup-distro-base_append += "login-welcome"
+RDEPENDS:packagegroup-base-3g = "modemmanager"
+RDEPENDS:packagegroup-distro-base:append += "login-welcome"

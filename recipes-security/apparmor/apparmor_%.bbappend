@@ -4,9 +4,9 @@ SYSTEMD_AUTO_ENABLE = "enable"
 
 # xargs -d is used in scripts, thus we need full xargs not the busybox ones
 # getconf is used in scripts thus we need libc6-utils
-RDEPENDS_${PN}_append += "findutils glibc-utils"
+RDEPENDS:${PN}:append = " findutils glibc-utils"
 
-do_install_append() {
+do_install:append() {
     #
     # Some apparmor profiles don't match yocto filesystem layout, so adjust them here
     #

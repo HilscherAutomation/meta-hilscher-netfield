@@ -1,6 +1,6 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
-SRC_URI_append += " \
+SRC_URI:append = " \
 	file://nginx_gen_ssl_cert \
 	file://90.hardening.conf \
 	file://nginx.logrotate \
@@ -11,12 +11,12 @@ SRC_URI_append += " \
 APPARMOR_PROFILES="${PN}.apparmor:usr.sbin.nginx"
 inherit apparmor
 
-PACKAGECONFIG_append += "http2 http_sub"
+PACKAGECONFIG:append = " http2 http_sub"
 PACKAGECONFIG[http_sub] = "--with-http_sub_module,,"
 
-SYSTEMD_SERVICE_${PN}_append += "nginx-certificate.timer nginx-certificate.service"
+SYSTEMD_SERVICE:${PN}:append = " nginx-certificate.timer nginx-certificate.service"
 
-do_install_append() {
+do_install:append() {
   install -m 755 -d ${D}/etc/nginx/ssl ${D}/etc/ssl/services/nginx
 
   install -d "${D}/etc/nginx/conf.d"
@@ -45,11 +45,11 @@ z ${sysconfdir}/nginx 0775 root netadmin
 z ${sysconfdir}/nginx/nginx.conf 0664 root netadmin
 EOF
 }
-FILES_${PN}_append += "${libdir}/tmpfiles.d/nginx-netadmin.conf"
+FILES:${PN}:append = " ${libdir}/tmpfiles.d/nginx-netadmin.conf"
 
 PACKAGES =+ "${PN}-conf"
-RDEPENDS_${PN}_append += "${PN}-conf"
-FILES_${PN}-conf += "${sysconfdir}/nginx/nginx.conf"
+RDEPENDS:${PN}:append = " ${PN}-conf"
+FILES:${PN}-conf += "${sysconfdir}/nginx/nginx.conf"
 
 #FILES_${PN} += "/var/lib/nginx"
 #FILES_${PN} += "${sysconfdir}/nginx/*"

@@ -8,20 +8,20 @@ inherit useradd
 require driver_version.inc
 S .= "libcifx/"
 
-DEBIAN_NOAUTONAME_${PN} = "1"
+DEBIAN_NOAUTONAME:${PN} = "1"
 
 USERADD_PACKAGES = "${PN}"
-GROUPADD_PARAM_${PN} = "-r cifx"
+GROUPADD_PARAM:${PN} = "-r cifx"
 
 # As we may be using different settings per machine, make libcifx a machine package
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 PACKAGES =+ "${PN}-plugin-spm"
-RDEPENDS_${PN} += "${@bb.utils.contains('PACKAGECONFIG', 'spm', '${PN}-plugin-spm', '', d)}"
+RDEPENDS:${PN} += "${@bb.utils.contains('PACKAGECONFIG', 'spm', '${PN}-plugin-spm', '', d)}"
 
 DEPENDS        += "${@bb.utils.contains('PACKAGECONFIG', 'tun', 'libnl', '', d)}"
-RDEPENDS_${PN} += "${@bb.utils.contains('PACKAGECONFIG', 'tun', 'libnl libnl-cli', '', d)}"
+RDEPENDS:${PN} += "${@bb.utils.contains('PACKAGECONFIG', 'tun', 'libnl libnl-cli', '', d)}"
 
-FILESEXTRAPATHS_append := "${THISDIR}/..:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/..:"
 
 SRC_URI += " \
    file://80-hilscher-netx.rules \
@@ -44,7 +44,7 @@ PACKAGECONFIG[spm] = "-DHWIF=ON -DSPM_PLUGIN=ON"
 PACKAGECONFIG[tun] = "-DVIRTETH=ON"
 
 
-do_install_append() {
+do_install:append() {
   #bootloader
   cd "${S}../BSL"
   install -d -m 0775 -g cifx "${D}/opt/cifx/deviceconfig/"
@@ -87,11 +87,11 @@ do_install_append() {
   chmod 0775 ${D}/opt/cifx
 }
 
-FILES_${PN} += "/usr/lib/ \
+FILES:${PN} += "/usr/lib/ \
                 /opt/cifx/ \
                 ${nonarch_base_libdir}/udev/rules.d/80-hilscher-netx.rules \
                 ${nonarch_base_libdir}/udev/rules.d/80-hilscher-cifxeth.rules \
                 ${systemd_unitdir}/network/98-cifx.link \
                 "
-FILES_${PN}-plugin-spm += "/opt/cifx/plugins/ \
+FILES:${PN}-plugin-spm += "/opt/cifx/plugins/ \
                            ${nonarch_base_libdir}/udev/rules.d/80-hilscher-netx-spi.rules"

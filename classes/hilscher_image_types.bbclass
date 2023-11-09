@@ -1,6 +1,6 @@
 inherit kernel-artifact-names sign-wrapper
 
-DEPENDS_append += "${@bb.utils.contains_any('IMAGE_FSTYPES', 'wic.bz2 fastboot', 'deploy-scripts-native', '', d)}"
+DEPENDS:append = " ${@bb.utils.contains_any('IMAGE_FSTYPES', 'wic.bz2 fastboot', 'deploy-scripts-native', '', d)}"
 
 HILSCHER_RESCUE_IMAGE_LINK_NAME ??= "${HILSCHER_RESCUE_IMAGE}-${MACHINE}"
 INITRAMFS_IMAGE_NAME ?= "${@['${INITRAMFS_IMAGE}-${MACHINE}', ''][d.getVar('INITRAMFS_IMAGE') == '']}"
@@ -14,16 +14,16 @@ inherit hilscher-firmware-version
 IMAGE_VERSION_SUFFIX =. "-${FULL_FW_VERSION}"
 
 ########################################
-# Anonymous python function to fix ROOTFS_POSTPROCESS_COMMAND_remove
+# Anonymous python function to fix ROOTFS_POSTPROCESS_COMMAND:remove
 ########################################
 python () {
     # Because 'ROOTFS_POSTPROCESS_COMMAND' list is very ugly constructed, it isn't possible
-    # to remove some commands in a use of 'ROOTFS_POSTPROCESS_COMMAND_remove'.
+    # to remove some commands in a use of 'ROOTFS_POSTPROCESS_COMMAND:remove'.
     # Therfore we implemented a further way to remove commands from list.
-    # Use 'ROOTFS_POSTPROCESS_COMMAND_removeFix' instead of 'ROOTFS_POSTPROCESS_COMMAND_remove'!
+    # Use 'ROOTFS_POSTPROCESS_COMMAND:removeFix' instead of 'ROOTFS_POSTPROCESS_COMMAND:remove'!
 
     cmdList = d.getVar('ROOTFS_POSTPROCESS_COMMAND') or ""
-    cmdRemoveList = d.getVar('ROOTFS_POSTPROCESS_COMMAND_removeFix') or ""
+    cmdRemoveList = d.getVar('ROOTFS_POSTPROCESS_COMMAND:removeFix') or ""
 
     cmdList = cmdList.replace(' ', '')
 
@@ -33,10 +33,10 @@ python () {
     cmdList = cmdList.replace(';', '; ')
     d.setVar('ROOTFS_POSTPROCESS_COMMAND', cmdList)
 }
-ROOTFS_POSTPROCESS_COMMAND_removeFix += "rootfs_update_timestamp;"
+ROOTFS_POSTPROCESS_COMMAND:removeFix += "rootfs_update_timestamp;"
 
 # Mark the following line as comment to support the yocto test framework!
-#ROOTFS_POSTPROCESS_COMMAND_removeFix += "write_image_test_data;"
+#ROOTFS_POSTPROCESS_COMMAND:removeFix += "write_image_test_data;"
 
 ########################################
 # Anonymous python function for image handling
@@ -70,14 +70,14 @@ python() {
 do_install_firmware_manifest() {
    install -m 0444 "${IMAGE_MANIFEST}" ${IMAGE_ROOTFS}/firmware.manifest
 }
-ROOTFS_POSTUNINSTALL_COMMAND_append += "do_install_firmware_manifest;"
+ROOTFS_POSTUNINSTALL_COMMAND:append = " do_install_firmware_manifest;"
 
 do_install_firmware_version() {
    echo ${FULL_FW_VERSION} > ${IMAGE_ROOTFS}/firmware.version
    echo ${IMAGE_NAME} > ${IMAGE_ROOTFS}/firmware.image_name
    chmod 0444 ${IMAGE_ROOTFS}/firmware.version ${IMAGE_ROOTFS}/firmware.image_name
 }
-ROOTFS_POSTUNINSTALL_COMMAND_append += "do_install_firmware_version;"
+ROOTFS_POSTUNINSTALL_COMMAND:append = " do_install_firmware_version;"
 
 create_boot_cfg_file() {
 	local dir="$1"
@@ -159,31 +159,31 @@ sign_squashfs_image() {
 	ln -sf ${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.$ext.signed ${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.$ext.signed
 }
 
-IMAGE_TYPEDEP_squashfs_signed += "squashfs"
+IMAGE_TYPEDEP:squashfs_signed += "squashfs"
 do_image_squashfs_signed[depends] += "file-signature-native:do_populate_sysroot"
 do_image_squashfs_signed[vardeps] += "PLATFORM_SIGN PLATFORM_KEYDIR PLATFORM_KEYNAME"
-IMAGE_CMD_squashfs_signed () {
+IMAGE_CMD:squashfs_signed () {
 	sign_squashfs_image squashfs
 }
 
-IMAGE_TYPEDEP_squashfs_xz_signed += "squashfs-xz"
+IMAGE_TYPEDEP:squashfs_xz_signed += "squashfs-xz"
 do_image_squashfs_signed_xz[depends] += "file-signature-native:do_populate_sysroot"
 do_image_squashfs_signed_xz[vardeps] += "PLATFORM_SIGN PLATFORM_KEYDIR PLATFORM_KEYNAME"
-IMAGE_CMD_squashfs_xz_signed () {
+IMAGE_CMD:squashfs_xz_signed () {
 	sign_squashfs_image squashfs-xz
 }
 
-IMAGE_TYPEDEP_squashfs_lzo_signed += "squashfs-lzo"
+IMAGE_TYPEDEP:squashfs_lzo_signed += "squashfs-lzo"
 do_image_squashfs_signed_lzo[depends] += "file-signature-native:do_populate_sysroot"
 do_image_squashfs_signed_lzo[vardeps] += "PLATFORM_SIGN PLATFORM_KEYDIR PLATFORM_KEYNAME"
-IMAGE_CMD_squashfs_lzo_signed () {
+IMAGE_CMD:squashfs_lzo_signed () {
 	sign_squashfs_image squashfs-lzo
 }
 
-IMAGE_TYPEDEP_squashfs_lz4_signed += "squashfs-lz4"
+IMAGE_TYPEDEP:squashfs_lz4_signed += "squashfs-lz4"
 do_image_squashfs_signed_lz4[depends] += "file-signature-native:do_populate_sysroot"
 do_image_squashfs_signed_lz4[vardeps] += "PLATFORM_SIGN PLATFORM_KEYDIR PLATFORM_KEYNAME"
-IMAGE_CMD_squashfs_lz4_signed () {
+IMAGE_CMD:squashfs_lz4_signed () {
 	sign_squashfs_image squashfs-lz4
 }
 
@@ -191,7 +191,7 @@ IMAGE_CMD_squashfs_lz4_signed () {
 # WIC Image
 ########################################
 
-IMAGE_TYPEDEP_wic += "squashfs_signed"
+IMAGE_TYPEDEP:wic += "squashfs_signed"
 
 WIC_TMPDIR = "${WORKDIR}/${IMAGE_BASENAME}.wic.tmpdir"
 WIC_BOOT_TMPDIR = "${WIC_TMPDIR}/boot"
@@ -199,8 +199,8 @@ WIC_RESCUE_TMPDIR = "${WIC_TMPDIR}/rescue"
 WIC_SYSTEM_TMPDIR = "${WIC_TMPDIR}/system"
 
 # For compatibility reasons, as the V2.3.x supports initrd-api files only with a prefix add a copy of initrd-api-part-cfg.
-WIC_SYSTEM_PART_CONTENT_append += "${IMAGE_LINK_NAME}.squashfs boot.cfg fitImage initrd-api-part-cfg initrd-api-part-cfg;part-cfg-initrd-api"
-WIC_BOOT_PART_CONTENT_append += "${IMAGE_BOOT_FILES}"
+WIC_SYSTEM_PART_CONTENT:append = " ${IMAGE_LINK_NAME}.squashfs boot.cfg fitImage initrd-api-part-cfg initrd-api-part-cfg;part-cfg-initrd-api"
+WIC_BOOT_PART_CONTENT:append = " ${IMAGE_BOOT_FILES}"
 
 do_image_wic[depends] += "${HILSCHER_RESCUE_IMAGE}:do_image_complete"
 do_image_wic[depends] += "file-signature-native:do_populate_sysroot"
@@ -237,7 +237,7 @@ do_image_wic_postfunc() {
 # SWU Image
 ########################################
 
-IMAGE_TYPEDEP_swu += "wic"
+IMAGE_TYPEDEP:swu += "wic"
 
 SWUPDATE_SIGN_ENFORCE ??= "${PLATFORM_SIGN}"
 SWUPDATE_KEYDIR ??= "${PLATFORM_KEYDIR}"
@@ -367,7 +367,7 @@ do_image_swu[depends] += "${HILSCHER_RESCUE_IMAGE}:do_image_complete"
 do_image_swu[depends] += "file-signature-native:do_populate_sysroot"
 do_image_swu[vardeps] += "PLATFORM_SIGN PLATFORM_KEYDIR PLATFORM_KEYNAME SWUPDATE_HELPER_FILES"
 
-IMAGE_CMD_swu() {
+IMAGE_CMD:swu() {
 	swu_files="${SWU_FILES}"
 	swu_file_attributes="${SWU_FILE_ATTRIBUTES}"
 	swu_images="${SWU_IMAGES}"
@@ -446,7 +446,7 @@ IMAGE_CMD_swu() {
 # Licenses Image
 ########################################
 
-IMAGE_CMD_licenses.tar() {
+IMAGE_CMD:licenses.tar() {
     # create archived licenses
     cd ${DEPLOY_DIR}
     find licenses -maxdepth 1 ! -path licenses ! -name '*-native' -exec tar uf ${IMGDEPLOYDIR}/${IMAGE_NAME}.rootfs.licenses.tar {} \;
@@ -456,12 +456,12 @@ IMAGE_CMD_licenses.tar() {
 # FASTBOOT Image
 ########################################
 
-IMAGE_TYPEDEP_fastboot += "wic"
+IMAGE_TYPEDEP:fastboot += "wic"
 
 SIMG_BLOCK_SIZE = "1024"
 
 do_image_fastboot[depends] += "android-tools-native:do_populate_sysroot"
-IMAGE_CMD_fastboot() {
+IMAGE_CMD:fastboot() {
 	wic_image="${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.wic"
 
 	# Read signatur of GPT header: 512 (MBR) + 0 (Offset in GPT header).

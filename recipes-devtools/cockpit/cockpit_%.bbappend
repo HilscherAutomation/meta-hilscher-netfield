@@ -1,5 +1,5 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/cockpit:"
-SRC_URI_append += "\
+FILESEXTRAPATHS:prepend := "${THISDIR}/cockpit:"
+SRC_URI:append = "\
     file://wifi_helper \
     file://proxy_helper \
     file://docker_network_helper \
@@ -16,7 +16,7 @@ APPARMOR_PROFILES="\
     iotedge_get_modules.apparmor:usr.libexec.cockpit.iotedge_get_modules \
 "
 
-do_install_append() {
+do_install:append() {
     install -d ${D}/usr/libexec/cockpit/
     install -d ${D}${sysconfdir}/sudoers.d
 
@@ -38,4 +38,4 @@ EOF
 }
 
 # Required to patch toml
-RDEPENDS_${PN}_append += "python3-toml"
+RDEPENDS:${PN}:append = " python3-toml"

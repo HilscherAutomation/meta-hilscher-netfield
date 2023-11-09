@@ -1,10 +1,10 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
-SRC_URI_append += "file://samhainrc \
+SRC_URI:append = " file://samhainrc \
                    file://samhain_check_init \
                    file://samhain_update"
 
-DEPENDS_append += "audit"
+DEPENDS:append = " audit"
 
 # path to samhain data base
 DATABASE = "/var/lib/samhain/samhain_file"
@@ -13,11 +13,11 @@ DATABASE = "/var/lib/samhain/samhain_file"
 # maybe filled during runtime
 UPDATE_FILE = "/etc/samhain_update"
 
-do_compile_prepend() {
+do_compile:prepend() {
     cp ${WORKDIR}/samhainrc ${S}/samhainrc.linux
 }
 
-do_install_prepend() {
+do_install:prepend() {
     mkdir -p ${D}/etc/
     install -m 764 ${WORKDIR}/samhain_check_init ${D}/etc/
     sed -i -e 's,@DATABASE_PATH@,${DATABASE},'  \
@@ -30,6 +30,6 @@ do_install_prepend() {
     install ${WORKDIR}/samhain-init.service ${D}${systemd_system_unitdir}/
 }
 
-FILES_${PN} += "${systemd_system_unitdir}/samhain-init.service"
-FILES_${PN} += "/etc/samhain_check_init"
-FILES_${PN} += "${UPDATE_FILE}"
+FILES:${PN} += "${systemd_system_unitdir}/samhain-init.service"
+FILES:${PN} += "/etc/samhain_check_init"
+FILES:${PN} += "${UPDATE_FILE}"

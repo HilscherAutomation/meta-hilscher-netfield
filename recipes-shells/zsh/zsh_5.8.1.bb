@@ -41,13 +41,13 @@ do_configure () {
     oe_runconf
 }
 
-pkg_postinst_${PN} () {
+pkg_postinst:${PN} () {
     touch $D${sysconfdir}/shells
     grep -q "bin/zsh" $D${sysconfdir}/shells || echo /bin/zsh >> $D${sysconfdir}/shells
     grep -q "bin/sh" $D${sysconfdir}/shells || echo /bin/sh >> $D${sysconfdir}/shells
 }
 
-FILES_${PN}-dbg += "\
+FILES:${PN}-dbg += "\
     ${libdir}/${PN}/${PV}/${PN}/.debug/*.so \
     ${libdir}/${PN}/${PV}/${PN}/db/.debug/*.so \
     ${libdir}/${PN}/${PV}/${PN}/net/.debug/*.so \

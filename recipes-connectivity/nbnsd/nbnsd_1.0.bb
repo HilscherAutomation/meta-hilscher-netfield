@@ -13,8 +13,8 @@ SRC_URI = "file://nbnsd.c \
 APPARMOR_PROFILES="nbnsd.apparmor:usr.sbin.nbnsd"
 
 SYSTEMD_PACKAGES          = "${PN}"
-SYSTEMD_SERVICE_${PN}     = "nbnsd.service"
-SYSTEMD_AUTO_ENABLE_${PN} = "enable"
+SYSTEMD_SERVICE:${PN}     = "nbnsd.service"
+SYSTEMD_AUTO_ENABLE:${PN} = "enable"
 
 inherit apparmor systemd
 
@@ -33,5 +33,5 @@ do_install() {
     install -m 0644 ${WORKDIR}/nbnsd.service ${D}${systemd_unitdir}/system/
 }
 
-FILES_${PN} = "${sbindir} \
+FILES:${PN} = "${sbindir} \
                ${systemd_unitdir}"

@@ -3,22 +3,22 @@ HOMEPAGE = "https://github.com/Azure/iotedge"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM="file://../LICENSE;md5=0f7e3b1308cb5c00b372a6e78835732d"
 
-DEPENDS_append += "libstd-rs openssl"
+DEPENDS:append = " libstd-rs openssl"
 
 SRC_URI += "file://aziot_use_unwind_instead_abort.patch"
 
 inherit systemd
 SYSTEMD_AUTO_ENABLE = "disable"
-SYSTEMD_SERVICE_${PN} = "aziot-edged.service aziot-edged.mgmt.socket aziot-edged.workload.socket"
+SYSTEMD_SERVICE:${PN} = "aziot-edged.service aziot-edged.mgmt.socket aziot-edged.workload.socket"
 
 inherit useradd
 USERADD_PACKAGES="${PN}"
-USERADD_PARAM_${PN} = "--system --no-create-home --home-dir /var/lib/aziot/edged --shell /sbin/nologin --user-group --groups docker,systemd-journal,aziotcs,aziotks,aziotid,aziottpm iotedge;"
-USERADD_PARAM_${PN} += "-g iotedge -s /sbin/nologin edgeagentuser;"
-USERADD_PARAM_${PN} += "-g iotedge -s /sbin/nologin edgehubuser;"
-GROUPADD_PARAM_${PN} = "-r docker;-r systemd-journal;-r aziotcs;-r aziotks;-r aziotid; -r aziottpm"
+USERADD_PARAM:${PN} = "--system --no-create-home --home-dir /var/lib/aziot/edged --shell /sbin/nologin --user-group --groups docker,systemd-journal,aziotcs,aziotks,aziotid,aziottpm iotedge;"
+USERADD_PARAM:${PN} += "-g iotedge -s /sbin/nologin edgeagentuser;"
+USERADD_PARAM:${PN} += "-g iotedge -s /sbin/nologin edgehubuser;"
+GROUPADD_PARAM:${PN} = "-r docker;-r systemd-journal;-r aziotcs;-r aziotks;-r aziotid; -r aziottpm"
 
-do_install_append() {
+do_install:append() {
     install -d ${D}${sysconfdir}/aziot/edged/config.d ${D}${sysconfdir}/logrotate.d ${D}${systemd_system_unitdir} \
                ${D}${localstatedir}/lib/aziot/edged ${D}${localstatedir}/secrets
 
@@ -62,9 +62,9 @@ do_install_append() {
 }
 
 PACKAGES="${PN}-dev ${PN}"
-RDEPENDS_${PN} = "docker openssl procps azure-identity-service"
-FILES_${PN} = "${bindir} ${libexecdir} ${sysconfdir} ${libdir} ${localstatedir}"
-FILES_${PN}-dev = "${libdir}/rust"
+RDEPENDS:${PN} = "docker openssl procps azure-identity-service"
+FILES:${PN} = "${bindir} ${libexecdir} ${sysconfdir} ${libdir} ${localstatedir}"
+FILES:${PN}-dev = "${libdir}/rust"
 INHIBIT_PACKAGE_DEBUG_SPLIT="1"
 PROVIDES="iotedge"
-RPROVIDES_${PN}="iotedge"
+RPROVIDES:${PN}="iotedge"

@@ -6,7 +6,7 @@ require oem-base.inc
 # NOTE: Used by cockpit for cloud connecting.
 VENDOR_VARIANT_ID=""
 
-IMAGE_INSTALL_append += "swupdate-oem upnpd-oem"
+IMAGE_INSTALL:append = " swupdate-oem upnpd-oem"
 
 inherit hilscher-deploy
 

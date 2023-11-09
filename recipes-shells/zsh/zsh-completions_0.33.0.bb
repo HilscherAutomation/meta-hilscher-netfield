@@ -17,4 +17,4 @@ do_install() {
     chmod 0644 ${D}${datadir}/zsh/site-functions/*
 }
 
-FILES_${PN} = "${datadir}/zsh"
+FILES:${PN} = "${datadir}/zsh"
