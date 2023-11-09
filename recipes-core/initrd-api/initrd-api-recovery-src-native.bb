@@ -23,4 +23,4 @@ do_install() {
 	cp ${WORKDIR}/runscript.sh "${D}/${datadir}/initrd-api/recovery/"
 }
 
-FILES_${PN} = "${datadir}/initrd-api/recovery/*"
+FILES:${PN} = "${datadir}/initrd-api/recovery/*"

@@ -16,7 +16,7 @@ SRC_URI = " \
 PART_SCHEMES  = "boot-rescue-system-lvm"
 PART_SCHEMES += " boot-system-system-lvm"    
 do_fetch[vardeps] += "WKS_FILE PHYSICAL_SYSTEM_DEVICE IMAGE_PART_BOOT_SIZE IMAGE_PART_RESCUE_SIZE IMAGE_PART_SYSTEM_SIZE IMAGE_PART_DATA_SIZE PART_DATA_LV_DATA_SIZE PART_DATA_LV_BACKUP_SIZE"
-do_fetch_append() {
+do_fetch:append() {
     from shutil import copyfile
 
     part_schemes = d.getVar('PART_SCHEMES')
@@ -67,5 +67,5 @@ do_deploy() {
 }
 addtask deploy after do_sign
 
-RDEPENDS_${PN} += "dosfstools e2fsprogs-mke2fs e2fsprogs-resize2fs e2fsprogs-e2fsck util-linux-sfdisk"
-FILES_${PN} = "${datadir}"
+RDEPENDS:${PN} += "dosfstools e2fsprogs-mke2fs e2fsprogs-resize2fs e2fsprogs-e2fsck util-linux-sfdisk"
+FILES:${PN} = "${datadir}"

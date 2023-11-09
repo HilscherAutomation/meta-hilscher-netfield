@@ -4,7 +4,7 @@ LICENSE = "GPLv2"
 
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/GPL-2.0;md5=801f80980d171dd6425610833a22dbe6"
 
-FILESEXTRAPATHS_append := "${THISDIR}/.."
+FILESEXTRAPATHS:prepend := "${THISDIR}/..:"
 
 SRC_URI += "file://pub-key-loader.c"
 SRC_URI += "file://Makefile"
@@ -20,7 +20,7 @@ DEPENDS += "elfutils elfutils-native"
 
 inherit module sign-wrapper
 
-do_compile_prepend() {
+do_compile:prepend() {
 	CERT="${B}/tpmcert"
 	sign_wrapper_copy_certificate "${CERT}" "pem"
 	rm -f cert.h

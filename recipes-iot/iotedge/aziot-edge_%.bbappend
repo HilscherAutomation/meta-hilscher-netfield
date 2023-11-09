@@ -1,6 +1,6 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/docker:${THISDIR}/aziot-edge:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/docker:${THISDIR}/aziot-edge:"
 
-SRC_URI_append += "file://iotedge-docker.service \
+SRC_URI:append = " file://iotedge-docker.service \
                    file://iotedge-docker.socket \
                    file://iotedge.slice \
                    file://iotedge.json \
@@ -19,17 +19,17 @@ SRC_URI_append += "file://iotedge-docker.service \
                    file://update_gateway_settings \
 "
 
-RDEPENDS_${PN}_append += "bridge-utils yq"
+RDEPENDS:${PN}:append = " bridge-utils yq"
 # acl is required to set ACL in docker.socket
-RDEPENDS_${PN}_append += "acl"
+RDEPENDS:${PN}:append = " acl"
 # bash is required for update_gateway_settings script
-RDEPENDS_${PN}_append += "bash"
+RDEPENDS:${PN}:append = " bash"
 # toml-cli is required for aziot-genca script
-RDEPENDS_${PN}_append += "toml-cli"
+RDEPENDS:${PN}:append = " toml-cli"
 
-SYSTEMD_SERVICE_${PN}_append += "iotedge-docker.service iotedge-docker.socket iotedge.slice"
+SYSTEMD_SERVICE:${PN}:append = " iotedge-docker.service iotedge-docker.socket iotedge.slice"
 
-do_install_append() {
+do_install:append() {
     install -d ${D}${sysconfdir}/docker
     install -m0644 ${WORKDIR}/iotedge.json ${D}${sysconfdir}/docker/
     install -m0644 ${WORKDIR}/iotedge-docker.service ${D}${systemd_system_unitdir}
@@ -80,4 +80,4 @@ EOF
     echo "Environment=AZIOT_LOG=WARN" >> ${D}${sysconfdir}/systemd/system/aziot-edged.service.d/log-level.conf
 }
 
-FILES_${PN}_append += "${base_libdir} ${sbindir}"
+FILES:${PN}:append = " ${base_libdir} ${sbindir}"

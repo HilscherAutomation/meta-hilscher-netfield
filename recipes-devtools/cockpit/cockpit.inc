@@ -18,11 +18,11 @@ DEPENDS="json-glib krb5 polkit systemd"
 DEPENDS+="intltool-native glib-2.0-native coreutils-native nodejs-native \
           libxslt-native xmlto-native"
 
-RDEPENDS_${PN} = "glib-networking openssh-misc bash libpwquality libpam"
-RDEPENDS_${PN}-storaged = ""
+RDEPENDS:${PN} = "glib-networking openssh-misc bash libpwquality libpam"
+RDEPENDS:${PN}-storaged = ""
 # TODO: storaged requires udisks2, but this requires GPLv3 components
-#RDEPENDS_${PN}-storaged = "udisks2 e2fsprogs dosfstools lvm2"
-RDEPENDS_${PN}-docker = "docker"
+#RDEPENDS:${PN}-storaged = "udisks2 e2fsprogs dosfstools lvm2"
+RDEPENDS:${PN}-docker = "docker"
 
 EXTRA_OECONF = "--with-pamdir=/lib/security \
                 --with-networkmanager-needs-root=yes \
@@ -33,11 +33,11 @@ EXTRA_OECONF = "--with-pamdir=/lib/security \
 inherit autotools-brokensep pkgconfig systemd gettext useradd
 
 USERADD_PACKAGES = "${PN}"
-USERADD_PARAM_${PN} = "--system --no-create-home --home-dir /var/lib/cockpit --shell /sbin/nologin --user-group cockpit-ws"
+USERADD_PARAM:${PN} = "--system --no-create-home --home-dir /var/lib/cockpit --shell /sbin/nologin --user-group cockpit-ws"
 
 SYSTEMD_PACKAGES="${PN}"
-SYSTEMD_SERVICE_${PN}="${PN}.service"
-SYSTEMD_AUTO_ENABLE_${PN} = "enable"
+SYSTEMD_SERVICE:${PN}="${PN}.service"
+SYSTEMD_AUTO_ENABLE:${PN} = "enable"
 
 export SUDO="/usr/bin/sudo"
 export CHCON="/usr/bin/chcon"
@@ -53,7 +53,7 @@ PACKAGECONFIG[asan]="--enable-asan=yes,--enable-asan=no,asan"
 
 # Split up branding themes into separate packages
 PACKAGES_DYNAMIC += "^${PN}-branding-.*"
-python populate_packages_prepend () {
+python populate_packages:prepend () {
     branding_basedir = os.path.join(d.expand('${datadir}'), 'cockpit', 'branding')
     do_split_packages(d, branding_basedir,
                       r'^(.*)$', 'cockpit-branding-%s',
@@ -80,11 +80,11 @@ kill_flow_server() {
   fi
 }
 
-do_compile_append() {
+do_compile:append() {
   kill_flow_server
 }
 
-do_install_append() {
+do_install:append() {
   install -d ${D}${sysconfdir}/cockpit
   install -m 0644 ${WORKDIR}/cockpit.conf ${D}${sysconfdir}/cockpit
 
@@ -117,26 +117,26 @@ do_install_append() {
 
 SECURITY_CFLAGS = "${SECURITY_NO_PIE_CFLAGS}"
 
-FILES_${PN}-apps = "${datadir}/cockpit/apps"
-FILES_${PN}-ovirt = "${datadir}/cockpit/ovirt"
-FILES_${PN}-packagekit = "${datadir}/cockpit/packagekit"
-FILES_${PN}-selinux = "${datadir}/cockpit/selinux"
-FILES_${PN}-sosreport = "${datadir}/cockpit/sosreport"
-FILES_${PN}-subscriptions = "${datadir}/cockpit/subscriptions"
-FILES_${PN}-playground = "${datadir}/cockpit/playground"
-FILES_${PN}-onboarding = "${datadir}/cockpit/onboard"
-FILES_${PN}-docker = "${datadir}/cockpit/docker"
-FILES_${PN}-iotedge-docker = "${datadir}/cockpit/iotedge-docker"
-FILES_${PN}-general-settings = "${datadir}/cockpit/generalSettings"
+FILES:${PN}-apps = "${datadir}/cockpit/apps"
+FILES:${PN}-ovirt = "${datadir}/cockpit/ovirt"
+FILES:${PN}-packagekit = "${datadir}/cockpit/packagekit"
+FILES:${PN}-selinux = "${datadir}/cockpit/selinux"
+FILES:${PN}-sosreport = "${datadir}/cockpit/sosreport"
+FILES:${PN}-subscriptions = "${datadir}/cockpit/subscriptions"
+FILES:${PN}-playground = "${datadir}/cockpit/playground"
+FILES:${PN}-onboarding = "${datadir}/cockpit/onboard"
+FILES:${PN}-docker = "${datadir}/cockpit/docker"
+FILES:${PN}-iotedge-docker = "${datadir}/cockpit/iotedge-docker"
+FILES:${PN}-general-settings = "${datadir}/cockpit/generalSettings"
 # NOTE: shell/images and index.css is referenced by other packages and must always be provided
-FILES_${PN}-terminal = "${datadir}/cockpit/terminal"
-FILES_${PN}-vmachines = "${datadir}/cockpit/machines"
-FILES_${PN}-kubernetes = "${datadir}/cockpit/kubernetes \
+FILES:${PN}-terminal = "${datadir}/cockpit/terminal"
+FILES:${PN}-vmachines = "${datadir}/cockpit/machines"
+FILES:${PN}-kubernetes = "${datadir}/cockpit/kubernetes \
                           ${libexecdir}/cockpit-kube-auth \
                           ${libexecdir}/cockpit-kube-launch"
-FILES_${PN}-storaged   = "${datadir}/cockpit/storaged/*"
+FILES:${PN}-storaged   = "${datadir}/cockpit/storaged/*"
 
-FILES_${PN} += "${systemd_unitdir} \
+FILES:${PN} += "${systemd_unitdir} \
                 ${datadir}/locale \
 		${datadir}/polkit-1 \
                 ${datadir}/cockpit/shell/ \

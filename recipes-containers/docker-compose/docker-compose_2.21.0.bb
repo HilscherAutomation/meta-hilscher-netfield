@@ -56,7 +56,7 @@ do_install() {
 
 INHIBIT_PACKAGE_DEBUG_SPLIT="1"
 INHIBIT_PACKAGE_STRIP = "1"
-INSANE_SKIP_${PN} += "ldflags already-stripped"
+INSANE_SKIP:${PN} += "ldflags already-stripped"
 
-FILES_${PN} = "${libdir} ${bindir}"
-RDEPENDS_${PN} = "docker"
+FILES:${PN} = "${libdir} ${bindir}"
+RDEPENDS:${PN} = "docker"

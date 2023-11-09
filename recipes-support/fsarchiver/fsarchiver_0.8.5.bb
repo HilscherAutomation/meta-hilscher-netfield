@@ -11,7 +11,7 @@ SRC_URI[sha256sum] = "c694f52e42703d7e8c4d56f2db97a8ff5616df1d723429126de97c2221
 
 DEPENDS = "libgcrypt e2fsprogs"
 
-RDEPENDS_${PN}="e2fsprogs-tune2fs"
+RDEPENDS:${PN}="e2fsprogs-tune2fs"
 
 PACKAGECONFIG ??= "gz bz2 xz lzo lz4"
 PACKAGECONFIG[gz]=",--disable-zlib,zlib"

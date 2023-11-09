@@ -23,16 +23,16 @@ IMAGE_INSTALL += "sudo"
 #login
 inherit extrausers
 EXTRA_USERS_PARAMS += "groupadd -g 1000 admin;"
-EXTRA_USERS_PARAMS += "useradd -c 'System Administrator' -u 1000 -P admin -G sudo -s /bin/sh admin;"
+EXTRA_USERS_PARAMS += "useradd -c 'System Administrator' -u 1000 -p 'admin' -G sudo -s /bin/sh admin;"
 
 do_create_platform_dir() {
    install -d ${IMAGE_ROOTFS}/var/platform
    install -d ${IMAGE_ROOTFS}/usr/local
 }
-ROOTFS_POSTUNINSTALL_COMMAND_append += "${@bb.utils.contains('NETIOT_ROOT_OVERLAY', '1', '', 'do_create_platform_dir ; ', d)}"
+ROOTFS_POSTUNINSTALL_COMMAND:append = " ${@bb.utils.contains('NETIOT_ROOT_OVERLAY', '1', '', 'do_create_platform_dir ; ', d)}"
 
 do_install_manifest() {
    # Real firmware version is provided by meta-hilscher-distro
    ln -s firmware.version ${IMAGE_ROOTFS}/fw_version
 }
-ROOTFS_POSTUNINSTALL_COMMAND_append += " do_install_manifest ;"
+ROOTFS_POSTUNINSTALL_COMMAND:append = " do_install_manifest ;"

@@ -9,7 +9,7 @@ DEPENDS = "u-boot-mkimage-native dtc-native"
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 # Note: The boot-menu* files need to be provided via the platform specific layer
-SRC_URI_append += "file://boot-menu-fastboot.cmd \
+SRC_URI:append = " file://boot-menu-fastboot.cmd \
                    file://boot-menu-debug.cmd \
                    file://boot-recovery.cmd \
                   "
@@ -31,7 +31,7 @@ do_deploy() {
 addtask deploy before do_build after do_install
 do_deploy[dirs] += "${DEPLOYDIR}/${PN}"
 
-do_assemble_boot_script_fitimage_prepend() {
+do_assemble_boot_script_fitimage:prepend() {
 	# scripts will be signed at assemble_boot_script_fitimage (boot-script-fitimage.bbclass)
 	setup_sign_wrapper_env "${PLATFORM_KEYNAME}"
 	sign_key=$(setup_sign_wrapper_env "${PLATFORM_KEYNAME}")

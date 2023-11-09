@@ -1,4 +1,4 @@
-do_install_append() {
+do_install:append() {
     for service in aziot-identityd aziot-keyd aziot-certd aziot-tpmd; do
         install -d ${D}${sysconfdir}/systemd/system/${service}.service.d
         echo "[Service]" > ${D}${sysconfdir}/systemd/system/${service}.service.d/log-level.conf

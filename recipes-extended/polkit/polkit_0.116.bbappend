@@ -1,6 +1,6 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
-SRC_URI_append += "file://bind_use_of_cookies_to_specific.patch \
+SRC_URI:append = " file://bind_use_of_cookies_to_specific.patch \
                    file://60-network-manager.rules \
                    file://60-modem-manager.rules \
                    file://60-firewalld.rules \
@@ -14,9 +14,9 @@ SRC_URI_append += "file://bind_use_of_cookies_to_specific.patch \
 inherit useradd
 
 USERADD_PACKAGES="${PN}"
-GROUPADD_PARAM_${PN} = "-r timeadmin;-r netadmin;"
+GROUPADD_PARAM:${PN} = "-r timeadmin;-r netadmin;"
 
-do_install_append() {
+do_install:append() {
     for rule in 60-network-manager.rules 60-modem-manager.rules 60-firewalld.rules 60-cifx.rules 60-dhcp.rules 60-nginx.rules 60-timedatectl.rules 99-netfield.rules; do
         install -m 0644 ${WORKDIR}/$rule ${D}${datadir}/polkit-1/rules.d
     done

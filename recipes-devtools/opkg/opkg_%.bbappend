@@ -1,9 +1,9 @@
-PACKAGECONFIG_append += "openssl sha256"
+PACKAGECONFIG:append = " openssl sha256"
 
 OPKG_BASE_PATH ?= "/opt/apps"
 OPKGLIBDIR      = "${OPKG_BASE_PATH}/lib"
 
-do_install_append_class-target() {
+do_install:append:class-target() {
     # Install to /opt/apps per default
     sed -i -e 's@dest root.*@dest root ${OPKG_BASE_PATH}@' ${D}${sysconfdir}/opkg/opkg.conf
 

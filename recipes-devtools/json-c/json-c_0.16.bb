@@ -10,7 +10,7 @@ SRC_URI[sha256sum] = "8e45ac8f96ec7791eaf3bb7ee50e9c2100bbbc87b8d0f1d030c5ba8a02
 UPSTREAM_CHECK_URI = "https://github.com/${BPN}/${BPN}/releases"
 UPSTREAM_CHECK_REGEX = "json-c-(?P<pver>\d+(\.\d+)+)-\d+"
 
-RPROVIDES_${PN} = "libjson"
+RPROVIDES:${PN} = "libjson"
 
 inherit cmake
 

@@ -15,12 +15,12 @@ SRCREV="f609c4313f9a9c101e1f90434b0641ab66999fcb"
 inherit go-mod systemd
 
 SYSTEMD_PACKAGES="${PN}"
-SYSTEMD_SERVICE_${PN} = "${BPN}.service"
+SYSTEMD_SERVICE:${PN} = "${BPN}.service"
 
 inherit apparmor
 APPARMOR_PROFILES="${BPN}.apparmor:usr.bin.${BPN}"
 
-do_install_append() {
+do_install:append() {
     # Remove libdir, as it is not required for anything
     rm -rf ${D}${libdir}
 
@@ -37,5 +37,5 @@ ADD_OPTS="-log-only-denied"
 EOF
 }
 
-FILES_${PN} += "${systemd_system_unitdir}"
-RDEPENDS_${PN} = "docker"
+FILES:${PN} += "${systemd_system_unitdir}"
+RDEPENDS:${PN} = "docker"

@@ -212,7 +212,7 @@ with open('relocations.inc', 'w') as f:
             f.write('    %s:%s \\\n' %(module['path'], module['path']))
     f.write('"\n')
     f.write("""
-do_compile_prepend() {
+do_compile:prepend() {
     cd ${S}/src/import
     for s in $sites; do
         site_dest=$(echo $s | cut -d: -f1)

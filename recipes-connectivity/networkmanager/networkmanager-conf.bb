@@ -5,7 +5,7 @@ PRECONFIGURED_SYSTEM_CONNECTIONS ??= "eth0 eth1 cifx0"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
-SRC_URI_append += "file://eth0 \
+SRC_URI:append = " file://eth0 \
                    file://eth1 \
                    file://cifx0 \
                    file://wifi_permanent_mac \
@@ -30,5 +30,5 @@ do_install() {
 }
 
 PACKAGES="${PN}"
-FILES_${PN} = "${sysconfdir} ${datadir}"
-RDEPENDS_${PN} = "net-tools"
+FILES:${PN} = "${sysconfdir} ${datadir}"
+RDEPENDS:${PN} = "net-tools"

@@ -11,7 +11,7 @@ SRC_URI = "file://process_machine_state \
            file://machine-state.service \
           "
 
-RDEPENDS_${PN} = "jq"
+RDEPENDS:${PN} = "jq"
 
 inherit systemd
 
@@ -20,8 +20,8 @@ inherit systemd
 # and leave it up to user to configure a LED and the service status.
 SYSTEMD_MACHINE_STATE_SERVICE_AUTO_ENABLE ??= "disable"
 SYSTEMD_PACKAGES = "${PN}"
-SYSTEMD_SERVICE_${PN} = "machine-state.service"
-SYSTEMD_AUTO_ENABLE_${PN} ?= "${SYSTEMD_MACHINE_STATE_SERVICE_AUTO_ENABLE}"
+SYSTEMD_SERVICE:${PN} = "machine-state.service"
+SYSTEMD_AUTO_ENABLE:${PN} ?= "${SYSTEMD_MACHINE_STATE_SERVICE_AUTO_ENABLE}"
 
 USERADD_PACKAGES = "${PN}"
 
@@ -41,7 +41,7 @@ do_install() {
 	install -m 0644 ${WORKDIR}/machine-state.service ${D}${systemd_unitdir}/system
 }
 
-FILES_${PN} = "${sysconfdir}/machine-state/system-leds \
+FILES:${PN} = "${sysconfdir}/machine-state/system-leds \
                ${systemd_unitdir} \
                ${libdir_native}/machine-state/ \
               "

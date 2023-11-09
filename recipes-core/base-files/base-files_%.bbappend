@@ -1,8 +1,8 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
-SRC_URI_append += "file://mqtt-config.json"
+SRC_URI:append = " file://mqtt-config.json"
 
-do_install_append() {
+do_install:append() {
     install -d ${D}${sysconfdir}/gateway
     install -m0644 ${WORKDIR}/mqtt-config.json ${D}${sysconfdir}/gateway/
 

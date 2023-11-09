@@ -1,6 +1,6 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/audit-rules:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/audit-rules:"
 
-SRC_URI_append += "file://30-basic-configuration.rules"
+SRC_URI:append = " file://30-basic-configuration.rules"
 
 DEFAULT_RULESET="\
     10-base-config.rules \
@@ -20,7 +20,7 @@ DEFAULT_RULESET="\
     99-finalize.rules \
 "
 
-do_install_append() {
+do_install:append() {
     sed -i -e 's/^#-e/-e/g' ${D}${datadir}/audit/sample-rules/99-finalize.rules
 
     install -m 0640 ${WORKDIR}/30-basic-configuration.rules ${D}${datadir}/audit/sample-rules/

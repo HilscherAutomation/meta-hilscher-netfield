@@ -28,7 +28,7 @@ SRC_URI = "\
 SRCREV="1a7969545d73537545645f5cd2c79b7a77e7d39f"
 
 # CGO does not play well with thumb -> https://patches.openembedded.org/patch/144011/
-TUNE_CCARGS_remove += "-mthumb"
+TUNE_CCARGS:remove = "-mthumb"
 
 # Apache-2.0 for docker
 LICENSE = "Apache-2.0"
@@ -38,21 +38,21 @@ S = "${WORKDIR}/git"
 
 PACKAGES =+ "${PN}-contrib ${PN}-bash-completion ${PN}-zsh-completion"
 
-DEPENDS_append_class-target += "libseccomp lvm2 libdevmapper btrfs-tools libtool"
+DEPENDS:append:class-target = " libseccomp lvm2 libdevmapper btrfs-tools libtool"
 
 #exclude_graphdriver_btrfs
 DOCKER_BUILDTAGS="seccomp pkcs11 selinux"
 
-DEPENDS_append_class-target += "${@bb.utils.contains('DISTRO_FEATURES','apparmor','apparmor','',d)}"
+DEPENDS:append:class-target = " ${@bb.utils.contains('DISTRO_FEATURES','apparmor','apparmor','',d)}"
 DOCKER_BUILDTAGS +="${@bb.utils.contains('DISTRO_FEATURES','apparmor','apparmor','',d)}"
 
-RDEPENDS_${PN} = "curl git util-linux iptables libseccomp \
+RDEPENDS:${PN} = "curl git util-linux iptables libseccomp \
                   ${@bb.utils.contains('DISTRO_FEATURES','systemd','','cgroup-lite',d)} \
                   docker-cli docker-init containerd (>= 1.2.10) runc \
                  "
 
-RRECOMMENDS_${PN} = "kernel-module-dm-thin-pool kernel-module-nf-nat"
-RSUGGESTS_${PN} = "lxc rt-tests"
+RRECOMMENDS:${PN} = "kernel-module-dm-thin-pool kernel-module-nf-nat"
+RSUGGESTS:${PN} = "lxc rt-tests"
 DOCKER_PKG="github.com/docker/docker"
 
 inherit systemd update-rc.d
@@ -82,11 +82,11 @@ do_compile() {
 }
 
 SYSTEMD_PACKAGES = "${@bb.utils.contains('DISTRO_FEATURES','systemd','${PN}','',d)}"
-SYSTEMD_SERVICE_${PN} = "${@bb.utils.contains('DISTRO_FEATURES','systemd','docker.service','',d)}"
+SYSTEMD_SERVICE:${PN} = "${@bb.utils.contains('DISTRO_FEATURES','systemd','docker.service','',d)}"
 
 INITSCRIPT_PACKAGES += "${@bb.utils.contains('DISTRO_FEATURES','sysvinit','${PN}','',d)}"
-INITSCRIPT_NAME_${PN} = "${@bb.utils.contains('DISTRO_FEATURES','sysvinit','docker.init','',d)}"
-INITSCRIPT_PARAMS_${PN} = "${OS_DEFAULT_INITSCRIPT_PARAMS}"
+INITSCRIPT_NAME:${PN} = "${@bb.utils.contains('DISTRO_FEATURES','sysvinit','docker.init','',d)}"
+INITSCRIPT_PARAMS:${PN} = "${OS_DEFAULT_INITSCRIPT_PARAMS}"
 
 do_install() {
 	mkdir -p ${D}/${bindir}
@@ -108,13 +108,13 @@ do_install() {
 
 inherit useradd
 USERADD_PACKAGES = "${PN}"
-GROUPADD_PARAM_${PN} = "-r docker"
+GROUPADD_PARAM:${PN} = "-r docker"
 
-FILES_${PN} += "${systemd_unitdir}/system \
+FILES:${PN} += "${systemd_unitdir}/system \
 		${datadir}"
 
-FILES_${PN}-contrib += "${datadir}/docker/check-config.sh"
-RDEPENDS_${PN}-contrib += "bash"
+FILES:${PN}-contrib += "${datadir}/docker/check-config.sh"
+RDEPENDS:${PN}-contrib += "bash"
 
 # go.bbclass uses own unpack routine, which tries to unpack git modules that have a destsuffix
 # as directories, below main source directory, which is not what we want
@@ -131,5 +131,5 @@ python do_unpack() {
 }
 
 PROVIDES="docker"
-RPROVIDES_${PN}="docker"
-INSANE_SKIP_${PN}="textrel"
+RPROVIDES:${PN}="docker"
+INSANE_SKIP:${PN}="textrel"

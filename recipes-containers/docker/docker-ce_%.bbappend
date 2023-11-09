@@ -1,17 +1,17 @@
 require recipes-devtools/go/fix_go_cache.inc
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
-SRC_URI_append += "file://docker.rules"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
+SRC_URI:append = " file://docker.rules"
 
-SRC_URI_append += "\
+SRC_URI:append = "\
    file://0001-hack-Add-reading-of-user-credentials-from-socket.patch \
    file://0002-Allow-docker-readonly-group-to-access-docker-socket.patch \
 "
 
-DOCKER_BUILDTAGS_append += "exclude_graphdriver_devicemapper exclude_graphdriver_aufs exclude_graphdriver_zfs exclude_graphdriver_overlay"
-DEPENDS_remove_class-target += "libdevmapper"
+DOCKER_BUILDTAGS:append = " exclude_graphdriver_devicemapper exclude_graphdriver_aufs exclude_graphdriver_zfs exclude_graphdriver_overlay"
+DEPENDS:remove:class-target = "libdevmapper"
 
-do_install_append() {
+do_install:append() {
     if ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'true', 'false', d)}; then
         install -d ${D}${libdir}/tmpfiles.d/
         cat <<EOF>> ${D}${libdir}/tmpfiles.d/docker_overlay.conf
@@ -50,6 +50,6 @@ EOF
 }
 
 # acl is required to apply ACL on socket startup
-RDEPENDS_${PN}_append += "acl"
-FILES_${PN}_append += "${base_libdir}/udev/rules.d/ \
+RDEPENDS:${PN}:append = " acl"
+FILES:${PN}:append = " ${base_libdir}/udev/rules.d/ \
                        ${libdir}/tmpfiles.d"

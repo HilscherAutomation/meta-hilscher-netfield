@@ -1,6 +1,6 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
-SRC_URI_append += "file://tar-1.17-wildcards.patch \
+SRC_URI:append = " file://tar-1.17-wildcards.patch \
                    file://tar-1.17-xattrs.patch \
                    file://CVE-2010-0624.patch \
                    file://CVE-2016-6321.patch \
@@ -12,6 +12,6 @@ SRC_URI_append += "file://tar-1.17-wildcards.patch \
                    file://tar-1.17-acl-restore.patch \
     "
 
-DEPENDS_append +=" ${@bb.utils.contains('DISTRO_FEATURES', 'acl', 'acl', '', d)} "
+DEPENDS:append =" ${@bb.utils.contains('DISTRO_FEATURES', 'acl', 'acl', '', d)} "
 
 PR="r4"

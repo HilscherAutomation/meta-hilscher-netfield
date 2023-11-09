@@ -2,12 +2,12 @@
 # rules will be automatically installed to correct location
 # and loaded prior to installation
 
-RDEPENDS_${PN}_append += "apparmor"
+RDEPENDS:${PN}:append = " apparmor"
 
 APPARMOR_PROFILES_ADDITIONAL ??= ""
 APPARMOR_PROFILES_TARGET     ??= ""
 
-pkg_postinst_${PN}_prepend() {
+pkg_postinst:${PN}:prepend() {
     apparmor_profiles="${APPARMOR_PROFILES_TARGET}"
 
     if ${@bb.utils.contains('DISTRO_FEATURES','apparmor','true','false',d)}; then
@@ -19,7 +19,7 @@ pkg_postinst_${PN}_prepend() {
     fi
 }
 
-pkg_prerm_${PN}_prepend() {
+pkg_prerm:${PN}:prepend() {
     apparmor_profiles="${APPARMOR_PROFILES_TARGET}"
 
     if ${@bb.utils.contains('DISTRO_FEATURES','apparmor','true','false',d)}; then
@@ -31,7 +31,7 @@ pkg_prerm_${PN}_prepend() {
     fi
 }
 
-do_install_append() {
+do_install:append() {
     if ${@bb.utils.contains('DISTRO_FEATURES','apparmor','true','false',d)}; then
 	profiles="${APPARMOR_PROFILES} ${APPARMOR_PROFILES_ADDITIONAL}"
         for profile in $profiles; do
@@ -74,4 +74,4 @@ python __anonymous () {
             d.appendVar("SRC_URI", " file://" + prof_local)
 }
 
-FILES_${PN}_append += "${sysconfdir}/apparmor.d"
+FILES:${PN}:append = " ${sysconfdir}/apparmor.d"

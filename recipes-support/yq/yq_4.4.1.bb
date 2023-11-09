@@ -13,13 +13,13 @@ inherit go-mod
 
 # Remove binaries from git, which result in sysroot errors on non intel platforms:
 #  | sysroot-destdir/usr/lib/go/src/github.com/mikefarah/yq/yqt: file format not recognized
-do_unpack_append() {
+do_unpack:append() {
     s = d.getVar('S', True)
     goimport = d.getVar('GO_IMPORT', True)
     os.unlink(os.path.join(s, 'src', goimport, 'yqt'))
 }
 
-do_install_append() {
+do_install:append() {
     # Delete library stuff, which is not needed, as we only need to cli
     rm -r ${D}${libdir}
 }

@@ -25,19 +25,19 @@ PACKAGES = " \
 	${PN}-fstab \
 "
 
-SUMMARY_${PN}-user = "Initrd update hook for synchronizing users from update to live system."
-RDEPENDS_${PN}-user += ""
-FILES_${PN}-user += "${sysconfdir}/update-hooks.d/*-updateuser"
+SUMMARY:${PN}-user = "Initrd update hook for synchronizing users from update to live system."
+RDEPENDS:${PN}-user += ""
+FILES:${PN}-user += "${sysconfdir}/update-hooks.d/*-updateuser"
 
-SUMMARY_${PN}-ca = "Initrd update hook for synchronizing ca certificate updates."
-RDEPENDS_${PN}-ca += ""
-FILES_${PN}-ca += "${sysconfdir}/update-hooks.d/*-updateca"
+SUMMARY:${PN}-ca = "Initrd update hook for synchronizing ca certificate updates."
+RDEPENDS:${PN}-ca += ""
+FILES:${PN}-ca += "${sysconfdir}/update-hooks.d/*-updateca"
 
-SUMMARY_${PN}-fstab = "Initrd update hook for synchronizing the /etc/fstab."
-RDEPENDS_${PN}-fstab += ""
-FILES_${PN}-fstab += "${sysconfdir}/update-hooks.d/*-updatefstab"
+SUMMARY:${PN}-fstab = "Initrd update hook for synchronizing the /etc/fstab."
+RDEPENDS:${PN}-fstab += ""
+FILES:${PN}-fstab += "${sysconfdir}/update-hooks.d/*-updatefstab"
 
 # This package references all other packages so that it can be used as a wrapper.
-ALLOW_EMPTY_${PN} = "1"
-RRECOMMENDS_${PN} += "${PACKAGES}"
-FILES_${PN} = ""
+ALLOW_EMPTY:${PN} = "1"
+RRECOMMENDS:${PN} += "${PACKAGES}"
+FILES:${PN} = ""

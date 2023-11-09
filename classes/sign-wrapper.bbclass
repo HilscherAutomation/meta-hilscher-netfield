@@ -290,7 +290,7 @@ sign_wrapper_copy_certificate() {
 ################################################################################################
 # Function sets prepares environment to use keyengine
 ################################################################################################
-do_install_prepend() {
+do_install:prepend() {
 	# in case keyengine is used we need to setup the engine path via environment variable here to be able to sign the modules in the install step
 	setup_sign_wrapper_env "${PLATFORM_KEYNAME}"
 }

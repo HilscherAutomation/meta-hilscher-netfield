@@ -1,9 +1,9 @@
 # Make sure no python2 is required
-DEPENDS_append += "openssl"
-PACKAGECONFIG_remove += "scripting"
-PACKAGES_remove += "${PN}-python ${PN}-tests"
+DEPENDS:append = " openssl"
+PACKAGECONFIG:remove = "scripting"
+PACKAGES:remove = "${PN}-python ${PN}-tests"
 
-do_install_append() {
+do_install:append() {
     rm -rf ${D}${libdir}/perf/perf-core/tests
     rm -rf ${D}${libexecdir}/perf-core/tests
 }

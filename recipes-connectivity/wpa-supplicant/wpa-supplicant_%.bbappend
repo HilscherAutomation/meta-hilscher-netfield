@@ -1,6 +1,6 @@
 PACKAGECONFIG ?= "openssl"
 
-do_configure_append () {
+do_configure:append () {
 	echo "CONFIG_EAP_FAST=y" >> wpa_supplicant/.config
 
     # Enable WPA3 support

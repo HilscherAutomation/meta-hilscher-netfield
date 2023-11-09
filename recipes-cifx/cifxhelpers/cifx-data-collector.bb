@@ -4,7 +4,7 @@ LICENSE = "CLOSED"
 SRC_URI = "file://cifx-data-collector.c"
 
 DEPENDS = "libcifx"
-RDEPENDS_${PN} = "libcifx"
+RDEPENDS:${PN} = "libcifx"
 
 S = "${WORKDIR}"
 

@@ -1,4 +1,4 @@
-DEPENDS_append += "openssl-native"
+DEPENDS:append = " openssl-native"
 
 inherit sign-wrapper
 

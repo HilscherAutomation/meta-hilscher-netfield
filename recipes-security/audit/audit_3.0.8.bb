@@ -21,7 +21,7 @@ INITSCRIPT_NAME = "auditd"
 INITSCRIPT_PARAMS = "defaults"
 
 SYSTEMD_PACKAGES = "auditd"
-SYSTEMD_SERVICE_auditd = "auditd.service"
+SYSTEMD_SERVICE:auditd = "auditd.service"
 
 DEPENDS += "tcp-wrappers libcap-ng linux-libc-headers (>= 2.6.30)"
 
@@ -37,7 +37,7 @@ EXTRA_OECONF += " \
 	--without-python \
 	--disable-zos-remote \
 	"
-EXTRA_OECONF_append_arm = " --with-arm=yes"
+EXTRA_OECONF:append:arm = " --with-arm=yes"
 
 EXTRA_OEMAKE += "PYLIBVER='python${PYTHON_BASEVERSION}' \
 	PYINC='${STAGING_INCDIR}/$(PYLIBVER)' \
@@ -45,8 +45,8 @@ EXTRA_OEMAKE += "PYLIBVER='python${PYTHON_BASEVERSION}' \
 	STDINC='${STAGING_INCDIR}' \
 	"
 
-SUMMARY_audispd-plugins = "Plugins for the audit event dispatcher"
-DESCRIPTION_audispd-plugins = "The audispd-plugins package provides plugins for the real-time \
+SUMMARY:audispd-plugins = "Plugins for the audit event dispatcher"
+DESCRIPTION:audispd-plugins = "The audispd-plugins package provides plugins for the real-time \
 interface to the audit system, audispd. These plugins can do things \
 like relay events to remote machines or analyze events for suspicious \
 behavior."
@@ -54,20 +54,20 @@ behavior."
 PACKAGES =+ "audispd-plugins"
 PACKAGES =+ "auditd ${PN}-python"
 
-FILES_${PN} = "${sysconfdir}/libaudit.conf ${libdir}/libaudit.so.1* ${libdir}/libauparse.so.*"
-FILES_auditd += "${bindir}/* ${base_sbindir}/* ${sysconfdir}/* ${systemd_unitdir}/system ${datadir}/audit"
-FILES_audispd-plugins += "${sysconfdir}/audisp/audisp-remote.conf \
+FILES:${PN} = "${sysconfdir}/libaudit.conf ${libdir}/libaudit.so.1* ${libdir}/libauparse.so.*"
+FILES:auditd += "${bindir}/* ${base_sbindir}/* ${sysconfdir}/* ${systemd_unitdir}/system ${datadir}/audit"
+FILES:audispd-plugins += "${sysconfdir}/audisp/audisp-remote.conf \
 	${sysconfdir}/audisp/plugins.d/au-remote.conf \
 	${sbindir}/audisp-remote ${localstatedir}/spool/audit \
 	"
-FILES_${PN}-dbg += "${libdir}/python${PYTHON_BASEVERSION}/*/.debug"
-FILES_${PN}-python = "${libdir}/python${PYTHON_BASEVERSION}"
-FILES_${PN}-dev += "${libdir}/*.so ${libdir}/*.la ${libdir}/pkgconfig/*"
+FILES:${PN}-dbg += "${libdir}/python${PYTHON_BASEVERSION}/*/.debug"
+FILES:${PN}-python = "${libdir}/python${PYTHON_BASEVERSION}"
+FILES:${PN}-dev += "${libdir}/*.so ${libdir}/*.la ${libdir}/pkgconfig/*"
 
-CONFFILES_auditd += "${sysconfdir}/audit/audit.rules"
-RDEPENDS_auditd += "bash"
+CONFFILES:auditd += "${sysconfdir}/audit/audit.rules"
+RDEPENDS:auditd += "bash"
 
-do_install_append() {
+do_install:append() {
 	rm -f ${D}/${libdir}/python${PYTHON_BASEVERSION}/site-packages/*.a
 	rm -f ${D}/${libdir}/python${PYTHON_BASEVERSION}/site-packages/*.la
 

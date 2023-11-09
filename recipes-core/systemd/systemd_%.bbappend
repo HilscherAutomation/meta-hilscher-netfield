@@ -1,32 +1,32 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
-RDEPENDS_${PN}_append += "systemd-machine-units"
+RDEPENDS:${PN}:append = " systemd-machine-units"
 
-SRC_URI_append += "file://disable_predictable_network_names.patch \
+SRC_URI:append = " file://disable_predictable_network_names.patch \
     file://pass_unit_name_on_enable_disable.patch \
     file://allow_readlog_for_netadmin.patch \
 "
 
 # Default servers to add to initial configuration
-EXTRA_OEMESON_append += "-Dntp-servers='0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org'"
+EXTRA_OEMESON:append = " -Dntp-servers='0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org'"
 
-PACKAGECONFIG_append += "${@bb.utils.contains('DISTRO_FEATURES', 'apparmor', 'apparmor', '', d)}"
+PACKAGECONFIG:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'apparmor', 'apparmor', '', d)}"
 PACKAGECONFIG[apparmor] = "-Dapparmor=true,-Dapparmor=false,apparmor"
-PACKAGECONFIG_append += "seccomp audit"
-PACKAGECONFIG_append += "journal-upload"
-PACKAGECONFIG_remove += "networkd"
+PACKAGECONFIG:append = " seccomp audit"
+PACKAGECONFIG:append = " journal-upload"
+PACKAGECONFIG:remove = "networkd"
 
 # Use cgroups v2 per default
-PACKAGECONFIG_append += "cgroupv2"
+PACKAGECONFIG:append = " cgroupv2"
 
 # Make sure journal-upload is not automatically started, as it requires a configuration
-SYSTEMD_PACKAGES_remove += "${PN}-journal-upload"
-SYSTEMD_SERVICE_${PN}-journal-upload = ""
+SYSTEMD_PACKAGES:remove = "${PN}-journal-upload"
+SYSTEMD_SERVICE:${PN}-journal-upload = ""
 
 inherit useradd
-GROUPADD_PARAM_${PN}_append += ";-r -g 65533 nobody; -r wheel; -r kvm; -r render;"
+GROUPADD_PARAM:${PN}:append = ";-r -g 65533 nobody; -r wheel; -r kvm; -r render;"
 
-do_install_append() {
+do_install:append() {
     # Make journald capture /dev/log (syslog), which does not work if /dev/log is already existing
     sed -i -e 's@\[Socket\]@\[Socket\]\nExecStartPre=-/bin/rm -f /dev/log@g' ${D}${systemd_system_unitdir}/systemd-journald-dev-log.socket
 
@@ -53,4 +53,4 @@ do_install_append() {
 }
 
 # Don't rebuilt if os-release changes
-RRECOMMMENDS_${PN}_remove += "os-release"
+RRECOMMMENDS:${PN}:remove = "os-release"
