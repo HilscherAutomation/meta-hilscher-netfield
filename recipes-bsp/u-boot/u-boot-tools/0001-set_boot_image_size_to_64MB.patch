@@ -7,11 +7,11 @@ Subject: [PATCH] set_boot_image_size_to_64MB
  common/bootm.c | 6 ++++++
  1 file changed, 6 insertions(+)
 
-diff --git a/common/bootm.c b/common/bootm.c
+diff --git a/boot/bootm.c b/boot/bootm.c
 index db4362a643..417800060c 100644
---- a/common/bootm.c
-+++ b/common/bootm.c
-@@ -27,6 +27,12 @@
+--- a/boot/bootm.c
++++ b/boot/bootm.c
+@@ -33,6 +33,12 @@
  #include <bootm.h>
  #include <image.h>
  

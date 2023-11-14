@@ -1,27 +1,36 @@
-We are providing the full path to the key via keydir, while mkimage expects base attributes and sets object manually to keyname.
-keyname cannot be used in our case as it is fixed to "db" due to old compatibility and we cannot really adjust it in build process
-diff -aurN a/lib/rsa/rsa-sign.c b/lib/rsa/rsa-sign.c
---- a/lib/rsa/rsa-sign.c	2021-09-10 09:26:04.667575205 +0200
-+++ b/lib/rsa/rsa-sign.c	2021-09-10 09:31:54.998347877 +0200
-@@ -135,8 +135,8 @@
- 	if (engine_id && !strcmp(engine_id, "pkcs11")) {
- 		if (keydir)
- 			snprintf(key_id, sizeof(key_id),
--				 "pkcs11:%s;object=%s;type=public",
--				 keydir, name);
-+				 "pkcs11:%s;type=public",
-+				 keydir);
+Subject: [PATCH] rsa-sign.c: Use full path keydir instead of keyname
+
+We are providing the full path to the key via keydir, while mkimage
+expects base attributes and sets object manually to keyname. keyname
+cannot be used in our case as it is fixed to "db" due to old
+compatibility and we cannot really adjust it in build process.
+---
+ lib/rsa/rsa-sign.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/lib/rsa/rsa-sign.c b/lib/rsa/rsa-sign.c
+index 3b6e5f0f86..ff2f432e66 100644
+--- ./lib/rsa/rsa-sign.c.orig	2023-11-14 17:47:14.798280687 +0100
++++ ./lib/rsa/rsa-sign.c	2023-11-14 17:48:32.398642474 +0100
+@@ -120,8 +120,8 @@
+ 					 keydir);
+ 			else
+ 				snprintf(key_id, sizeof(key_id),
+-					 "pkcs11:%s;object=%s;type=public",
+-					 keydir, name);
++					 "pkcs11:%s;type=public",
++					 keydir);
  		else
  			snprintf(key_id, sizeof(key_id),
  				 "pkcs11:object=%s;type=public",
-@@ -255,8 +255,8 @@
- 	if (engine_id && !strcmp(engine_id, "pkcs11")) {
- 		if (keydir)
- 			snprintf(key_id, sizeof(key_id),
--				 "pkcs11:%s;object=%s;type=private",
--				 keydir, name);
-+				 "pkcs11:%s;type=private",
-+				 keydir);
+@@ -242,8 +242,8 @@
+ 					 keydir);
+ 			else
+ 				snprintf(key_id, sizeof(key_id),
+-					 "pkcs11:%s;object=%s;type=private",
+-					 keydir, name);
++					 "pkcs11:%s;type=private",
++					 keydir);
  		else
  			snprintf(key_id, sizeof(key_id),
  				 "pkcs11:object=%s;type=private",
