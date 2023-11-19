@@ -1,0 +1,18 @@
+--- a/boot/image-fit.c	2023-11-19 22:14:57.031279737 +0100
++++ b/boot/image-fit.c	2023-11-19 22:15:49.535621063 +0100
+@@ -1640,6 +1640,7 @@
+ 		if (ret)
+ 			ret = -EINVAL;
+ 
++#if 0
+ 		/*
+ 		 * U-Boot stopped using unit addressed in 2017. Since libfdt
+ 		 * can match nodes ignoring any unit address, signature
+@@ -1655,6 +1656,7 @@
+ 				return ret;
+ 			}
+ 		}
++#endif
+ 		if (ret) {
+ 			log_debug("FIT check error %d\n", ret);
+ 			return ret;
