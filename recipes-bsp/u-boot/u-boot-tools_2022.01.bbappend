@@ -2,6 +2,7 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/u-boot-tools:"
 SRC_URI:append = " file://pkcs11_use_keydir_as_path.patch \
                    file://0001-set_boot_image_size_to_64MB.patch \
                    file://mkimage-wrapper \
+                   file://disable-no-unit-address-check.patch \
                   "
 
 do_install:append() {
