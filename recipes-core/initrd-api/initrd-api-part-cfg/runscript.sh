@@ -51,6 +51,7 @@ toBytes() {
 get_cur_dev_node() {
 	local dev_node="${dev}${pn}"
 	echo "$dev" | grep -q /dev/mmcblk && dev_node="${dev}p${pn}"
+	echo "$dev" | grep -q /dev/nvme && dev_node="${dev}p${pn}"
 	echo $dev_node
 }
 
