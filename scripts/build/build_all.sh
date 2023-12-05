@@ -158,7 +158,10 @@ for machine in $PLATFORMS; do
 		echo -e "EXTRA_IMAGE_PACKAGES = \"$EXTRA_IMAGE_PACKAGES\"\n" >> conf/local.overrides.conf
 
 		# Remove old entry and append the new one
-		sed -i '/INHERIT += "cve-check"/,2d' conf/local.overrides.conf
+		sed -e '/INHERIT += "cve-check"/,2d'  \
+                    -e '/CVE_CHECK_FORMAT_JSON.*/,1d' \
+                    -i conf/local.overrides.conf
+		[ "${cve_check_enabled}" = "1" ] && echo -e "CVE_CHECK_FORMAT_JSON = \"1\"" >> conf/local.overrides.conf
 		[ "${cve_check_enabled}" = "1" ] && echo -e "INHERIT += \"cve-check\"\n" >> conf/local.overrides.conf
 
 		# Remove old entry and append the new one
@@ -192,16 +195,17 @@ for machine in $PLATFORMS; do
 
 	# Run CVE check
 	if [ "$cve_check_enabled" = "1" ]; then
-		image="$target"
-		cve_file=$(readlink -f "tmp/deploy/images/$machine/$image-$machine.cve")
+		# convert -oem-all to -oem
+		image="${target//-oem-all/-oem}"
+		cve_file=$(readlink -f "tmp/deploy/images/$machine/$image-$machine.json")
 
-		cp $cve_file $DEPLOY_DIR/$machine/$image/$FW_VERSION/
-		ln -sf $(basename $cve_file) $DEPLOY_DIR/$machine/$image/$FW_VERSION/$image-$machine.cve
+		cp "$cve_file" $DEPLOY_DIR/$machine/$FW_VERSION/
+		ln -sf $(basename $cve_file) $DEPLOY_DIR/$machine/$FW_VERSION/$image-$machine.json
 
-		json_output="$(basename $cve_file).json"
+		json_output="$(basename $cve_file).cve.json"
 		$SCRIPTDIR/processcves $cve_file --machine "$machine" --format warnings-ng > \
-			$DEPLOY_DIR/$machine/$image/$FW_VERSION/$json_output
-		ln -sf $json_output $DEPLOY_DIR/$machine/$image/$FW_VERSION/$image-$machine.cve.json
+				       $DEPLOY_DIR/$machine/$FW_VERSION/$json_output
+		ln -sf $json_output $DEPLOY_DIR/$machine/$FW_VERSION/$image-$machine.cve.json
 	fi
 
 	cd ..

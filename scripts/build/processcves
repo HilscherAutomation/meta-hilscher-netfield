@@ -1,19 +1,15 @@
 #!/usr/bin/env python3
 
+import json
 import re
 
-# Valid keys inside each entry
-CVE_VALID_KEYS = [
-  'CVE',
-  'CVE STATUS',
-  'CVE SUMMARY',
-  'CVSS v2 BASE SCORE',
-  'CVSS v3 BASE SCORE',
-  'MORE INFORMATION',
-  'PACKAGE NAME',
-  'PACKAGE VERSION',
-  'VECTOR'
-]
+CVE_JSON_TO_FIELD_NAME = {
+    'summary' : 'SUMMARY',
+    'scorev2' : 'CVSS v2 BASE SCORE',
+    'scorev3' : 'CVSS v3 BASE SCORE',
+    'vector'  : 'VECTOR',
+    'link'    : 'MORE INFORMATION',
+}
 
 CVSS_SCORE_V3_INVALID = '0.0'
 CVSS_SCORE_V2_TO_SEVERITY = {
@@ -35,12 +31,12 @@ def _is_url(string):
 def get_severity_from_issue(issue):
     ret = 'unknown'
 
-    if issue['CVSS v3 BASE SCORE'] != CVSS_SCORE_V3_INVALID:
+    if issue.get('scorev3', CVSS_SCORE_V3_INVALID) != CVSS_SCORE_V3_INVALID:
         _table = CVSS_SCORE_V3_TO_SEVERITY
-        _score = issue['CVSS v3 BASE SCORE']
+        _score = issue['scorev3']
     else:
         _table = CVSS_SCORE_V2_TO_SEVERITY
-        _score = issue['CVSS v2 BASE SCORE']
+        _score = issue['scorev2']
 
     for _key, _value in _table.items():
         if float(_score) <= _key:
@@ -52,30 +48,12 @@ def get_severity_from_issue(issue):
 def read_cves_from_file(filename):
     cves = {}
 
-    with open(filename) as logfile:
-        contents = logfile.read()
+    with open(filename, 'r') as f:
+        data = json.load(f)
 
-    cves_to_parse = contents.split('\n\n');
-    for _cve in cves_to_parse:
-        if (_cve is ''):
-            continue
-
-        entry = {}
-
-        allelements = _cve.split('\n')
-        for element in allelements:
-            key = element.split(':')[0]
-            value = ':'.join(element.split(':')[1:]).lstrip()
-            entry[key] = value
-
-        if 'PACKAGE NAME' not in entry:
-            continue
-
-        package_name = entry['PACKAGE NAME']
-        if package_name not in cves:
-            cves[package_name] = []
-
-        cves[package_name].append(entry)
+    for pkg in data['package']:
+        pkgname = pkg['name'] + '-' + pkg['version']
+        cves[pkgname] = pkg['issue']
 
     return cves
 
@@ -84,13 +62,12 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Process yocto generated CVE files')
     parser.add_argument('CVELOG', metavar='logfile', type=str, help='Log file to parse (e.g. build/tmp/work/nginx/<version>/temp/cve.log)')
-    parser.add_argument('--filter', type=str, default='CVE STATUS=Unpatched', help='Filter cves. (default "CVE STATUS=Unpatched")')
+    parser.add_argument('--filter', type=str, default='status=Unpatched', help='Filter cves. (default "status=Unpatched")')
     parser.add_argument('--summary', action='store_true', help='Print summary')
     parser.add_argument('--format', type=str, choices=['raw', 'warnings-ng'], default='raw', help='Select output format (default=raw python object)')
     parser.add_argument('--machine', type=str, help='Set machine name used in output formats, supporting it')
 
     args = parser.parse_args()
-
 
     cves = read_cves_from_file(args.CVELOG)
 
@@ -145,7 +122,6 @@ if __name__ == '__main__':
             'High'     : 'HIGH',
             'Critical' : 'ERROR',
         }
-        import json
         _output = {}
         _output['_class'] = 'io.jenkins.plugins.analysis.core.restapi.ReportApi'
         _output['issues'] = []
@@ -160,17 +136,17 @@ if __name__ == '__main__':
 
                 _new_issue['severity']    = SEVERITY_TO_WARNINGSNG[get_severity_from_issue(_issue)]
                 _new_issue['category']    = 'CVE'
-                _new_issue['type']        = _issue['CVE']
-                _new_issue['packageName'] = _issue['PACKAGE NAME'] + ' - ' + _issue['PACKAGE VERSION']
+                _new_issue['type']        = _issue['id']
+                _new_issue['packageName'] = _comp
 
                 # Build HTML description from all interesting fields
                 _descr = ''
-                for _field in ['CVE SUMMARY', 'CVSS v2 BASE SCORE', 'CVSS v3 BASE SCORE', 'VECTOR', 'MORE INFORMATION']:
-                    _descr += '<b>' + _field + ': ' + '</b>'
-                    if _is_url(_issue[_field]):
-                        _descr += '<a href="{0}" target="_blank">{0}</a>'.format(_issue[_field])
+                for json_fieldname, html_fieldname in CVE_JSON_TO_FIELD_NAME.items():
+                    _descr += '<b>' + html_fieldname + ': ' + '</b>'
+                    if _is_url(_issue[json_fieldname]):
+                        _descr += '<a href="{0}" target="_blank">{0}</a>'.format(_issue[json_fieldname])
                     else:
-                        _descr += _issue[_field]
+                        _descr += _issue[json_fieldname]
                     _descr += '<br>'
                 _new_issue['description'] = _descr
 
