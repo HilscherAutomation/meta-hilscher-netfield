@@ -48,7 +48,7 @@ aziotks:x:962:aziotid,aziotcs
 aziottpm:x:963:aziotid
 rpcuser:x:970:
 bind:x:975:
-dhcp:x:976:
+dhcpcd:x:976:
 avahi-autoipd:x:977:
 systemd-journal-upload:x:979
 systemd-bus-proxy:x:980:
@@ -72,5 +72,6 @@ tss:x:997:
 sshd:x:998:
 rpc:x:999:
 admin:x:1000:
+sgx:x:2000:
 nobody:x:65533:
 nogroup:x:65534:
