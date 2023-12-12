@@ -2,6 +2,7 @@ DESCRIPTION = "cifX device driver for Hilscher netX devices"
 HOMEPAGE = "http://www.hilscher.com"
 LICENSE = "CLOSED"
 
+inherit pkgconfig
 inherit cmake
 inherit useradd
 
