@@ -5,10 +5,11 @@ diff --git a/network/99-default.link b/network/99-default.link
 index 79538f9..8fc018f 100644
 --- a/network/99-default.link
 +++ b/network/99-default.link
-@@ -8,5 +8,5 @@
+@@ -11,6 +11,6 @@
  OriginalName=*
  
  [Link]
 -NamePolicy=keep kernel database onboard slot path
 +NamePolicy=keep kernel
+ AlternativeNamesPolicy=database onboard slot path
  MACAddressPolicy=persistent
