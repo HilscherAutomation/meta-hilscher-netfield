@@ -1,0 +1,13 @@
+With old bash-complete this script fails. It's not clear how this works with
+the newer versions as it seems it tries to do some operations in host's /etc.
+
+--- a/meson_post_install.py	2023-12-06 09:54:40.964714954 +0100
++++ b/meson_post_install.py	2023-12-06 09:54:53.148748629 +0100
+@@ -13,5 +13,7 @@
+ if bash_completion_completionsdir:
+     if not os.path.isabs(bash_completion_completionsdir):
+         bash_completion_completionsdir = os.path.join(prefix, bash_completion_completionsdir)
++    else:
++        bash_completion_completionsdir = os.path.join(prefix, '..', bash_completion_completionsdir[1:])
+     os.rename(os.path.join(bash_completion_completionsdir, 'qmicli-completion'),
+               os.path.join(bash_completion_completionsdir, 'qmicli'))
