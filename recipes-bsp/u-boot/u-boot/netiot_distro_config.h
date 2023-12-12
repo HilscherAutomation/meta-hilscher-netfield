@@ -21,10 +21,10 @@
 	"autoload="AUTOLOAD"\0" \
 	"initrd_high="INITRD_HIGH"\0" \
 	"fdt_high="FDT_HIGH"\0" \
-	"loadaddr=" xstr(CONFIG_LOADADDR) "\0" \
+	"loadaddr=" xstr(CONFIG_SYS_LOAD_ADDR) "\0" \
 	"script=boot-fit.scr\0" \
-	"scriptaddr=" xstr(CONFIG_LOADADDR) "\0" \
-	"fitscript=script@1\0" \
+	"scriptaddr=" xstr(CONFIG_SYS_LOAD_ADDR) "\0" \
+	"fitscript=script-1\0" \
 	"bootcmd_plat="PLATBOOT_COMMAND"\0" \
 	"bootcmd_usb0="USBBOOT_COMMAND"\0" \
 	"pxe_setup="PXEBOOT_SETUP"\0" \
