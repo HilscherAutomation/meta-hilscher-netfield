@@ -12,7 +12,7 @@ S="${WORKDIR}/${BPN}-${PV}"
 DEPENDS = "intltool-native gettext-native glib-2.0-native \
            docbook-xml-dtd4-native docbook-xsl-stylesheets-native libxslt-native xmlto-native \
 "
-inherit autotools-brokensep systemd
+inherit autotools-brokensep systemd pkgconfig
 
 EXTRA_OECONF = " \
   --with-iptables=${sbindir}/iptables --with-iptables-restore=${sbindir}/iptables-restore \
