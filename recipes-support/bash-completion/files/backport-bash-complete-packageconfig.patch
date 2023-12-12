@@ -1,0 +1,43 @@
+diff --git a/Makefile.am b/Makefile.am
+index dcecc32c..aaf51ea4 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -5,6 +5,9 @@ sysconf_DATA = bash_completion
+ profiledir = $(sysconfdir)/profile.d
+ profile_DATA = bash_completion.sh
+ 
++pkgconfigdir = $(datadir)/pkgconfig
++pkgconfig_DATA = bash-completion.pc
++
+ bash_completion.sh: bash_completion.sh.in Makefile
+        sed -e 's|@sysconfdir[@]|$(sysconfdir)|' <$(srcdir)/$@.in >$@
+ 
+diff --git a/bash-completion.pc.in b/bash-completion.pc.in
+new file mode 100644
+index 00000000..f0a3572c
+--- /dev/null
++++ b/bash-completion.pc.in
+@@ -0,0 +1,12 @@
++prefix=@prefix@
++datadir=@datadir@
++sysconfdir=@sysconfdir@
++
++compatdir=${sysconfdir}/bash_completion.d
++completionsdir=${sysconfdir}/bash_completion.d
++helpersdir=${sysconfdir}/bash_completions.d/helpers
++
++Name: @PACKAGE@
++Description: programmable completion for the bash shell
++URL: https://github.com/scop/bash-completion
++Version: @VERSION@
+diff --git a/configure.ac b/configure.ac
+index 0732138f..9c8b705a 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -3,5 +3,5 @@ AC_INIT([bash-completion], [1.3])
+ AM_INIT_AUTOMAKE([foreign dist-bzip2 no-dist-gzip -Wall -Werror])
+ AC_SUBST(bashcompdir, $sysconfdir/bash_completion.d)
+ AC_SUBST(helpersdir, $sysconfdir/bash_completion.d/helpers)
+-AC_CONFIG_FILES([Makefile completions/Makefile completions/helpers/Makefile test/Makefile])
++AC_CONFIG_FILES([Makefile completions/Makefile completions/helpers/Makefile test/Makefile bash-completion.pc])
+ AC_OUTPUT
