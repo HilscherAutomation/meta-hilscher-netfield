@@ -15,7 +15,7 @@ IMAGE_INSTALL += "initial-machine-setup"
 #service patches swupdate environement to run service at port 80
 IMAGE_INSTALL += "rescue-service"
 
-IMAGE_INSTALL += "dhcp-client"
+IMAGE_INSTALL += "dhcpcd"
 
 #currently for debugging purposes
 IMAGE_INSTALL += "sudo"
