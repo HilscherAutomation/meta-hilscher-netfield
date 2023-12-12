@@ -14,7 +14,7 @@ S="${WORKDIR}/git"
 
 DEPENDS="systemd gperf libcap gperf-native"
 
-inherit meson useradd
+inherit meson useradd pkgconfig
 
 USERADD_PACKAGES="${PN}"
 USERADD_PARAM:${PN}  = "-r -d / -s /bin/nologin -g systemd-journal systemd-journal-netlog"
