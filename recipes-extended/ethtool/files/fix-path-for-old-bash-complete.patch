@@ -1,0 +1,12 @@
+--- a/configure.ac	2023-12-06 10:15:57.240236639 +0100
++++ b/configure.ac	2023-12-06 10:16:14.656284659 +0100
+@@ -58,7 +58,7 @@
+ 	      && bash_completion_dir=`"$PKG_CONFIG" --print-errors --variable=completionsdir bash-completion 2>&AS_MESSAGE_LOG_FD`],
+ 	     [bash_completion_dir="${bash_completion_dir#"$bash_completion_prefix"}"
+ 	      bash_completion_dir="${bash_completion_dir#/}"
+-	      BASH_COMPLETION_DIR='${prefix}'/"$bash_completion_dir"],
++	      BASH_COMPLETION_DIR='${prefix}'/../"$bash_completion_dir"],
+ 	     [BASH_COMPLETION_DIR='${datadir}/bash-completion/completions'])
+        AC_MSG_RESULT([$BASH_COMPLETION_DIR])],
+       [BASH_COMPLETION_DIR="$with_bash_completion_dir"])
+
