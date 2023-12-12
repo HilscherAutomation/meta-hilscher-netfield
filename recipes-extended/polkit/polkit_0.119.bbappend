@@ -1,7 +1,5 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
-#SRC_URI:append = " file://bind_use_of_cookies_to_specific.patch \
-#
 SRC_URI:append = " \
                    file://60-network-manager.rules \
                    file://60-modem-manager.rules \
