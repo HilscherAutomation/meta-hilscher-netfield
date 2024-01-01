@@ -56,6 +56,7 @@ python do_apply_verification_keys() {
     signature {
         key-%s {
             required = "conf";
+            algo = "sha256,rsa4096";
             rsa,modulus = <%s>;
             rsa,exponent = <0x00000000 0x%08x>;
             rsa,n0-inverse = <0x%08x>;
