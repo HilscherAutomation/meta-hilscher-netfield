@@ -1,6 +1,6 @@
 SUMMARY = "cifX device driver for Hilscher netX devices - kernel mode driver"
 HOMEPAGE = "www.hilscher.com"
-LICENSE = "GPLv2"
+LICENSE = "GPL-2.0-only"
 
 LIC_FILES_CHKSUM = "file://uio_netx.c;endline=12;md5=6d80c9f2fec84ce69fed2318825480a3"
 

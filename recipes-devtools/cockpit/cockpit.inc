@@ -1,6 +1,6 @@
 SUMMARY="Cockpit is a server manager that makes it easy to administer your GNU/Linux servers via a web browser."
 HOMEPAGE="http://www.cockpit-project.org/"
-LICENSE="LGPL-2.1"
+LICENSE="LGPL-2.1-or-later"
 
 SRC_URI +="file://cockpit.service \
            file://cockpit.socket \

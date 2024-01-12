@@ -1,6 +1,6 @@
 SUMMARY="Firewalld provides a dynamically managed firewall with support for network/firewall zones that define the trust level of network connections or interfaces"
 HOMEPAGE="https://firewalld.org/"
-LICENSE="GPL-2.0"
+LICENSE="GPL-2.0-only"
 
 LIC_FILES_CHKSUM="file://COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263"
 
