@@ -17,7 +17,7 @@ python() {
     # Append .debug on debug builds, if not already done
     if 'debug-tweaks' in d.getVar('IMAGE_FEATURES').split():
         if '.debug' not in version:
-            match = re.search('^(\d+)\.(\d+)\.(\d+)\.(\d+)(.*)', version)
+            match = re.search(r'^(\d+)\.(\d+)\.(\d+)\.(\d+)(.*)', version)
             if not match:
                 bb.warn('Unable to split version string. Simply adding .debug to end of full version')
                 version = version + '.debug'
