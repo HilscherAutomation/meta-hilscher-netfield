@@ -1,12 +1,13 @@
---- a/src/platform/nm-linux-platform.c	2019-11-27 16:53:09.632849414 +0100
-+++ b/src/platform/nm-linux-platform.c	2019-11-27 16:54:11.405825374 +0100
-@@ -7291,6 +7291,9 @@
- 	struct ifreq ifr = { };
- 	nm_auto_close int fd = -1;
+diff -aurN a/src/libnm-platform/nm-linux-platform.c b/src/libnm-platform/nm-linux-platform.c
+--- a/src/libnm-platform/nm-linux-platform.c	2022-03-07 10:09:54.000000000 +0100
++++ b/src/libnm-platform/nm-linux-platform.c	2024-01-12 12:03:40.122319418 +0100
+@@ -8138,6 +8138,9 @@
+     nm_assert(NM_IN_SET(props->type, IFF_TAP, IFF_TUN));
+     nm_assert(props->persist || out_fd);
  
-+	if (strncmp(name,"cifx",strlen("cifx")) == 0)
-+		return FALSE;
++    if (strncmp(name,"cifx",strlen("cifx")) == 0)
++       return FALSE;
 +
- 	nm_assert (NM_IN_SET (props->type, IFF_TAP, IFF_TUN));
- 	nm_assert (props->persist || out_fd);
- 
+     fd = open("/dev/net/tun", O_RDWR | O_CLOEXEC);
+     if (fd < 0)
+         return FALSE;
