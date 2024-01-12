@@ -1,6 +1,6 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/${BPN}:"
 
-LICENSE = "GPLv2"
+LICENSE = "GPL-2.0-only"
 LIC_FILES_CHKSUM = "file://pam_abl.c;beginline=1;endline=18;md5=ea2bb433f2e547ec8ab4b1a832437107"
 
 # NOTE: currently we use an archive from https://sourceforge.net/projects/pam-abl/. This is the

@@ -1,6 +1,6 @@
 SUMMARY="FSArchiver is a system tool that allows you to save the contents of a file-system to a compressed archive file."
 HOMEPAGE="http://www.fsarchiver.org/"
-LICENSE="GPLv2"
+LICENSE="GPL-2.0-only"
 
 LIC_FILES_CHKSUM="file://COPYING;md5=cbbd794e2a0a289b9dfcc9f513d1996e"
 

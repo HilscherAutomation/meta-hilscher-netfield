@@ -1,6 +1,6 @@
 SUMMARY = "netANALYZER device driver for Hilscher netANALYZER devices"
 HOMEPAGE = "www.hilscher.com"
-LICENSE = "GPLv2"
+LICENSE = "GPL-2.0-only"
 
 LIC_FILES_CHKSUM = "file://LICENSE;md5=c85113d9fb28eb2a1504e899037c915d"
 
