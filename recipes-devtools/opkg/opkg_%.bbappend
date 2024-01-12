@@ -1,4 +1,4 @@
-PACKAGECONFIG:append = " openssl sha256"
+PACKAGECONFIG:append = " sha256"
 
 OPKG_BASE_PATH ?= "/opt/apps"
 OPKGLIBDIR      = "${OPKG_BASE_PATH}/lib"

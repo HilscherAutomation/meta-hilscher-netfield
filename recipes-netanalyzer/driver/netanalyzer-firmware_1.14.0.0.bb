@@ -5,7 +5,7 @@ LICENSE = "CLOSED"
 require driver_version.inc
 PV="1.14.0.0"
 
-S .= "firmware"
+S .= "/firmware"
 
 inherit allarch
 
