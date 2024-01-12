@@ -7,7 +7,7 @@ inherit cmake
 inherit useradd
 
 require driver_version.inc
-S .= "libcifx/"
+S .= "/libcifx"
 
 DEBIAN_NOAUTONAME:${PN} = "1"
 
@@ -47,7 +47,7 @@ PACKAGECONFIG[tun] = "-DVIRTETH=ON"
 
 do_install:append() {
   #bootloader
-  cd "${S}../BSL"
+  cd "${S}/../BSL"
   install -d -m 0775 -g cifx "${D}/opt/cifx/deviceconfig/"
   install -m 444 NETX*  "${D}/opt/cifx/"
 

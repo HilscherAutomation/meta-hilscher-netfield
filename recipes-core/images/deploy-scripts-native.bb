@@ -2,7 +2,7 @@ DESCRIPTION = "Deploy scripts on host."
 HOMEPAGE = "http://www.hilscher.com"
 LICENSE = "CLOSED"
 
-inherit native hilscher-deploy
+inherit hilscher-deploy native
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 

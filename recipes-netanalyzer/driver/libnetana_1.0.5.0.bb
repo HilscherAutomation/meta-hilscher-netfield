@@ -6,7 +6,7 @@ inherit autotools
 
 require driver_version.inc
 
-S .= "libnetana/"
+S .= "/libnetana"
 
 RDEPENDS:${PN} = "kernel-module-netanalyzer"
 

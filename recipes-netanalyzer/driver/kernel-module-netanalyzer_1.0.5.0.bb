@@ -14,7 +14,7 @@ SRC_URI += " \
    file://fix_compile_errors.patch \
 "
 
-S .= "netanalyzer_kernel_mod/"
+S .= "/netanalyzer_kernel_mod"
 
 EXTRA_OEMAKE += "KDIR=${STAGING_KERNEL_DIR}"
 
