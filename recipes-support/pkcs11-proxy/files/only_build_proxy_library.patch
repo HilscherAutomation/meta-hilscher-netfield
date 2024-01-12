@@ -1,0 +1,36 @@
+diff -aurN a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt	2024-01-12 13:39:54.157739087 +0100
++++ b/CMakeLists.txt	2024-01-12 13:52:37.217211604 +0100
+@@ -7,7 +7,6 @@
+ project (pkcs11 C)
+ 
+ set(PKCS11_PROXY_SRCS gck-rpc-module.c gck-rpc-message.c gck-rpc-util.c egg-buffer.c gck-rpc-tls-psk.c)
+-set(PKCS11_DAEMON_SRCS egg-buffer.c gck-rpc-daemon-standalone.c gck-rpc-dispatch.c gck-rpc-message.c gck-rpc-util.c syscall-reporter.c syscall-names.h gck-rpc-tls-psk.c)
+ 
+ add_definitions(-Wall)
+ add_library(pkcs11-proxy SHARED ${PKCS11_PROXY_SRCS})
+@@ -19,8 +18,6 @@
+   endif()
+ endif()
+ 
+-add_executable (pkcs11-daemon ${GUI_TYPE} ${PKCS11_DAEMON_SRCS})
+-
+ set_target_properties(pkcs11-proxy PROPERTIES VERSION 0.1 SOVERSION 0)
+ 
+ if (WIN32)
+@@ -29,15 +26,12 @@
+   add_library(dl STATIC IMPORTED)
+   set_property(TARGET dl PROPERTY
+                IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/ext/lib/libdl.a)
+-  target_link_libraries (pkcs11-daemon ws2_32)
+   target_link_libraries (pkcs11-proxy ws2_32)
+ endif (WIN32)
+ 
+ target_link_libraries (pkcs11-proxy pthread ssl crypto)
+-target_link_libraries (pkcs11-daemon dl pthread ssl crypto seccomp)
+ 
+ install_targets (/lib pkcs11-proxy)
+-install_targets (/bin pkcs11-daemon)
+ 
+ add_custom_command(
+    OUTPUT syscall-names.h 
