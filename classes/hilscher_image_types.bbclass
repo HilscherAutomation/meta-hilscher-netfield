@@ -33,10 +33,10 @@ python () {
     cmdList = cmdList.replace(';', '; ')
     d.setVar('ROOTFS_POSTPROCESS_COMMAND', cmdList)
 }
-ROOTFS_POSTPROCESS_COMMAND:removeFix += "rootfs_update_timestamp;"
+ROOTFS_POSTPROCESS_COMMAND:removeFix:append = " rootfs_update_timestamp;"
 
 # Mark the following line as comment to support the yocto test framework!
-#ROOTFS_POSTPROCESS_COMMAND:removeFix += "write_image_test_data;"
+#ROOTFS_POSTPROCESS_COMMAND:removeFix:append = " write_image_test_data;"
 
 ########################################
 # Anonymous python function for image handling

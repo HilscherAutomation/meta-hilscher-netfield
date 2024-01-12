@@ -7,7 +7,7 @@ LIC_FILES_CHKSUM = "file://uio_netx.c;endline=12;md5=6d80c9f2fec84ce69fed2318825
 FILESEXTRAPATHS:prepend := "${THISDIR}/..:"
 
 require driver_version.inc
-S .= "uio_netx/"
+S .= "/uio_netx"
 
 SRC_URI += "file://fix_dt_handling.patch"
 

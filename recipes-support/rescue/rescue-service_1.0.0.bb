@@ -8,7 +8,7 @@ SRC_URI = "file://prepare_platform.sh \
            file://rescue.service \
            file://rescue.conf"
 
-S = "${WORKDIR}/"
+S = "${WORKDIR}"
 
 do_install() {
   install -d -m 0775 "${D}/opt/rescue/"
