@@ -12,3 +12,5 @@ SRC_URI += "file://only_build_proxy_library.patch"
 S = "${WORKDIR}/git"
 
 inherit cmake native
+
+RDEPENDS:${PN} = "libp11-native"

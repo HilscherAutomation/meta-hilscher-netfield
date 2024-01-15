@@ -238,7 +238,7 @@ setup_sign_wrapper_env() {
 			;;
 
 			pkcs11)
-				export OPENSSL_ENGINES="${RECIPE_SYSROOT_NATIVE}/usr/lib/engines-1.1/"
+				export OPENSSL_ENGINES="${RECIPE_SYSROOT_NATIVE}/usr/lib/engines-3/"
 
 				if [ -n "${SIGN_WRAPPER_PKCS11_REMOTE}" ]; then
 					export PKCS11_PROXY_SOCKET="${SIGN_WRAPPER_PKCS11_REMOTE}"
