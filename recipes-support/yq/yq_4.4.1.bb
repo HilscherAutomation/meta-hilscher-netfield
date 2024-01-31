@@ -4,7 +4,7 @@ LICENSE="MIT"
 
 LIC_FILES_CHKSUM="file://src/${GO_IMPORT}/LICENSE;md5=090d381b4b3eb93194e8cbff4aaae2de"
 
-SRC_URI = "git://${GO_IMPORT}.git;nobranch=1"
+SRC_URI = "git://${GO_IMPORT}.git;protocol=https;nobranch=1"
 SRCREV = "917fd0eb6a857fca69a582a0efb3e20708c5876f"
 
 GO_IMPORT = "github.com/mikefarah/yq"

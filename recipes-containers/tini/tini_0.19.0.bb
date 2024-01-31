@@ -5,7 +5,7 @@ spawn a single child (Tini is meant to be run in a container), and wait for \
 it to exit all the while reaping zombies and performing signal forwarding. "
 
 SRCREV = "de40ad007797e0dcd8b7126f27bb87401d224240"
-SRC_URI = "git://github.com/krallin/tini.git;protocol=https"
+SRC_URI = "git://github.com/krallin/tini.git;protocol=https;branch=master"
 
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=ffc9091894702bc5dcf4cc0085561ef5"
