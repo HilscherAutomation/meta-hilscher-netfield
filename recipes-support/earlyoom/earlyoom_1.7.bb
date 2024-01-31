@@ -4,7 +4,7 @@ HOMEPAGE="https://github.com/rfjakob/earlyoom"
 
 LIC_FILES_CHKSUM="file://LICENSE;md5=875c33872f2633c48ce20e87d8cd3270"
 
-SRC_URI="git://github.com/rfjakob/earlyoom.git;protocol=https"
+SRC_URI="git://github.com/rfjakob/earlyoom.git;protocol=https;branch=master"
 SRCREV="ebaea9526bcee14889b00d83a9dd3d038315cee2"
 
 S="${WORKDIR}/git"
