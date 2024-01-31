@@ -1,3 +1,15 @@
+From caf5b001f6582110e50fe68a48ecc77f1494c15c Mon Sep 17 00:00:00 2001
+From: Robert Drab <robert.drab@infopulse.com>
+Date: Tue, 12 Dec 2023 09:46:14 +0100
+Subject: [PATCH] bash-completion: Add patch backporting packageconfig
+
+---
+ Makefile.am           |  3 +++
+ bash-completion.pc.in | 12 ++++++++++++
+ configure.ac          |  2 +-
+ 3 files changed, 16 insertions(+), 1 deletion(-)
+ create mode 100644 bash-completion.pc.in
+
 diff --git a/Makefile.am b/Makefile.am
 index dcecc32c..aaf51ea4 100644
 --- a/Makefile.am
@@ -10,11 +22,11 @@ index dcecc32c..aaf51ea4 100644
 +pkgconfig_DATA = bash-completion.pc
 +
  bash_completion.sh: bash_completion.sh.in Makefile
-        sed -e 's|@sysconfdir[@]|$(sysconfdir)|' <$(srcdir)/$@.in >$@
+ 	sed -e 's|@sysconfdir[@]|$(sysconfdir)|' <$(srcdir)/$@.in >$@
  
 diff --git a/bash-completion.pc.in b/bash-completion.pc.in
 new file mode 100644
-index 00000000..f0a3572c
+index 00000000..c0693f40
 --- /dev/null
 +++ b/bash-completion.pc.in
 @@ -0,0 +1,12 @@
