@@ -147,7 +147,7 @@ while [ "${STATE}" -le "${STATE_WANTED}" ]; do
 		pid=$(docker-iotedge inspect -f '{{.State.Pid}}' edgeAgent 2>/dev/null)
 		# shellcheck disable=SC2181
 		[ $? != "0" ] && break
-		ports=$(nsenter -t "$pid" -n netstat -antl 2>/dev/null | grep tcp | tr -s " " | cut -d " " -f5 | tr -s ":" | cut -d ":" -f2 2>/dev/null)
+		ports=$(nsenter -t "$pid" -n netstat -antl 2>/dev/null | grep tcp | tr -s " " | cut -d " " -f5 | sed -e 's/.*://' 2>/dev/null)
 		# shellcheck disable=SC2181
 		[ $? != "0" ] && break
 		res="fail"
