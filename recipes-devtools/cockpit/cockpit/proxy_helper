@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 
 SYSTEMD_PROXY_CONFIG="/etc/systemd/system.conf.d/10-default-env.conf"
 PROFILE_PROXY_CONFIG="/etc/profile.d/10-proxy.sh"

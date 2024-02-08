@@ -38,7 +38,9 @@ include <tunables/global>
   /bin/systemctl                     rix,
 
   /etc/systemd/system.conf.d/10-default-env.conf rwk,
+  /etc/systemd/system.conf.d/                    rwk,
   /etc/profile.d/10-proxy.sh                     rwk,
+  /etc/profile.d/                                rwk,
 
   /etc/aziot/config.toml                         rwk,
   /usr/bin/python3.[0-9]                         rix,
