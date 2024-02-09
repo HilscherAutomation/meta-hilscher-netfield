@@ -84,7 +84,7 @@ create_boot_cfg_file() {
 	local dst="$2"
 
 	# Query for real image name of kernel and rootfs
-	kernel=$(ls $dir | grep -E "fitImage|Image$")
+	kernel=$(ls $dir | grep -E "fitImage|Image$|bzImage")
 	root=$(ls $dir | grep -E ".squashfs($|.xz$|.lz4$|.lzo$)")
 
 	# Create boot configuration
