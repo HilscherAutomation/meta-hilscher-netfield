@@ -5,6 +5,7 @@ Requires=cockpit.socket
 
 [Service]
 OOMScoreAdjust=-1000
+ExecStartPre=+/bin/mkdir -p /etc/systemd/system.conf.d
 ExecStartPre=-/bin/mkdir -p /var/lib/swupdate
 ExecStartPre=-/bin/rm -f /var/lib/swupdate/*
 ExecStartPre=-/usr/sbin/remotectl certificate --ensure --user=root --group=root

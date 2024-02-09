@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 
 SYSTEMD_PROXY_CONFIG="/etc/systemd/system.conf.d/10-default-env.conf"
 PROFILE_PROXY_CONFIG="/etc/profile.d/10-proxy.sh"
@@ -32,16 +32,35 @@ set_proxy_config() {
     mkdir -p $(dirname ${SYSTEMD_PROXY_CONFIG})
     mkdir -p $(dirname ${PROFILE_PROXY_CONFIG})
 
-    cat <<EOF>${SYSTEMD_PROXY_CONFIG}
+    if [ -n "${http_proxy}" ]; then
+        default_env="${default_env} \"http_proxy=${http_proxy}\""
+    fi
+    if [ -n "${https_proxy}" ]; then
+        default_env="${default_env} \"https_proxy=${https_proxy}\""
+    fi
+    if [ -n "${ftp_proxy}" ]; then
+        default_env="${default_env} \"ftp_proxy=${ftp_proxy}\""
+    fi
+    if [ -n "${no_proxy}" ]; then
+        default_env="${default_env} \"no_proxy=${no_proxy}\""
+    fi
+    default_env=$(echo $default_env | sed -e 's;^[ ]*;;')
+
+    if [ -z "${default_env}" ]; then
+        rm -f "${SYSTEMD_PROXY_CONFIG}"
+        rm -f "${PROFILE_PROXY_CONFIG}"
+    else
+        cat <<EOF>${SYSTEMD_PROXY_CONFIG}
 [Manager]
-DefaultEnvironment="http_proxy=${http_proxy}" "https_proxy=${https_proxy}" "ftp_proxy=${ftp_proxy}" "no_proxy=${no_proxy}"
+DefaultEnvironment=${default_env}
 EOF
 
-    cat <<EOF>${PROFILE_PROXY_CONFIG}
+        cat <<EOF>${PROFILE_PROXY_CONFIG}
 #!/bin/sh
 
-export "http_proxy=${http_proxy}" "https_proxy=${https_proxy}" "ftp_proxy=${ftp_proxy}" "no_proxy=${no_proxy}"
+export ${default_env}
 EOF
+    fi
 
     # Patch config.toml if existing
     if [ -e "/etc/aziot/config.toml" ]; then
