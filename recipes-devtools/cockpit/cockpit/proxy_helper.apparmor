@@ -31,6 +31,10 @@ include <tunables/global>
   /usr/libexec/cockpit/proxy_helper  r,
   /usr/bin/dirname.*                 rix,
   /bin/mkdir.*                       rix,
+  # sed may be from busybox or real package, so allow both
+  /bin/sed{,.*}                      rix,
+  /bin/busybox.nosuid                rix,
+  /bin/rm.*                          rix,
   /{var/volatile/,}tmp/{,**}         rwk,
   /bin/cat{,.coreutils}              rix,
   /usr/bin/jq                        rix,
