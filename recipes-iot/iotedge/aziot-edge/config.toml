@@ -1,0 +1,15 @@
+hostname = "null"
+
+[provisioning]
+source = "manual"
+connection_string = "null"
+
+[agent]
+name = "edgeAgent"
+type = "docker"
+
+  [agent.config]
+  image = "mcr.microsoft.com/azureiotedge-agent:1.4"
+
+  [agent.env]
+  UpstreamProtocol = "AmqpWs"

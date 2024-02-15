@@ -5,7 +5,9 @@ LIC_FILES_CHKSUM="file://../LICENSE;md5=0f7e3b1308cb5c00b372a6e78835732d"
 
 DEPENDS_append += "libstd-rs openssl"
 
-SRC_URI += "file://aziot_use_unwind_instead_abort.patch"
+SRC_URI += "file://aziot_use_unwind_instead_abort.patch \
+    file://config.toml \
+"
 
 inherit systemd
 SYSTEMD_AUTO_ENABLE = "disable"
@@ -39,6 +41,7 @@ do_install_append() {
     chown iotedge:iotedge ${D}${sysconfdir}/aziot/edged/config.d
 
     chmod 0755 ${D}${localstatedir}/lib/aziot/edged
+    install -m 0600 ${WORKDIR}/config.toml ${D}${sysconfdir}/aziot/config.toml
     chmod 0600 ${D}${sysconfdir}/aziot/config.toml.edge.template
     chmod 0400 ${D}${sysconfdir}/aziot/edged/config.toml.default
     chmod 0700 ${D}${sysconfdir}/aziot/edged/config.d
