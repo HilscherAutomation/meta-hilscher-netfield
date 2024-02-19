@@ -24,3 +24,5 @@ addtask do_hilscher_deploy_setscene
 
 do_hilscher_deploy[cleandirs] = "${HDEPLOY_PATH_MACHINE}"
 do_hilscher_deploy[stamp-extra-info] = "${MACHINE_ARCH}"
+
+do_build[recrdeptask] += "do_hilscher_deploy"
