@@ -39,7 +39,7 @@ IMAGE_INSTALL += "earlyoom"
 
 # TPM
 IMAGE_INSTALL += "${@bb.utils.contains('MACHINE_FEATURES', 'tpm', 'tpm-tools trousers', '', d)}"
-IMAGE_INSTALL += "packagegroup-security-tpm2 swtpm opensc"
+IMAGE_INSTALL += "packagegroup-security-tpm2 swtpm opensc libp11"
 
 # zeroconf, netbios and upnp support
 IMAGE_INSTALL += "avahi-daemon nbnsd"
