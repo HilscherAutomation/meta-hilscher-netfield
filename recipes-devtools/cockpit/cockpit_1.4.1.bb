@@ -1,4 +1,5 @@
 SRC_URI="git://bitbucket.hilscher.com/scm/ial/cockpit-netiot.git;user=${HILSCHER_BITBUCKET_USER};protocol=https;nobranch=1 \
+         file://onboarding_start_iotedge_docker.patch \
          file://use_tarball_version_if_available.patch"
 SRCREV = "6432aa67f7288fa5b0b55d0515426f0a75372835"
 
