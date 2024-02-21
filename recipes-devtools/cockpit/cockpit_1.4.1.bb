@@ -5,7 +5,10 @@ S="${WORKDIR}/cockpit-netiot-${PV}"
 
 LIC_FILES_CHKSUM="file://COPYING;md5=4fbd65380cdd255951079008b364516c"
 
-SRC_URI += "file://use_tarball_version_if_available.patch"
+SRC_URI += " \
+    file://onboarding_start_iotedge_docker.patch \
+    file://use_tarball_version_if_available.patch \
+"
 
 EXTRA_OECONF:append = " ${@bb.utils.contains("IMAGE_FEATURES", "debug-tweaks", "--enable-debug", "" ,d)}"
 
