@@ -1,5 +1,3 @@
-require recipes-devtools/go/fix_go_cache.inc
-
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 SRC_URI:append = " file://docker.rules"
 

@@ -18,7 +18,6 @@ PV .= "+git${SRCPV}"
 inherit go
 inherit goarch
 inherit pkgconfig
-require recipes-devtools/go/fix_go_cache.inc
 
 GO_IMPORT = "import"
 

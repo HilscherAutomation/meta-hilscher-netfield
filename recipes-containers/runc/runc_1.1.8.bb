@@ -17,7 +17,6 @@ PV .= "+git${SRCPV}"
 
 inherit go
 inherit goarch
-require recipes-devtools/go/fix_go_cache.inc
 inherit pkgconfig
 
 PACKAGECONFIG ??= "seccomp"

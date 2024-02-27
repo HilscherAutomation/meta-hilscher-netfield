@@ -21,7 +21,7 @@ do_configure() {
 	:
 }
 
-do_configure_libc-musl() {
+do_configure:libc-musl() {
 	rm -f ${S}/src/runtime/race/*.syso
 }
 
