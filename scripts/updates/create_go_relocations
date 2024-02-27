@@ -37,12 +37,17 @@ for required in go_mod['Require']:
         indirect = False
 
     # Check for replacements of current remote
-    for replace in go_mod['Replace']:
-        if replace['Old']['Path'] == modulepath:
-            modulepath = replace['New']['Path']
-            if 'Version' in replace['New']:
-                version = replace['New']['Version']
-            break
+    if go_mod['Replace'] is not None:
+        for replace in go_mod['Replace']:
+            if replace['Old']['Path'] == modulepath:
+                modulepath = replace['New']['Path']
+                if 'Version' in replace['New']:
+                    version = replace['New']['Version']
+                break
+
+    # TODO: Hacky
+    if modulepath == 'dario.cat/mergo':
+        modulepath = 'github.com/darccio/mergo'
 
     # Translate / split modulepath
     for translator in GO_PATH_TRANSLATORS:
@@ -61,6 +66,8 @@ for required in go_mod['Require']:
             raise Exception('Unable to generate unique module name for %s' % modulepath);
 
     used_srcuri_names.append(srcuri_name)
+
+    print('Processing: %s (root=%s)' % (modulepath, root))
 
     # Try to extract location of repository
     req = urllib.request.Request('https://' + root + '?go-get=1')
@@ -167,21 +174,30 @@ with open('relocations.inc', 'w') as f:
     for module in module_list:
         # Workarounds:
         #  - moby/sys/<x> must be translated to moby/sys/<x>/<x>
-        #  - otel/exporters/otlp/otlptrace -> otel/exporters/otlp/internal/retry/exporters/otlp/otlptrace:force
+        #  - github.com/docker/buildx -> add additional moby/buildkit from vendored sources
+        #  - github.com/darccio/mergo -> dario.cat/mergo
+        #  - otel/exporters/otlp/otlptrace -> otel/exporters/otlp/otlptrace/exporters/otlp/otlptrace:force
+        #  - go.opentelemetry.io/otel/exporters/prometheus -> go.opentelemetry.io/otel/exporters/prometheus/exporters/prometheus:force
         #  - go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp -> go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc/instrumentation/net/http/otelhttp:force
         #  - otel/(metric|sdk|trace) -> otel/(metric|sdk|trace)/(metric|sdk|trace)
         #  - go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc -> +/instrumentation/google.golang.org/grpc/otelgrpc 
-        #  - go.opentelemetry.io/otel/exporters/otlp/internal/retry -> + /exporters/otlp/internal/retry
         #  - proto/otlp -> proto/otlp/otlp
         #  - github.com/aws/aws-sdk-go-v2/<x> -> + <x>
         #  - google.golang.org/genproto/googleapis/<x> -> + /googleapis/<x>
         if '/moby/sys' in module['path']:
             srcpath=module['path'] + '/' + module['path'].split('/')[-1]
             f.write('    %s:%s \\\n' %(module['path'], srcpath))
+        elif module['path'] == 'github.com/docker/buildx':
+            f.write('    %s:%s \\\n' %(module['path'], module['path']))
+            f.write('    github.com/moby/buildkit:%s/vendor/github.com/moby/buildkit \\\n' %(module['path']))
+        elif module['path'] == 'github.com/darccio/mergo':
+            f.write('    dario.cat/mergo:github.com/darccio/mergo \\\n')
         elif '/exporters/otlp/' in module['path']:
             search=re.search('(.*/exporters/otlp/)(.*)', module['path'])
-            srcpath=search.group(1) + 'internal/retry/exporters/otlp/' + search.group(2)
+            srcpath=search.group(1) + 'otlptrace/exporters/otlp/' + search.group(2)
             f.write('    %s:%s:force \\\n' %(module['path'], srcpath))
+        elif  module['path'] == 'go.opentelemetry.io/otel/exporters/prometheus':
+            f.write('    %s:%s/exporters/prometheus:force \\\n' %(module['path'], module['path']))
         elif module['path'].startswith('go.opentelemetry.io/contrib/instrumentation/net/http/'):
             search=re.search('go.opentelemetry.io/contrib/instrumentation(.*)', module['path'])
             srcpath='go.opentelemetry.io/contrib/instrumentation/' + \
@@ -198,8 +214,6 @@ with open('relocations.inc', 'w') as f:
             f.write('    %s:%s:force \\\n' %(module['path'], module['path'] + '/otlp'))
         elif module['path'].endswith('instrumentation/google.golang.org/grpc/otelgrpc'):
             f.write('    %s:%s:force \\\n' %(module['path'], module['path'] + '/instrumentation/google.golang.org/grpc/otelgrpc'))
-        elif module['path'].endswith('exporters/otlp/internal/retry'):
-            f.write('    %s:%s:force \\\n' %(module['path'], module['path'] + '/exporters/otlp/internal/retry'))
         elif module['path'].startswith('github.com/aws/aws-sdk-go-v2/'):
             modpath='/'.join(module['path'].split('/')[3:])
             srcpath='github.com/aws/aws-sdk-go-v2/' + modpath + '/' + modpath

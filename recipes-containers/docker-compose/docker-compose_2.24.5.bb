@@ -7,7 +7,7 @@ COMPOSE_PKG = "github.com/docker/compose/v2"
 
 SRC_URI="git://${GO_IMPORT};protocol=https;branch=main \
          file://modules.txt"
-SRCREV="d6f842b042d2f2926901305336527b3eaadf067a"
+SRCREV="8fdd45cd4ce0035968efef3cae44529690fbea60"
 
 include src_uri.inc
 
@@ -56,7 +56,7 @@ do_install() {
 
 INHIBIT_PACKAGE_DEBUG_SPLIT="1"
 INHIBIT_PACKAGE_STRIP = "1"
-INSANE_SKIP:${PN} += "ldflags already-stripped"
+INSANE_SKIP:${PN} += "ldflags already-stripped textrel"
 
 FILES:${PN} = "${libdir} ${bindir}"
 RDEPENDS:${PN} = "docker"

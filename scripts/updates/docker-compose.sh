@@ -23,6 +23,9 @@ docker run -it --rm -v "$tmpdir":/build --workdir /build/compose golang:1.20 ../
 
 cp "$tmpdir"/compose/relocations.inc "$tmpdir"/compose/src_uri.inc \
    "${SCRIPTDIR}"/../../recipes-containers/docker-compose/
+# WORKAROUND: Required as some tools need newer fsutil as in main go.mod
+sed -e 's@\(github.com/tonistiigi/fsutil\):[^ ]*@\1:github.com/docker/buildx/vendor/github.com/tonistiigi/fsutil:force@g' \
+    -i "${SCRIPTDIR}"/../../recipes-containers/docker-compose/relocations.inc
 cp "$tmpdir"/compose/modules.txt \
    "${SCRIPTDIR}"/../../recipes-containers/docker-compose/files
 current_compose=$(ls -1 "${SCRIPTDIR}"/../../recipes-containers/docker-compose/*.bb | head -n1)

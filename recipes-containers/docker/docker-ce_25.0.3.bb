@@ -19,13 +19,13 @@ DESCRIPTION = "Linux container runtime \
  "
 
 SRC_URI = "\
-	git://github.com/moby/moby.git;protocol=https;branch=24.0 \
-	file://use_yocto_goflags.patch \
+	git://github.com/moby/moby.git;protocol=https;branch=25.0 \
+	file://0001-dynbinary-use-go-cross-compiler.patch \
 	file://docker.init \
 	file://hi.Dockerfile \
 	"
 
-SRCREV="1a7969545d73537545645f5cd2c79b7a77e7d39f"
+SRCREV="f417435e5f6216828dec57958c490c4f8bae4f98"
 
 # CGO does not play well with thumb -> https://patches.openembedded.org/patch/144011/
 TUNE_CCARGS:remove = "-mthumb"
@@ -60,10 +60,6 @@ inherit go
 inherit pkgconfig
 
 export GOARCH="${TARGET_GOARCH}"
-# Prevent following error:
-#  | no required module provides package github.com/docker/docker/cmd/dockerd: go.mod file not found in current directory or any parent directory; see 'go help modules' 
-# See https://www.linuxquestions.org/questions/slackware-14/help-to-install-docker%5Berror-says-go-mod-not-found-4175693908/
-export GO111MODULE="auto"
 
 do_compile() {
 	cd ${S}
@@ -78,7 +74,7 @@ do_compile() {
 	export DOCKER_BUILDTAGS="${DOCKER_BUILDTAGS}"
 	export DOCKER_GITCOMMIT="${SRCREV}"
 	export VERSION="${PV}"
-	./hack/make.sh dynbinary dynbinary-proxy
+	./hack/make.sh dynbinary
 }
 
 SYSTEMD_PACKAGES = "${@bb.utils.contains('DISTRO_FEATURES','systemd','${PN}','',d)}"
@@ -91,7 +87,7 @@ INITSCRIPT_PARAMS:${PN} = "${OS_DEFAULT_INITSCRIPT_PARAMS}"
 do_install() {
 	mkdir -p ${D}/${bindir}
 	cp -L ${S}/bundles/dynbinary-daemon/dockerd ${D}/${bindir}/dockerd
-	cp -L ${S}/bundles/dynbinary-proxy/docker-proxy ${D}/${bindir}/docker-proxy
+	cp -L ${S}/bundles/dynbinary-daemon/docker-proxy ${D}/${bindir}/docker-proxy
 
 	if ${@bb.utils.contains('DISTRO_FEATURES','systemd','true','false',d)}; then
 		install -d ${D}${systemd_unitdir}/system
