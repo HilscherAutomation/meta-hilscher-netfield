@@ -41,6 +41,7 @@ cockpit-ws:x:80:
 users:x:100:
 netadmin:x:101:
 timeadmin:x:102:
+sgx:x:200:
 docker-readonly:x:950:
 aziotid:x:960:
 aziotcs:x:961:aziotid
@@ -72,6 +73,5 @@ tss:x:997:
 sshd:x:998:
 rpc:x:999:
 admin:x:1000:
-sgx:x:2000:
 nobody:x:65533:
 nogroup:x:65534:

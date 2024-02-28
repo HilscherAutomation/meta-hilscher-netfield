@@ -41,6 +41,7 @@ cockpit-ws:x:80:
 users:x:100:
 netadmin:x:101:
 timeadmin:x:102:
+sgx:x:200:
 docker-readonly:x:950:
 aziotid:x:960:
 aziotcs:x:961:aziotid
@@ -49,7 +50,7 @@ aziottpm:x:963:aziotid
 rpcuser:x:970:
 tss:x:971:
 bind:x:975:
-dhcp:x:976:
+dhcpcd:x:976:
 avahi-autoipd:x:977:
 systemd-journal-upload:x:980:
 systemd-bus-proxy:x:981:
