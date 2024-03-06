@@ -4,18 +4,18 @@ if [ ! -e "/etc/gateway/settings.json" ]; then
     exit 0
 fi
 
-product_number=$(cat /var/platform/device_data/product_number | tr -d '$\n')
+product_number=$(cat /var/platform/device_data/product_number | tr -d '\n')
 
 # This is a device with gets a hardware id assigned from cloud
 if [ "$product_number" = "FFFFFFFFFFFF" ]; then
-    serial_number=$(cat /var/platform/device_data/serial_number | tr -d '$\n')
+    serial_number=$(cat /var/platform/device_data/serial_number | tr -d '\n')
     serial_number=$(echo $serial_number | rev | cut -c1-12 | rev)
     serial_number=$(printf "%12s" "$serial_number" | sed "s/ /0/g")
     prefix=$(jq -r '.gatewayPrefix' /etc/gateway/settings.json)
 
     if [ "${product_number}-${serial_number}" = "$prefix" ]; then
         if [ -e "/mnt/backup/nvd/hardware_id" ]; then
-            hardwareid=$(cat /mnt/backup/nvd/hardware_id | tr -d '$\n')
+            hardwareid=$(cat /mnt/backup/nvd/hardware_id | tr -d '\n')
 
             # Update settings.json
             echo "<6> Updating settings.json with hardwareid from netFIELD.io"

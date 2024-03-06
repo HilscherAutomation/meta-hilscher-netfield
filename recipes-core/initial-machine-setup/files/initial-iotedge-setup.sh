@@ -4,14 +4,14 @@
 if [ -z "$(cat /etc/gateway/settings.json 2>/dev/null)" ]; then
     if [ -e "/var/platform/device_data/product_number" ]; then
         # Pad up product_number to 12 characters
-        product_number=$(cat /var/platform/device_data/product_number | tr -d '$\n')
+        product_number=$(cat /var/platform/device_data/product_number | tr -d '\n')
         product_number=$(printf "%12s" "$product_number" | sed "s/ /0/g")
     else
         product_number="000000000000"
     fi
 
     # Read and pad serial number to 12 characters
-    serial_number=$(cat /var/platform/device_data/serial_number | tr -d '$\n')
+    serial_number=$(cat /var/platform/device_data/serial_number | tr -d '\n')
     serial_number=$(echo $serial_number | rev | cut -c1-12 | rev)
     serial_number=$(printf "%12s" "$serial_number" | sed "s/ /0/g")
 
