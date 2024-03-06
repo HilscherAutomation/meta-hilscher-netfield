@@ -166,7 +166,7 @@ function pre_cleanup()
 	os.execute("grep -q bootCfg=.*/boot.cfg /proc/cmdline && rm -rf /mnt/system/aboot.cfg*")
 
 	-- Delete obsolete files
-	os.execute("for file in $(find /mnt/system -maxdepth 1 -name *fitImage* -o name *bzImage*); do grep -q $(basename $file) /mnt/system/*boot.cfg || rm $file*; done")
+	os.execute("for file in $(find /mnt/system -maxdepth 1 -name *fitImage* -o -name *bzImage*); do grep -q $(basename $file) /mnt/system/*boot.cfg || rm $file*; done")
 	os.execute("for file in $(find /mnt/system/ -maxdepth 1 -name *.rootfs.squashfs); do grep -q $(basename $file) /mnt/system/*boot.cfg || rm $file*; done")
 
 	return true
