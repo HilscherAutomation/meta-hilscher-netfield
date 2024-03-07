@@ -163,6 +163,12 @@ EOF
 
 	# Set build parameters
 	if touch conf/local.overrides.conf; then
+		# create spdx SBOM
+		if ! grep -q 'INHERIT += "create-spdx"' conf/local.overrides.conf ; then
+			echo 'INHERIT += "create-spdx"' >> conf/local.overrides.conf
+			echo 'SPDX_PRETTY = "1"' >> conf/local.overrides.conf
+		fi
+
 		# Remove old entry and append the new one
 		sed -i "/FIRMWARE_VERSION = /,2d" conf/local.overrides.conf
 		echo -e "FIRMWARE_VERSION = \"${FW_VERSION}\"\n" >> conf/local.overrides.conf
@@ -261,6 +267,17 @@ EOF
 		XZ_OPT="-T0" tar cJf $DEPLOY_DIR/$machine/$FW_VERSION/"${src_release_dir}".tar.xz "${src_release_dir}"
 		rm -rf "${src_release_dir}"
 	fi
+
+	# Copy SBOM
+	if echo "$target" | grep "-oem-all$"; then
+		# OEM image, so we need the netfield-image-oem base image's manifest
+		# strip -all first as license is netfield-image-oem-${machine}-...
+		local fulltarget=$(echo "$target" | sed 's@-all$@@')
+		sbom_file=$(readlink -f tmp/deploy/images/$machine/${fulltarget}-${machine}.spdx.tar.zst)
+	else
+		sbom_file=$(readlink -f tmp/deploy/images/$machine/${target}-${machine}.spdx.tar.zst)
+	fi
+	cp -L $sbom_file $DEPLOY_DIR/$machine/$FW_VERSION/
 
 	# Run CVE check
 	if [ "$cve_check_enabled" = "1" ]; then
