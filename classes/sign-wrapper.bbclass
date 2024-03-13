@@ -64,6 +64,39 @@ SIGN_WRAPPER_KEY     ??= "${PLATFORM_KEYNAME}"
 SIGN_WRAPPER_KEY_SRC ??= "${PLATFORM_KEYDIR}"
 SIGN_WRAPPER_KEY_DST ??= "${DEPLOY_DIR_IMAGE}/key_store/"
 
+python() {
+  '''
+  This anonymous function is used to calculate joint hash of all the keys
+  from the SIGN_WRAPPER_KEY_SRC directory. This hash is then used to set
+  SIGN_WRAPPER_KEYS_SHA variable which in turn is used as vardeps for the
+  do_populate_public_key task. Without this sstate will not notice keys
+  change which can lead to a situation that bootloader will not be rebuild
+  when keys were changed. This in turn will prevent the device from booting
+  properly
+  '''
+
+  def file_checksum(file_path):
+    import hashlib
+
+    with open(file_path, "rb") as f:
+      bytes = f.read()
+      readable_hash = hashlib.sha256(bytes).hexdigest();
+    return readable_hash
+
+  def dir_joint_checksum(dir_path):
+    hash = ""
+    for root, dirs, files in os.walk(dir_path):
+      for names in sorted(files):
+        filepath = os.path.join(root, names)
+        hash = hash + file_checksum(filepath)
+    return hash
+
+  priv_key_dir_path = os.path.join(d.getVar("SIGN_WRAPPER_KEY_SRC", True))
+  # We have to trigger reparsing whenever something changes in priv_key_dir
+  bb.parse.mark_dependency(d, priv_key_dir_path)
+  d.setVar('SIGN_WRAPPER_KEYS_SHA', dir_joint_checksum(priv_key_dir_path))
+}
+
 SIGN_WRAPPER_MODE    ??= "file"
 SIGN_WRAPPER_OPENSSL_PARAMS     ??= ""
 
@@ -302,5 +335,5 @@ do_install[vardeps] += "PLATFORM_SIGN SIGN_WRAPPER_KEY SIGN_WRAPPER_KEY_SRC SIGN
 do_populate_public_key () {
 	populate_public_key "${SIGN_WRAPPER_KEY}"
 }
-do_populate_public_key[vardeps] ?= "PLATFORM_SIGN SIGN_WRAPPER_KEY SIGN_WRAPPER_KEY_SRC SIGN_WRAPPER_KEY_DST"
+do_populate_public_key[vardeps] ?= "PLATFORM_SIGN SIGN_WRAPPER_KEY SIGN_WRAPPER_KEY_SRC SIGN_WRAPPER_KEY_DST SIGN_WRAPPER_KEYS_SHA"
 addtask populate_public_key before do_configure after do_prepare_recipe_sysroot
