@@ -29,6 +29,8 @@ RDEPENDS:${PN}:append = " toml-cli"
 
 SYSTEMD_SERVICE:${PN}:append = " iotedge-docker.service iotedge-docker.socket iotedge.slice"
 
+export SOCKET_DIR="/run/aziot"
+
 do_install:append() {
     install -d ${D}${sysconfdir}/docker
     install -m0644 ${WORKDIR}/iotedge.json ${D}${sysconfdir}/docker/
