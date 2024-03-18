@@ -170,7 +170,7 @@ do_assemble_fitimage_initramfs:prepend() {
 
 # verify if fitimage is correctly signed, use public key located in device tree
 do_assemble_fitimage:append() {
-	if [ "${PLATFORM_SIGN}" = "1" ]; then
+	if [ "${PLATFORM_SIGN}" = "1" ] && [ "${DISABLE_FIT_SIGNATURE_CHECK}" != "1" ]; then
 		echo "Check signature of fitimage..."
 		if [ -n "${EXTERNAL_KERNEL_DEVICETREE}" ]; then
 			pubkey_dtb=$(ls -1 ${EXTERNAL_KERNEL_DEVICETREE}/*.dtb)
@@ -182,7 +182,7 @@ do_assemble_fitimage:append() {
 }
 
 do_assemble_fitimage_initramfs:append() {
-	if [ "${PLATFORM_SIGN}" = "1" ]; then
+	if [ "${PLATFORM_SIGN}" = "1" ] && [ "${DISABLE_FIT_SIGNATURE_CHECK}" != "1" ]; then
 		echo "Check signature of fitimage-initramfs..."
 		if [ -n "${EXTERNAL_KERNEL_DEVICETREE}" ]; then
 			pubkey_dtb=$(ls -1 ${EXTERNAL_KERNEL_DEVICETREE}/*.dtb)
