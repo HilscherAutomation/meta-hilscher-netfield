@@ -20,8 +20,9 @@ export sites=" \
     github.com/hashicorp/go-version:github.com/hashicorp/go-version \
     github.com/jonboulle/clockwork:github.com/jonboulle/clockwork \
     github.com/mattn/go-shellwords:github.com/mattn/go-shellwords \
+    github.com/mitchellh/go-ps:github.com/mitchellh/go-ps \
     github.com/mitchellh/mapstructure:github.com/mitchellh/mapstructure \
-    github.com/crazy-max/buildkit:github.com/crazy-max/buildkit \
+    github.com/moby/buildkit:github.com/moby/buildkit \
     github.com/moby/patternmatcher:github.com/moby/patternmatcher \
     github.com/moby/term:github.com/moby/term \
     github.com/morikuni/aec:github.com/morikuni/aec \
@@ -45,6 +46,7 @@ export sites=" \
     golang.org/x/sync:golang.org/x/sync \
     golang.org/x/sys:golang.org/x/sys \
     google.golang.org/grpc:google.golang.org/grpc \
+    gopkg.in/yaml.v3:gopkg.in/yaml.v3 \
     gotest.tools/v3:gotest.tools/v3 \
     dario.cat/mergo:github.com/darccio/mergo \
     github.com/AdaLogics/go-fuzz-headers:github.com/AdaLogics/go-fuzz-headers \
@@ -163,7 +165,6 @@ export sites=" \
     google.golang.org/protobuf:google.golang.org/protobuf \
     gopkg.in/inf.v0:gopkg.in/inf.v0 \
     gopkg.in/yaml.v2:gopkg.in/yaml.v2 \
-    gopkg.in/yaml.v3:gopkg.in/yaml.v3 \
     k8s.io/api:k8s.io/api \
     k8s.io/apimachinery:k8s.io/apimachinery \
     k8s.io/apiserver:k8s.io/apiserver \
