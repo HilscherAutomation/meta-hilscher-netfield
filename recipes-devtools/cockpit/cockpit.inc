@@ -8,6 +8,7 @@ SRC_URI +="file://cockpit.service \
            file://cockpit.conf \
            file://99-cockpit.conf \
            file://add_default_origin_with_port.patch \
+           file://docker_use_api_124.patch \
 "
 PACKAGES=+"${PN}-apps ${PN}-ovirt ${PN}-packagekit ${PN}-selinux ${PN}-sosreport \
           ${PN}-subscriptions ${PN}-playground ${PN}-kubernetes ${PN}-storaged \
