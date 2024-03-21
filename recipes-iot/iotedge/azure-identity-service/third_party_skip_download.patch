@@ -1,7 +1,7 @@
 diff -aurN a/contrib/third-party-notices.sh b/contrib/third-party-notices.sh
---- a/contrib/third-party-notices.sh	2022-09-05 07:32:53.237161728 +0200
-+++ b/contrib/third-party-notices.sh	2022-09-05 07:37:54.460724939 +0200
-@@ -190,7 +190,7 @@
+--- a/contrib/third-party-notices.sh	2024-03-18 10:17:06.140391763 +0100
++++ b/contrib/third-party-notices.sh	2024-03-18 10:17:44.521572766 +0100
+@@ -187,7 +187,7 @@
              # https://github.com/hannobraun/inotify/commit/52c18c527fe227b329f8428d73a1c732f2d56ce5
              # but that requires inotify v0.8 and notify v4 uses inotify v0.7.
              # notify v5.0 will depend on inotify v0.8, so remove this when that happens.
@@ -10,7 +10,7 @@ diff -aurN a/contrib/third-party-notices.sh b/contrib/third-party-notices.sh
          fi
  
          if [ "$name:$version" == 'inotify-sys:0.1.4' ]; then
-@@ -199,14 +199,14 @@
+@@ -196,14 +195,14 @@
              # notify will need to depend on newer version of inotify (> 0.8) that depends 
              # on newer version of inotify-sys (> 0.1.4), so remove this when that happens.
              # The ISC license content is identical in both inotify and inotify-sys repos. 

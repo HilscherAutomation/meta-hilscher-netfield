@@ -1,20 +1,23 @@
 diff -aurN a/contrib/third-party-notices.sh b/contrib/third-party-notices.sh
---- a/contrib/third-party-notices.sh	2021-04-15 10:51:10.582872468 +0200
-+++ b/contrib/third-party-notices.sh	2021-04-15 10:58:53.356118613 +0200
-@@ -5,25 +5,6 @@
- # This script identifies all the third-party dependencies of the crates in the workspace.
- # At a high level, `cargo metadata --format-version 1` gives this information in JSON.
+--- a/contrib/third-party-notices.sh	2024-03-18 10:15:49.706006315 +0100
++++ b/contrib/third-party-notices.sh	2024-03-18 10:17:06.140391763 +0100
+@@ -2,28 +2,6 @@
  
+ set -euo pipefail
+ 
+-# This script identifies all the third-party dependencies of the crates in the workspace.
+-# At a high level, `cargo metadata --format-version 1` gives this information in JSON.
+-
 -case "$ARCH" in
 -    'amd64')
 -        platform='x86_64-unknown-linux-gnu'
 -        ;;
 -
--    'arm32v7')
+-    'arm32v7'|'armhf')
 -        platform='armv7-unknown-linux-gnueabihf'
 -        ;;
 -
--    'aarch64')
+-    'aarch64'|'arm64')
 -        platform='aarch64-unknown-linux-gnu'
 -        ;;
 -
