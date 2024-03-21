@@ -12,6 +12,7 @@ By default, a default image will be build for a predefined list of machines(plat
   -D                          Build a debug image
   -e <extra_image_features>   Add extra image features
   -f <fw_version>             Firmware version (default: "2.5.0.0")
+  -g                          Build GPL compliance tarball
   -i <image>                  Image name to build (default: "netfield-image" or "netfield-image-oem-all" on oem capable machines)
   -p <extra_image_packages>   Add extra image packages
   -P <machine[0..n]>          Space seperated list of machines/platforms to build
@@ -30,7 +31,7 @@ EOF
 	exit 1
 }
 
-while getopts ":b:cd:De:f:i:p:P:s:t" o; do
+while getopts ":b:cd:De:f:gi:p:P:s:t" o; do
 	case "${o}" in
 		b)
 			build_dir="${OPTARG}"
@@ -48,6 +49,8 @@ while getopts ":b:cd:De:f:i:p:P:s:t" o; do
 			;;
 		f)
 			fw_version="${OPTARG}"
+			;;
+		g)	gpl_compliance="1"
 			;;
 		i)
 			image="${OPTARG}"
@@ -146,8 +149,26 @@ for machine in $PLATFORMS; do
 		[ -e conf/site.conf ] && diff -ua conf/site.conf ../site.conf || cp -i ../site.conf conf/site.conf
 	fi
 
+	if [ "$gpl_compliance" = "1" ]; then
+		cat <<EOF>> conf/local.overrides.conf
+INHERIT += "archiver"
+ARCHIVER_MODE[src] = "original"
+ARCHIVER_MODE[diff] = "1"
+ARCHIVER_MODE[recipe] = "1"
+COPYLEFT_LICENSE_INCLUDE = "GPL* LGPL*"
+COPYLEFT_LICENSE_EXCLUDE = "CLOSED Proprietary"
+COPYLEFT_RECIPE_TYPES = "target"
+EOF
+	fi
+
 	# Set build parameters
 	if touch conf/local.overrides.conf; then
+		# create spdx SBOM
+		if ! grep -q 'INHERIT += "create-spdx"' conf/local.overrides.conf ; then
+			echo 'INHERIT += "create-spdx"' >> conf/local.overrides.conf
+			echo 'SPDX_PRETTY = "1"' >> conf/local.overrides.conf
+		fi
+
 		# Remove old entry and append the new one
 		sed -i "/FIRMWARE_VERSION = /,2d" conf/local.overrides.conf
 		echo -e "FIRMWARE_VERSION = \"${FW_VERSION}\"\n" >> conf/local.overrides.conf
@@ -192,6 +213,71 @@ for machine in $PLATFORMS; do
 	# NOTE: sstate-cache-management does not clean TUNEARCHS automatically, so
 	#       call it another time with possible tunearchs
 	# sstate-cache-management.sh -d -y --cache-dir=sstate-cache --extra-arch=corei7-64-intel-common,corei7-64,cortexa7t2hf-neon-vfpv4,cortexa9hf-neon,aarch64-mx8mm,aarch64
+
+	# Build GPL compliance tarball
+	if [ "$gpl_compliance" = "1" ]; then
+		src_release_dir="gpl-source-release-${machine}-${FW_VERSION}"
+		mkdir -p $src_release_dir
+		for a in tmp/deploy/sources/*; do
+			for d in $a/*; do
+				# Get package name from path
+				p=`basename $d`
+				while true; do
+					# strip version from path
+					prev_p="$p"
+					p=${p%-*}
+					if [ "$p" = "gcc-source" ]; then
+						p="gcc-runtime"
+						break
+					fi
+					if [ -d "tmp/deploy/licenses/$p" ]; then
+						break
+					fi
+					if [ "$p" = "$prev_p" ]; then
+						break
+					fi
+				done
+				# Only archive GPL packages (update *GPL* regex for your license check)
+				numfiles=`ls tmp/deploy/licenses/$p/*GPL* 2> /dev/null | wc -l`
+				if [ $numfiles -ge 1 ]; then
+					echo Archiving $p
+					mkdir -p $src_release_dir/$p/source
+					cp $d/* $src_release_dir/$p/source 2> /dev/null
+					mkdir -p $src_release_dir/$p/license
+					cp tmp/deploy/licenses/$p/* $src_release_dir/$p/license 2> /dev/null
+				else
+					echo Ommitting $p
+				fi
+			done
+		done
+		# copy image manifest which includes all packages with licenses
+		if echo "$target" | grep "-oem-all$"; then
+			# OEM image, so we need the netfield-image-oem base image's manifest
+			# strip -all first as license is netfield-image-oem-${machine}-...
+			manifest_dir=$(echo "$target" | sed 's@-all$@@')
+			manifest_dir=$(ls -1td tmp/deploy/licenses/${manifest_dir}-${machine}-${FW_VERSION}* | head -n 1)
+		else
+			# non-OEM image, so we need the netfield-image manifest
+			manifest_dir=$(ls -1td tmp/deploy/licenses/${target}-${machine}-${FW_VERSION}* | head -n 1)
+		fi
+		image_manifest="${manifest_dir}/license.manifest"
+		echo "Using image manifest ${image_manifest}"
+		cp "${image_manifest}" "${src_release_dir}"
+		echo "Creating GPL compliance archive $DEPLOY_DIR/$machine/${src_release_dir}.tar.xz"
+		XZ_OPT="-T0" tar cJf $DEPLOY_DIR/$machine/$FW_VERSION/"${src_release_dir}".tar.xz "${src_release_dir}"
+		rm -rf "${src_release_dir}"
+	fi
+
+	# Copy SBOM
+	if echo "$target" | grep "-oem-all$"; then
+		# OEM image, so we need the netfield-image-oem base image's manifest
+		# strip -all first as license is netfield-image-oem-${machine}-...
+		local fulltarget=$(echo "$target" | sed 's@-all$@@')
+		sbom_file=$(readlink -f tmp/deploy/images/$machine/${fulltarget}-${machine}.spdx.tar.zst)
+	else
+		sbom_file=$(readlink -f tmp/deploy/images/$machine/${target}-${machine}.spdx.tar.zst)
+	fi
+	cp -L $sbom_file $DEPLOY_DIR/$machine/$FW_VERSION/
 
 	# Run CVE check
 	if [ "$cve_check_enabled" = "1" ]; then
