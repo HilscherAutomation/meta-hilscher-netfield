@@ -174,7 +174,8 @@
             "method": {
               "enum": [
                 "symmetric_key",
-                "tpm"
+                "tpm",
+                "x509"
               ]
             },
             "global_endpoint": {
@@ -188,6 +189,16 @@
             "registration_id": {
               "type": "string",
               "pattern": "^.*$"
+            },
+            "crt": {
+              "type": "string",
+              "pattern": "^.*$",
+              "description": "Base64 encoded X.509 certificate. Must include Root/Intermediate CA certificates."
+            },
+            "key": {
+              "type": "string",
+              "pattern": "^.*$",
+              "description": "Base64 encoded private key."
             },
             "tpm": {
               "type": "object",
