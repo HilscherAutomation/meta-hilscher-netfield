@@ -1,0 +1,336 @@
+diff -aurN a/pkg/docker/client.js b/pkg/docker/client.js
+--- a/pkg/docker/client.js	2023-08-04 07:42:43.000000000 +0200
++++ b/pkg/docker/client.js	2024-03-20 14:26:20.046223571 +0100
+@@ -58,7 +58,7 @@
+             return;
+ 
+         /* Trigger the event signal when JSON from /events */
+-        events = http.get("/v1.12/events");
++        events = http.get("/v1.24/events");
+         events.stream(function(resp) {
+             util.docker_debug("event:", resp);
+             trigger_event();
+@@ -161,7 +161,7 @@
+          * /events for notification when something changes as well as some
+          * file monitoring.
+          */
+-        http.get("/v1.12/containers/json", { all: 1 })
++        http.get("/v1.24/containers/json", { all: 1 })
+                 .done(function(data) {
+                     var containers = JSON.parse(data);
+                     alive = true;
+@@ -174,7 +174,7 @@
+ 
+                         seen[id] = id;
+                         containers_meta[id] = item;
+-                        http.get("/v1.12/containers/" + encodeURIComponent(id) + "/json")
++                        http.get("/v1.24/containers/" + encodeURIComponent(id) + "/json")
+                                 .done(function(data) {
+                                     var container = JSON.parse(data);
+                                     populate_container(id, container);
+@@ -337,7 +337,7 @@
+         /*
+          * Gets a list of images and keeps it up to date.
+          */
+-        http.get("/v1.12/images/json")
++        http.get("/v1.24/images/json")
+                 .done(function(data) {
+                     var images = JSON.parse(data);
+                     alive = true;
+@@ -350,7 +350,7 @@
+ 
+                         seen[id] = id;
+                         images_meta[id] = item;
+-                        http.get("/v1.12/images/" + encodeURIComponent(id) + "/json")
++                        http.get("/v1.24/images/" + encodeURIComponent(id) + "/json")
+                                 .done(function(data) {
+                                     var image = JSON.parse(data);
+                                     populate_image(id, image);
+@@ -378,7 +378,7 @@
+     }
+ 
+     function fetch_info() {
+-        http.get("/v1.12/info")
++        http.get("/v1.24/info")
+                 .fail(function(ex) {
+                     util.docker_debug("info failed:", ex);
+ 
+@@ -491,7 +491,7 @@
+         util.docker_debug("starting:", id);
+         return http.request({
+             method: "POST",
+-            path: "/v1.12/containers/" + encodeURIComponent(id) + "/start",
++            path: "/v1.24/containers/" + encodeURIComponent(id) + "/start",
+             headers: { "Content-Type": "application/json" },
+             body: JSON.stringify(options || { })
+         })
+@@ -513,7 +513,7 @@
+         util.docker_debug("stopping:", id, timeout);
+         return http.request({
+             method: "POST",
+-            path: "/v1.12/containers/" + encodeURIComponent(id) + "/stop",
++            path: "/v1.24/containers/" + encodeURIComponent(id) + "/stop",
+             params: { 't': timeout },
+             body: ""
+         })
+@@ -535,7 +535,7 @@
+         util.docker_debug("restarting:", id);
+         return http.request({
+             method: "POST",
+-            path: "/v1.12/containers/" + encodeURIComponent(id) + "/restart",
++            path: "/v1.24/containers/" + encodeURIComponent(id) + "/restart",
+             params: { 't': timeout },
+             body: ""
+         })
+@@ -555,7 +555,7 @@
+         util.docker_debug("creating:", name, body);
+         return http.request({
+             method: "POST",
+-            path: "/v1.12/containers/create",
++            path: "/v1.24/containers/create",
+             params: { "name": name },
+             headers: { "Content-Type": "application/json" },
+             body: body,
+@@ -571,7 +571,7 @@
+ 
+     this.search = function search(term) {
+         util.docker_debug("searching:", term);
+-        return http.get("/v1.12/images/search", { "term": term })
++        return http.get("/v1.24/images/search", { "term": term })
+                 .fail(function(ex) {
+                     util.docker_debug("search failed:", term, ex);
+                 })
+@@ -591,7 +591,7 @@
+         util.docker_debug("committing:", id, repotag, options, run_config);
+         return http.request({
+             method: "POST",
+-            path: "/v1.12/commit",
++            path: "/v1.24/commit",
+             params: args,
+             headers: { "Content-Type": "application/json" },
+             body: JSON.stringify(run_config || { })
+@@ -615,7 +615,7 @@
+         util.docker_debug("deleting:", id);
+         return http.request({
+             method: "DELETE",
+-            path: "/v1.12/containers/" + encodeURIComponent(id),
++            path: "/v1.24/containers/" + encodeURIComponent(id),
+             params: { "force": forced },
+             body: ""
+         })
+@@ -644,7 +644,7 @@
+ 
+         return http.request({
+             method: "DELETE",
+-            path: "/v1.12/images/" + encodeURIComponent(id),
++            path: "/v1.24/images/" + encodeURIComponent(id),
+             params: { "force": forced },
+             body: ""
+         })
+@@ -694,7 +694,7 @@
+         util.docker_debug("updating:", id);
+         return http.request({
+             method: "POST",
+-            path: "/v1.12/containers/" + encodeURIComponent(id) + "/update",
++            path: "/v1.24/containers/" + encodeURIComponent(id) + "/update",
+             headers: { "Content-Type": "application/json" },
+             body: JSON.stringify(options || { })
+         })
+@@ -768,7 +768,7 @@
+ 
+     this.containers_for_image = function containers_for_image(id) {
+         util.docker_debug('containers search on image id: ', id);
+-        return http.get('/v1.12/containers/json', { all: 1, filters: JSON.stringify({ ancestor: [ id ] }) })
++        return http.get('/v1.24/containers/json', { all: 1, filters: JSON.stringify({ ancestor: [ id ] }) })
+                 .fail(function(ex) {
+                     util.docker_debug('containers search on image id failed:', id, ex);
+                 })
+diff -aurN a/pkg/docker/docker.js b/pkg/docker/docker.js
+--- a/pkg/docker/docker.js	2023-08-04 07:42:43.000000000 +0200
++++ b/pkg/docker/docker.js	2024-03-20 14:26:31.190509186 +0100
+@@ -63,7 +63,7 @@
+ 
+     var options = {
+         method: "POST",
+-        path: "/v1.12/images/create",
++        path: "/v1.24/images/create",
+         body: "",
+         params: {
+             fromImage: repo,
+@@ -109,7 +109,7 @@
+ /* Gets image info locally */
+ docker.inspect_image = function inspect_image(image) {
+     var dfd = $.Deferred();
+-    http.get("/v1.12/images/" + encodeURIComponent(image) + "/json")
++    http.get("/v1.24/images/" + encodeURIComponent(image) + "/json")
+             .done(function(data) {
+                 dfd.resolve(JSON.parse(data));
+             })
+diff -aurN a/pkg/iotedge-docker/client.js b/pkg/iotedge-docker/client.js
+--- a/pkg/iotedge-docker/client.js	2023-08-04 07:42:43.000000000 +0200
++++ b/pkg/iotedge-docker/client.js	2024-03-20 14:26:47.246920765 +0100
+@@ -58,7 +58,7 @@
+             return;
+ 
+         /* Trigger the event signal when JSON from /events */
+-        events = http.get("/v1.12/events");
++        events = http.get("/v1.24/events");
+         events.stream(function(resp) {
+             util.docker_debug("event:", resp);
+             trigger_event();
+@@ -161,7 +161,7 @@
+          * /events for notification when something changes as well as some
+          * file monitoring.
+          */
+-        http.get("/v1.12/containers/json", { all: 1 })
++        http.get("/v1.24/containers/json", { all: 1 })
+                 .done(function(data) {
+                     var containers = JSON.parse(data);
+                     alive = true;
+@@ -174,7 +174,7 @@
+ 
+                         seen[id] = id;
+                         containers_meta[id] = item;
+-                        http.get("/v1.12/containers/" + encodeURIComponent(id) + "/json")
++                        http.get("/v1.24/containers/" + encodeURIComponent(id) + "/json")
+                                 .done(function(data) {
+                                     var container = JSON.parse(data);
+                                     populate_container(id, container);
+@@ -338,7 +338,7 @@
+         /*
+          * Gets a list of images and keeps it up to date.
+          */
+-        http.get("/v1.12/images/json")
++        http.get("/v1.24/images/json")
+                 .done(function(data) {
+                     var images = JSON.parse(data);
+                     alive = true;
+@@ -351,7 +351,7 @@
+ 
+                         seen[id] = id;
+                         images_meta[id] = item;
+-                        http.get("/v1.12/images/" + encodeURIComponent(id) + "/json")
++                        http.get("/v1.24/images/" + encodeURIComponent(id) + "/json")
+                                 .done(function(data) {
+                                     var image = JSON.parse(data);
+                                     populate_image(id, image);
+@@ -379,7 +379,7 @@
+     }
+ 
+     function fetch_info() {
+-        http.get("/v1.12/info")
++        http.get("/v1.24/info")
+                 .fail(function(ex) {
+                     util.docker_debug("info failed:", ex);
+ 
+@@ -492,7 +492,7 @@
+         util.docker_debug("starting:", id);
+         return http.request({
+             method: "POST",
+-            path: "/v1.12/containers/" + encodeURIComponent(id) + "/start",
++            path: "/v1.24/containers/" + encodeURIComponent(id) + "/start",
+             headers: { "Content-Type": "application/json" },
+             body: JSON.stringify(options || { })
+         })
+@@ -514,7 +514,7 @@
+         util.docker_debug("stopping:", id, timeout);
+         return http.request({
+             method: "POST",
+-            path: "/v1.12/containers/" + encodeURIComponent(id) + "/stop",
++            path: "/v1.24/containers/" + encodeURIComponent(id) + "/stop",
+             params: { 't': timeout },
+             body: ""
+         })
+@@ -536,7 +536,7 @@
+         util.docker_debug("restarting:", id);
+         return http.request({
+             method: "POST",
+-            path: "/v1.12/containers/" + encodeURIComponent(id) + "/restart",
++            path: "/v1.24/containers/" + encodeURIComponent(id) + "/restart",
+             params: { 't': timeout },
+             body: ""
+         })
+@@ -556,7 +556,7 @@
+         util.docker_debug("creating:", name, body);
+         return http.request({
+             method: "POST",
+-            path: "/v1.12/containers/create",
++            path: "/v1.24/containers/create",
+             params: { "name": name },
+             headers: { "Content-Type": "application/json" },
+             body: body,
+@@ -572,7 +572,7 @@
+ 
+     this.search = function search(term) {
+         util.docker_debug("searching:", term);
+-        return http.get("/v1.12/images/search", { "term": term })
++        return http.get("/v1.24/images/search", { "term": term })
+                 .fail(function(ex) {
+                     util.docker_debug("search failed:", term, ex);
+                 })
+@@ -592,7 +592,7 @@
+         util.docker_debug("committing:", id, repotag, options, run_config);
+         return http.request({
+             method: "POST",
+-            path: "/v1.12/commit",
++            path: "/v1.24/commit",
+             params: args,
+             headers: { "Content-Type": "application/json" },
+             body: JSON.stringify(run_config || { })
+@@ -616,7 +616,7 @@
+         util.docker_debug("deleting:", id);
+         return http.request({
+             method: "DELETE",
+-            path: "/v1.12/containers/" + encodeURIComponent(id),
++            path: "/v1.24/containers/" + encodeURIComponent(id),
+             params: { "force": forced },
+             body: ""
+         })
+@@ -645,7 +645,7 @@
+ 
+         return http.request({
+             method: "DELETE",
+-            path: "/v1.12/images/" + encodeURIComponent(id),
++            path: "/v1.24/images/" + encodeURIComponent(id),
+             params: { "force": forced },
+             body: ""
+         })
+@@ -695,7 +695,7 @@
+         util.docker_debug("updating:", id);
+         return http.request({
+             method: "POST",
+-            path: "/v1.12/containers/" + encodeURIComponent(id) + "/update",
++            path: "/v1.24/containers/" + encodeURIComponent(id) + "/update",
+             headers: { "Content-Type": "application/json" },
+             body: JSON.stringify(options || { })
+         })
+@@ -769,7 +769,7 @@
+ 
+     this.containers_for_image = function containers_for_image(id) {
+         util.docker_debug('containers search on image id: ', id);
+-        return http.get('/v1.12/containers/json', { all: 1, filters: JSON.stringify({ ancestor: [ id ] }) })
++        return http.get('/v1.24/containers/json', { all: 1, filters: JSON.stringify({ ancestor: [ id ] }) })
+                 .fail(function(ex) {
+                     util.docker_debug('containers search on image id failed:', id, ex);
+                 })
+diff -aurN a/pkg/iotedge-docker/iotedge-docker.js b/pkg/iotedge-docker/iotedge-docker.js
+--- a/pkg/iotedge-docker/iotedge-docker.js	2023-08-04 07:42:43.000000000 +0200
++++ b/pkg/iotedge-docker/iotedge-docker.js	2024-03-20 14:26:57.639187193 +0100
+@@ -63,7 +63,7 @@
+ 
+     var options = {
+         method: "POST",
+-        path: "/v1.12/images/create",
++        path: "/v1.24/images/create",
+         body: "",
+         params: {
+             fromImage: repo,
+@@ -109,7 +109,7 @@
+ /* Gets image info locally */
+ docker.inspect_image = function inspect_image(image) {
+     var dfd = $.Deferred();
+-    http.get("/v1.12/images/" + encodeURIComponent(image) + "/json")
++    http.get("/v1.24/images/" + encodeURIComponent(image) + "/json")
+             .done(function(data) {
+                 dfd.resolve(JSON.parse(data));
+             })

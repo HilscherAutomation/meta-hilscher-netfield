@@ -13,6 +13,6 @@ export CXX_FOR_TARGET = "g++"
 # variants.
 python() {
     if 'mips' in d.getVar('TARGET_ARCH') or 'riscv32' in d.getVar('TARGET_ARCH'):
-        d.appendVar('INSANE_SKIP_%s' % d.getVar('PN'), " textrel")
+        d.appendVar('INSANE_SKIP:%s' % d.getVar('PN'), " textrel")
 }
 
