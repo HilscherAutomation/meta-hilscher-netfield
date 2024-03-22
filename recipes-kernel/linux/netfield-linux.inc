@@ -49,8 +49,9 @@ DEPENDS += "elfutils elfutils-native"
 KERNEL_FEATURES:append = " features/nfsd/nfsd-enable.scc ktypes/base/base.scc"
 
 # TPM
-KERNEL_FEATURES:append = " ${@bb.utils.contains_any('MACHINE_FEATURES', ['tpm','tpm2'], 'features/tpm/tpm.scc', '', d)}"
+KERNEL_FEATURES:append = " features/tpm/tpm.scc"
 SRC_URI:append = " ${@bb.utils.contains('MACHINE_FEATURES', 'tpm2', 'file://enable_tpm2_spi.cfg', '', d)}"
+SRC_URI:append = " file://vtpm_proxy.cfg"
 
 # Profiling
 KERNEL_FEATURES:append = " features/lttng/lttng.scc cfg/tracing.scc"

@@ -1,0 +1,25 @@
+diff -aurN a/configure.ac b/configure.ac
+--- a/configure.ac	2022-09-08 13:40:08.031574042 +0200
++++ b/configure.ac	2022-09-08 13:41:07.461091531 +0200
+@@ -558,8 +558,6 @@
+ 		man/Makefile                \
+ 		man/man3/Makefile           \
+ 		man/man8/Makefile           \
+-		tests/Makefile              \
+-		tests/test_config           \
+ 		])
+ AC_CONFIG_FILES([samples/swtpm-localca],
+                 [chmod 755 samples/swtpm-localca])
+diff -aurN a/Makefile.am b/Makefile.am
+--- a/Makefile.am	2022-09-08 13:38:05.980454828 +0200
++++ b/Makefile.am	2022-09-08 13:39:31.006628220 +0200
+@@ -8,8 +8,7 @@
+ 	include \
+ 	man \
+ 	samples \
+-	src \
+-	tests
++	src
+ 
+ ACLOCAL_AMFLAGS = -I m4
+ 
