@@ -1,5 +1,0 @@
-Device=spidev0.0
-Speed=25000000
-Mode=0
-ChunkSize=250
-
