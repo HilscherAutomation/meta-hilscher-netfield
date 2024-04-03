@@ -99,12 +99,12 @@ EOF
 }
 
 do_x509_onboarding() {
-    if [ ! -e "/var/platform/device_data/oem_data/iotedge/crt" ]; then
-        echo "<4>Missing crt for zero-touch onboarding"
+    if [ ! -e "/var/platform/device_data/oem_data/iotedge/device_crt" ]; then
+        echo "<4>Missing device_crt for zero-touch onboarding"
         exit 1
     fi
-    if [ ! -e "/var/platform/device_data/oem_data/iotedge/key" ]; then
-        echo "<4>Missing key for zero-touch onboarding"
+    if [ ! -e "/var/platform/device_data/oem_data/iotedge/device_key" ] || [ ! -e "/var/platform/device_data/oem_data/iotedge/device_key_uri" ]; then
+        echo "<4>Provide device_key or device_key_uri for zero-touch onboarding"
         exit 1
     fi
     if [ ! -e "/var/platform/device_data/oem_data/iotedge/scope_id" ]; then
@@ -125,53 +125,15 @@ do_x509_onboarding() {
     scope_id=$(cat /var/platform/device_data/oem_data/iotedge/scope_id)
     registration_id=$(cat /var/platform/device_data/oem_data/iotedge/registration_id)
 
-    cat /var/platform/device_data/oem_data/iotedge/crt | base64 -d > /etc/aziot/device.crt
-    cat /var/platform/device_data/oem_data/iotedge/key | base64 -d > /etc/aziot/device.key
-    sudo chown aziotks:aziotks /etc/aziot/device.key
-    sudo chown aziotks:aziotks /etc/aziot/device.crt    
+    cat /var/platform/device_data/oem_data/iotedge/device_crt | base64 -d | sudo tee /etc/aziot/device.key
+    chown aziotks:aziotks /etc/aziot/device.key
 
-    # determine if TPM exists using tpm2_getrandom 10 --hex 2>&1
-    hasTpm=$(tpm2_getrandom 10 --hex 2>&1)
-
-    # If TPM exists
-    if [ "$?" -eq 0 ]; then
-        # Unlock TPM if locked
-        tpm2_dictionarylockout --setup-parameters --max-tries=4294967295 --clear-lockout
-
-        # Ensure basic tpm slot setup
-        slotdata=$(sudo -Hu aziotks pkcs11-tool --module /usr/lib/pkcs11/libtpm2_pkcs11.so.0.0.0 --list-slots 2>/dev/null)
-
-        if [[ $slotdata != *"azureiothub"* ]]; then # todo test
-            nextFreeSlot=$(sudo -Hu aziotks pkcs11-tool --module /usr/lib/pkcs11/libtpm2_pkcs11.so.0.0.0 --list-slots 2>/dev/null | awk '/Slot/ {slot=$0} /uninitialized/ {print slot; exit}' | awk -F' ' '{print $2}' | tr -d '()')
-            nextFreeSlotId=$((nextFreeSlot + 1))
-            sudo -Hu aziotks pkcs11-tool --module /usr/lib/pkcs11/libtpm2_pkcs11.so.0.0.0 --slot $nextFreeSlotId --init-token --label "azureiothub" --so-pin "hilscher4ever"
-            sudo -Hu aziotks pkcs11-tool --module /usr/lib/pkcs11/libtpm2_pkcs11.so.0.0.0 --slot $nextFreeSlotId --init-pin --login --so-pin "hilscher4ever" --new-pin "hilscher"
-        fi
-
-        # Delete existing keypair (if any)
-        sudo -Hu aziotks pkcs11-tool --module /usr/lib/pkcs11/libtpm2_pkcs11.so.0.0.0 --token azureiothub --pin hilscher --delete-object --label device --type pubkey 2>/dev/null
-        sudo -Hu aziotks pkcs11-tool --module /usr/lib/pkcs11/libtpm2_pkcs11.so.0.0.0 --token azureiothub --pin hilscher --delete-object --label device --type privkey 2>/dev/null
-
-        # Convert key to RSA format
-        sudo -Hu aziotks openssl rsa -in /etc/aziot/device.key -out /etc/aziot/device_rsa.key
-
-        #!!!!!!! Attention: Here we need to switch from pkcs11-tool to tpm2_ptool because pkcs11-tool is not able to import a keypair into the TPM!
-        # sudo -Hu aziotks tpm2_ptool listtokens --pid 1
-        # sudo -Hu aziotks tpm2_ptool listobjects --label=azureiothub
-        sudo -Hu aziotks tpm2_ptool import --label=azureiothub --key-label device --privkey /etc/aziot/device_rsa.key --algorithm=rsa --userpin='hilscher'
-
-        # Import new keypair into TPM
-        sudo -Hu aziotks pkcs11-tool --module /usr/lib/pkcs11/libtpm2_pkcs11.so.0.0.0 --token azureiothub --pin hilscher --write-object /etc/aziot/device_rsa.key --type privkey --label device
-
-        # Delete key file
-        sudo rm /etc/aziot/device.key
-        sudo rm /etc/aziot/device_rsa.key
-
-        identity_pk="pkcs11:token=azureiothub;object=device?pin-value=hilscher"
-
-    # If TPM does not exist
-    else
+    if [ -e "/var/platform/device_data/oem_data/iotedge/device_key" ]; then
+        cat /var/platform/device_data/oem_data/iotedge/device_key | base64 -d | sudo tee /etc/aziot/device.key
+        chown aziotks:aziotks /etc/aziot/device.key
         identity_pk="file:///etc/aziot/device.key"
+    else
+        identity_pk=$(cat /var/platform/device_data/oem_data/iotedge/device_key_uri)
     fi
 
 # DPS x509 provisioning configuration

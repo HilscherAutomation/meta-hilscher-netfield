@@ -190,15 +190,25 @@
               "type": "string",
               "pattern": "^.*$"
             },
-            "crt": {
+            "device_crt": {
               "type": "string",
               "pattern": "^.*$",
               "description": "Base64 encoded X.509 certificate. Must include Root/Intermediate CA certificates."
             },
-            "key": {
+            "device_key": {
               "type": "string",
               "pattern": "^.*$",
               "description": "Base64 encoded private key."
+            },
+            "device_key_uri": {
+              "type": "string",
+              "pattern": "^.*$",
+              "description": "PKCS11 uri for iotedge."
+            },
+            "tpm_so_pin": {
+              "type": "string",
+              "pattern": "^.*$",
+              "description": "SO pin for TPM token that holds device_key_uri."
             },
             "tpm": {
               "type": "object",
