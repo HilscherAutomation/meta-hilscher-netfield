@@ -33,44 +33,8 @@ Requirements
 local.conf
    To create a yocto image with test support, you need to add the following lines to your local.conf file.
 
-   .. code-block:: bash
-
-      # ------------------------------------------------------------------------------
-      INHERIT += "testimage"
-
-      # Define the test controller used to access the DUT.
-      # NOTE: python3-pexpect is requiered by TEST_TARGET HilscherTarget.
-      TEST_TARGET ?= "HilscherTarget"
-
-      # Add yocto test cases ...
-      TEST_SUITES = "ping ssh syslog date dmesg apparmor"
-
-      # Add hilscher test cases ...
-      TEST_SUITES_append += "hilscher"
-      TEST_SUITES_append += "netfieldos"
-
-      TEST_SERVER_IP ?= "tbd"
-
-      # IP address of DUT
-      TEST_TARGET_IP ?= "tbd"
-
-      # The tests can be run automatically each time an image is built if you set
-      #TESTIMAGE_AUTO = "1"
-
-      # NOTE:
-      # A passwordless root ssh shell is required by yocto test framework.
-
-      # This can be done by yocto IMAGE_FEATURES ...
-      #EXTRA_IMAGE_FEATURES_append += "empty-root-password allow-empty-password  debug-tweaks"
-      #EXTRA_USERS_PARAMS_append += "usermod -s /bin/sh root;"
-
-      # or manually on the test device (DUT) ...
-      # sudo usermod -s /bin/sh root
-      # sudo sed -i 's/^root:[*x]:/root::/' /etc/shadow
-      # sudo sed -i 's/^[#[:space:]]*PermitEmptyPasswords.*/PermitEmptyPasswords yes/' /etc/ssh/sshd_config
-      # sudo sed -i 's/^[#[:space:]]*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
-      # sudo sed -i 's/nullok_secure/nullok/' /etc/pam.d/common-auth
-      # ------------------------------------------------------------------------------
+   .. literalinclude:: ../../src/conf/samples/local.overrides.test.conf.sample
+      :language: bash
 
 Passwordless root (ssh) shell
    As the test implementation runs commands on the test device (DUT) over ssh, a ssh root shell access without password is required on the DUT.

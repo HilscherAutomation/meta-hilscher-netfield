@@ -35,4 +35,4 @@ SCRIPTDIR=$(readlink -f ${0})
 SCRIPTDIR=$(dirname ${SCRIPTDIR})
 
 docker build -t sphinxdoc:netfieldos $SCRIPTDIR
-docker run --rm -it -h sphinxdoc -v $(pwd):/docs -u $BUILD_UID sphinxdoc:netfieldos $@
+docker run --rm -it -h sphinxdoc -v $(pwd):/docs -v "$(pwd)/..":/src -u $BUILD_UID sphinxdoc:netfieldos $@
