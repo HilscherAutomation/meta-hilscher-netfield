@@ -42,6 +42,8 @@ class BaseTest(OERuntimeTestCase):
     )
     dev_list_niot_e_tijcx_gb = (
     )
+    dev_list_netfield_unity = (
+    )
 
     machine_dev_list = {
         'netfield-compact-x8m-rev1': dev_list_netfield_compact_x8m_revX,
@@ -50,6 +52,7 @@ class BaseTest(OERuntimeTestCase):
         'netfield-iolink-edge-gw-rev2': dev_list_netfield_iolink_edge_gw_revX,
         'niot-e-tpi51-en-re': dev_list_niot_e_tpi51_en_re,
         'niot-e-tijcx-gb': dev_list_niot_e_tijcx_gb,
+        'netfield-unity': dev_list_netfield_unity,
     }
 
     def test_proc_iomem_entries(self):
@@ -87,6 +90,9 @@ class BaseTest(OERuntimeTestCase):
     led_list_niot_e_tijcx_gb = (
         'pg0:orange:user', 'pg1:green:user', 'pg2:orange:user', 'pg3:orange:user', 'pg4:orange:user',
     )
+    led_list_netfield_unity = (
+        # led_run_green is tested as GPIO
+    )
 
     machine_led_list = {
         'netfield-compact-x8m-rev1': led_list_netfield_compact_x8m_revX,
@@ -95,6 +101,7 @@ class BaseTest(OERuntimeTestCase):
         'netfield-iolink-edge-gw-rev2': led_list_netfield_iolink_edge_gw_rev2,
         'niot-e-tpi51-en-re': led_list_niot_e_tpi51_en_re,
         'niot-e-tijcx-gb': led_list_niot_e_tijcx_gb,
+        'netfield-unity': led_list_netfield_unity,
     }
 
     def test_sys_class_leds_files(self):
@@ -131,6 +138,13 @@ class BaseTest(OERuntimeTestCase):
         'gpiochip0', 'gpiochip330', 'gpiochip338', 'gpiochip382', 'gpiochip410',
         'gpio330', 'gpio331', 'gpio332', 'gpio333', 'gpio334', 'gpio335', 'gpio336', 'gpio337',
     )
+    gpio_list_netfield_unity = (
+        'gpio33', 'gpio37', 'gpio43', 'gpio47', 'gpiochip40', 'gpiochip797',
+        'gpio30', 'gpio34', 'gpio40', 'gpio44', 'gpio65', 'gpiochip60',
+        'gpiochip80', 'gpio31', 'gpio35', 'gpio41', 'gpio45', 'gpiochip20',
+        'gpiochip709', 'gpiochip844', 'gpio32', 'gpio36', 'gpio42', 'gpio46',
+        'gpiochip30', 'gpiochip717', 'gpiochip957',
+    )
 
     machine_gpio_list = {
         'netfield-compact-x8m-rev1': gpio_list_netfield_compact_x8m_revX,
@@ -139,6 +153,7 @@ class BaseTest(OERuntimeTestCase):
         'netfield-iolink-edge-gw-rev2': gpio_list_netfield_iolink_edge_gw_revX,
         'niot-e-tpi51-en-re': gpio_list_niot_e_tpi51_en_re,
         'niot-e-tijcx-gb': gpio_list_niot_e_tijcx_gb,
+        'netfield-unity': gpio_list_netfield_unity,
     }
 
     def test_sys_class_gpio_files(self):
