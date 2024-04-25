@@ -98,6 +98,62 @@ symmetric_key = { value = "$symmetric_key" }
 EOF
 }
 
+do_x509_onboarding() {
+    if [ ! -e "/var/platform/device_data/oem_data/iotedge/device_crt" ]; then
+        echo "<4>Missing device_crt for zero-touch onboarding"
+        exit 1
+    fi
+    if [ ! -e "/var/platform/device_data/oem_data/iotedge/device_key" ] || [ ! -e "/var/platform/device_data/oem_data/iotedge/device_key_uri" ]; then
+        echo "<4>Provide device_key or device_key_uri for zero-touch onboarding"
+        exit 1
+    fi
+    if [ ! -e "/var/platform/device_data/oem_data/iotedge/scope_id" ]; then
+        echo "<4>Missing scope_id for zero-touch onboarding"
+        exit 1
+    fi
+
+    if [ ! -e "/var/platform/device_data/oem_data/iotedge/registration_id" ]; then
+        echo "<4>Missing registration_id for zero-touch onboarding"
+        exit 1
+    fi
+    if [ -e "/var/platform/device_data/oem_data/iotedge/global_endpoint" ]; then
+        global_endpoint=$(cat /var/platform/device_data/oem_data/iotedge/global_endpoint)
+    else
+        global_endpoint="https://global.azure-devices-provisioning.net"
+    fi
+
+    scope_id=$(cat /var/platform/device_data/oem_data/iotedge/scope_id)
+    registration_id=$(cat /var/platform/device_data/oem_data/iotedge/registration_id)
+
+    cat /var/platform/device_data/oem_data/iotedge/device_crt | base64 -d | sudo tee /etc/aziot/device.key
+    chown aziotks:aziotks /etc/aziot/device.key
+
+    if [ -e "/var/platform/device_data/oem_data/iotedge/device_key" ]; then
+        cat /var/platform/device_data/oem_data/iotedge/device_key | base64 -d | sudo tee /etc/aziot/device.key
+        chown aziotks:aziotks /etc/aziot/device.key
+        identity_pk="file:///etc/aziot/device.key"
+    else
+        identity_pk=$(cat /var/platform/device_data/oem_data/iotedge/device_key_uri)
+    fi
+
+# DPS x509 provisioning configuration
+    cat <<EOF>/etc/aziot/config.toml
+[provisioning]
+source = "dps"
+global_endpoint = "$global_endpoint"
+id_scope ="$scope_id"
+
+[provisioning.attestation]
+method = "x509"
+registration_id = "$registration_id"
+identity_pk = "$identity_pk"
+identity_cert = "file:///etc/aziot/device.crt"
+
+[aziot_keys]
+pkcs11_lib_path = "/usr/lib/pkcs11/libtpm2_pkcs11.so.0.0.0"
+EOF
+}
+
 do_general_settings() {
     upstreamprotocol="Amqp"
 
@@ -167,6 +223,12 @@ if [ "$iotedge_status" != "enabled" ]; then
         case "$method" in
             "symmetric_key")
                 do_symmetric_key_onboarding
+                do_general_settings
+                iotedge config apply
+                systemctl enable --no-block aziot-edged
+                ;;
+            "x509")
+                do_x509_onboarding
                 do_general_settings
                 iotedge config apply
                 systemctl enable --no-block aziot-edged
