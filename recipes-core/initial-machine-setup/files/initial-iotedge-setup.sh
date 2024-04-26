@@ -99,41 +99,28 @@ EOF
 }
 
 do_x509_onboarding() {
-    if [ ! -e "/var/platform/device_data/oem_data/iotedge/device_crt" ]; then
+    device_crt_file="/var/platform/device_data/oem_data/iotedge/device_crt"
+    device_key_uri_file="/var/platform/device_data/oem_data/iotedge/device_key_uri"
+    device_key_file="/var/platform/device_data/oem_data/iotedge/device_key"
+
+    if [ ! -e "$device_crt_file" ]; then
         echo "<4>Missing device_crt for zero-touch onboarding"
         exit 1
     fi
-    if [ ! -e "/var/platform/device_data/oem_data/iotedge/device_key" ] || [ ! -e "/var/platform/device_data/oem_data/iotedge/device_key_uri" ]; then
+    if [ ! -e "$device_key_file" ] || [ ! -e "$device_key_uri_file" ]; then
         echo "<4>Provide device_key or device_key_uri for zero-touch onboarding"
         exit 1
     fi
-    if [ ! -e "/var/platform/device_data/oem_data/iotedge/scope_id" ]; then
-        echo "<4>Missing scope_id for zero-touch onboarding"
-        exit 1
-    fi
 
-    if [ ! -e "/var/platform/device_data/oem_data/iotedge/registration_id" ]; then
-        echo "<4>Missing registration_id for zero-touch onboarding"
-        exit 1
-    fi
-    if [ -e "/var/platform/device_data/oem_data/iotedge/global_endpoint" ]; then
-        global_endpoint=$(cat /var/platform/device_data/oem_data/iotedge/global_endpoint)
-    else
-        global_endpoint="https://global.azure-devices-provisioning.net"
-    fi
-
-    scope_id=$(cat /var/platform/device_data/oem_data/iotedge/scope_id)
-    registration_id=$(cat /var/platform/device_data/oem_data/iotedge/registration_id)
-
-    cat /var/platform/device_data/oem_data/iotedge/device_crt | base64 -d | sudo tee /etc/aziot/device.crt
+    cat "$device_crt_file" | base64 -d | sudo tee /etc/aziot/device.crt
     chown aziotks:aziotks /etc/aziot/device.crt
 
-    if [ -e "/var/platform/device_data/oem_data/iotedge/device_key" ]; then
-        cat /var/platform/device_data/oem_data/iotedge/device_key | base64 -d | sudo tee /etc/aziot/device.key
+    if [ -e "$device_key_file" ]; then
+        cat "$device_key_file" | base64 -d | sudo tee /etc/aziot/device.key
         chown aziotks:aziotks /etc/aziot/device.key
         identity_pk="file:///etc/aziot/device.key"
     else
-        identity_pk=$(cat /var/platform/device_data/oem_data/iotedge/device_key_uri)
+        identity_pk=$(cat "$device_key_uri_file")
     fi
 
 # DPS x509 provisioning configuration
@@ -191,22 +178,41 @@ EOF
     sync
 }
 
-if [ -e "/mnt/backup/nvd/onboard_override" ]; then
-    override=$(cat /mnt/backup/nvd/onboard_override)
-    case "$override" in
-        disabled)
-            echo "Skipping automatic/zero-touch onboarding"
-            exit 0
-        *)
-            echo "Unknown override option '$override', continueing normal zero-touch process"
-            ;;
-    esac
-fi
+ZERO_TOUCH_BASE="/mnt/backup/nvd/zero-touch"
 
 # Check for zero-touch onboarding data
 iotedge_status=$(systemctl is-enabled aziot-edged)
 if [ "$iotedge_status" != "enabled" ]; then
-    if [ -d "/var/platform/device_data/oem_data/iotedge" ]; then
+    if [ -e "$ZERO_TOUCH_BASE/override" ]; then
+        override=$(cat "$ZERO_TOUCH_BASE"/override)
+        case "$override" in
+            disabled)
+                echo "Skipping automatic/zero-touch onboarding"
+                exit 0
+                ;;
+            manual)
+                echo "Overriding onboarding with stored data"
+                cp "$ZERO_TOUCH_BASE"/etc/aziot/* /etc/aziot/
+                if [ -d "$ZERO_TOUCH_BASE/.tpm2_pkcs11/" ]; then
+                    # Copy pkcs11 database
+                    mkdir -p /var/lib/aziot/keyd/.tpm2_pkcs11/
+                    chown aziotks:aziotks /var/lib/aziot/keyd/.tpm2_pkcs11/
+                    chmod 0750 /var/lib/aziot/keyd/.tpm2_pkcs11/
+                    cp -r "$ZERO_TOUCH_BASE"/.tpm2_pkcs11/ /var/lib/aziot/keyd/.tpm2_pkcs11/
+                    chown aziotks:aziotks /var/lib/aziot/keyd/.tpm2_pkcs11/*
+                    chmod 0644 -R /var/lib/aziot/keyd/.tpm2_pkcs11/*
+                fi
+                if [ -d "/mnt/backup/nvd/swtpm" ]; then
+                    systemctl enable --now --no-block swtpm
+                fi
+                iotedge config apply
+                systemctl enable --no-block aziot-edged
+                ;;
+            *)
+                echo "Unknown override option '$override', continueing normal zero-touch process"
+                ;;
+        esac
+    elif [ -d "/var/platform/device_data/oem_data/iotedge" ]; then
         if [ -e "/var/platform/device_data/oem_data/iotedge/method" ]; then
             method=$(cat /var/platform/device_data/oem_data/iotedge/method)
         else
