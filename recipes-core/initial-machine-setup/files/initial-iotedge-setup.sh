@@ -191,6 +191,18 @@ EOF
     sync
 }
 
+if [ -e "/mnt/backup/nvd/onboard_override" ]; then
+    override=$(cat /mnt/backup/nvd/onboard_override)
+    case "$override" in
+        disabled)
+            echo "Skipping automatic/zero-touch onboarding"
+            exit 0
+        *)
+            echo "Unknown override option '$override', continueing normal zero-touch process"
+            ;;
+    esac
+fi
+
 # Check for zero-touch onboarding data
 iotedge_status=$(systemctl is-enabled aziot-edged)
 if [ "$iotedge_status" != "enabled" ]; then
