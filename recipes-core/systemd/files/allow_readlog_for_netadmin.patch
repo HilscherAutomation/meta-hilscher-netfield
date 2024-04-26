@@ -1,71 +1,56 @@
-diff -aurN a/tmpfiles.d/systemd.conf.m4 b/tmpfiles.d/systemd.conf.m4
---- a/tmpfiles.d/systemd.conf.m4	2022-08-08 15:07:27.982568181 +0200
-+++ b/tmpfiles.d/systemd.conf.m4	2022-09-05 14:34:12.923765840 +0200
-@@ -31,18 +31,18 @@
- m4_ifdef(`HAVE_ACL',`m4_dnl
- m4_ifdef(`ENABLE_ADM_GROUP',`m4_dnl
- m4_ifdef(`ENABLE_WHEEL_GROUP',``
--a+ /run/log/journal/%m - - - - d:group:adm:r-x,d:group:wheel:r-x
--a+ /run/log/journal/%m - - - - group:adm:r-x,group:wheel:r-x
+--- a/tmpfiles.d/systemd.conf.in	2024-04-22 10:52:33.684470190 +0200
++++ b/tmpfiles.d/systemd.conf.in	2024-04-22 11:14:07.391657204 +0200
+@@ -31,17 +31,17 @@
+ Z /run/log/journal/%m ~2750 root systemd-journal - -
+ {% if HAVE_ACL %}
+ {% if ENABLE_ADM_GROUP and ENABLE_WHEEL_GROUP %}
+-a+ /run/log/journal    - - - - d:group::r-x,d:group:adm:r-x,d:group:wheel:r-x,group::r-x,group:adm:r-x,group:wheel:r-x
+-a+ /run/log/journal/%m - - - - d:group:adm:r-x,d:group:wheel:r-x,group:adm:r-x,group:wheel:r-x
 -a+ /run/log/journal/%m/*.journal* - - - - group:adm:r--,group:wheel:r--
-+a+ /run/log/journal/%m - - - - d:group:adm:r-x,d:group:wheel:r-x,d:group:netadmin:r-x
-+a+ /run/log/journal/%m - - - - group:adm:r-x,group:wheel:r-x,group:netadmin:r-x
++a+ /run/log/journal    - - - - d:group::r-x,d:group:adm:r-x,d:group:wheel:r-x,d:group:netadmin:r-x,group::r-x,group:adm:r-x,group:wheel:r-x,group:netadmin:r-x
++a+ /run/log/journal/%m - - - - d:group:adm:r-x,d:group:wheel:r-x,d:group:netadmin:r-x,group:adm:r-x,group:wheel:r-x,group:netadmin:r-x
 +a+ /run/log/journal/%m/*.journal* - - - - group:adm:r--,group:wheel:r--,group:netadmin:r--
- '',``
--a+ /run/log/journal/%m - - - - d:group:adm:r-x
--a+ /run/log/journal/%m - - - - group:adm:r-x
+ {% elif ENABLE_ADM_GROUP %}
+-a+ /run/log/journal    - - - - d:group::r-x,d:group:adm:r-x,group::r-x,group:adm:r-x
+-a+ /run/log/journal/%m - - - - d:group:adm:r-x,group:adm:r-x
 -a+ /run/log/journal/%m/*.journal* - - - - group:adm:r--
-+a+ /run/log/journal/%m - - - - d:group:adm:r-x,d:group:netadmin:r-x
-+a+ /run/log/journal/%m - - - - group:adm:r-x,group:netadmin:r-x
++a+ /run/log/journal    - - - - d:group::r-x,d:group:adm:r-x,d:group:netadmin:r-x,group::r-x,group:adm:r-x,group:netadmin:r-x
++a+ /run/log/journal/%m - - - - d:group:adm:r-x,d:group:netadmin:r-x,group:adm:r-x,group:netadmin:r-x
 +a+ /run/log/journal/%m/*.journal* - - - - group:adm:r--,group:netadmin:r--
- '')',`m4_dnl
- m4_ifdef(`ENABLE_WHEEL_GROUP',``
--a+ /run/log/journal/%m - - - - d:group:wheel:r-x
--a+ /run/log/journal/%m - - - - group:wheel:r-x
+ {% elif ENABLE_WHEEL_GROUP %}
+-a+ /run/log/journal    - - - - d:group::r-x,d:group:wheel:r-x,group::r-x,group:wheel:r-x
+-a+ /run/log/journal/%m - - - - d:group:wheel:r-x,group:wheel:r-x
 -a+ /run/log/journal/%m/*.journal* - - - - group:wheel:r--
-+a+ /run/log/journal/%m - - - - d:group:wheel:r-x,d:group:netadmin:r-x
-+a+ /run/log/journal/%m - - - - group:wheel:r-x,group:netadmin:r-x
++a+ /run/log/journal    - - - - d:group::r-x,d:group:wheel:r-x,d:group:netadmin:r-x,group::r-x,group:wheel:r-x,group:netadmin:r-x
++a+ /run/log/journal/%m - - - - d:group:wheel:r-x,group:wheel:r-x,group:netadmin:r-x
 +a+ /run/log/journal/%m/*.journal* - - - - group:wheel:r--,group:netadmin:r--
- '')')')m4_dnl
+ {% endif %}
+ {% endif %}
  
- z /var/log/journal 2755 root systemd-journal - -
-@@ -51,24 +51,24 @@
- m4_ifdef(`HAVE_ACL',`m4_dnl
- m4_ifdef(`ENABLE_ADM_GROUP',`m4_dnl
- m4_ifdef(`ENABLE_WHEEL_GROUP',``
--a+ /var/log/journal    - - - - d:group::r-x,d:group:adm:r-x,d:group:wheel:r-x
--a+ /var/log/journal    - - - - group::r-x,group:adm:r-x,group:wheel:r-x
--a+ /var/log/journal/%m - - - - d:group:adm:r-x,d:group:wheel:r-x
--a+ /var/log/journal/%m - - - - group:adm:r-x,group:wheel:r-x
+@@ -50,17 +50,17 @@
+ z /var/log/journal/%m/system.journal 0640 root systemd-journal - -
+ {% if HAVE_ACL %}
+ {% if ENABLE_ADM_GROUP and ENABLE_WHEEL_GROUP %}
+-a+ /var/log/journal    - - - - d:group::r-x,d:group:adm:r-x,d:group:wheel:r-x,group::r-x,group:adm:r-x,group:wheel:r-x
+-a+ /var/log/journal/%m - - - - d:group:adm:r-x,d:group:wheel:r-x,group:adm:r-x,group:wheel:r-x
 -a+ /var/log/journal/%m/system.journal - - - - group:adm:r--,group:wheel:r--
-+a+ /var/log/journal    - - - - d:group::r-x,d:group:adm:r-x,d:group:wheel:r-x,d:group:netadmin:r-x
-+a+ /var/log/journal    - - - - group::r-x,group:adm:r-x,group:wheel:r-x,group:netadmin:r-x
-+a+ /var/log/journal/%m - - - - d:group:adm:r-x,d:group:wheel:r-x,d:group:netadmin:r-x
-+a+ /var/log/journal/%m - - - - group:adm:r-x,group:wheel:r-x,group:netadmin:r-x
++a+ /var/log/journal    - - - - d:group::r-x,d:group:adm:r-x,d:group:wheel:r-x,d:group:netadmin:r-x,group::r-x,group:adm:r-x,group:wheel:r-x,group:netadmin:r-x
++a+ /var/log/journal/%m - - - - d:group:adm:r-x,d:group:wheel:r-x,d:group:netadmin:r-x,group:adm:r-x,group:wheel:r-x,group:netadmin:r-x
 +a+ /var/log/journal/%m/system.journal - - - - group:adm:r--,group:wheel:r--,group:netadmin:r--
- '', ``
--a+ /var/log/journal    - - - - d:group::r-x,d:group:adm:r-x
--a+ /var/log/journal    - - - - group::r-x,group:adm:r-x
--a+ /var/log/journal/%m - - - - d:group:adm:r-x
--a+ /var/log/journal/%m - - - - group:adm:r-x
+ {% elif ENABLE_ADM_GROUP %}
+-a+ /var/log/journal    - - - - d:group::r-x,d:group:adm:r-x,group::r-x,group:adm:r-x
+-a+ /var/log/journal/%m - - - - d:group:adm:r-x,group:adm:r-x
 -a+ /var/log/journal/%m/system.journal - - - - group:adm:r--
-+a+ /var/log/journal    - - - - d:group::r-x,d:group:adm:r-x,d:group:netadmin:r-x
-+a+ /var/log/journal    - - - - group::r-x,group:adm:r-x,group:netadmin:r-x
-+a+ /var/log/journal/%m - - - - d:group:adm:r-x,d:group:netadmin:r-x
-+a+ /var/log/journal/%m - - - - group:adm:r-x,group:netadmin:r-x
++a+ /var/log/journal    - - - - d:group::r-x,d:group:adm:r-x,d:group:netadmin:r-x,group::r-x,group:adm:r-x,group:netadmin:r-x
++a+ /var/log/journal/%m - - - - d:group:adm:r-x,group:adm:r-x,group:netadmin:r-x
 +a+ /var/log/journal/%m/system.journal - - - - group:adm:r--,group:netadmin:r--
- '')',`m4_dnl
- m4_ifdef(`ENABLE_WHEEL_GROUP',``
--a+ /var/log/journal    - - - - d:group::r-x,d:group:wheel:r-x
--a+ /var/log/journal    - - - - group::r-x,group:wheel:r-x
--a+ /var/log/journal/%m - - - - d:group:wheel:r-x
--a+ /var/log/journal/%m - - - - group:wheel:r-x
+ {% elif ENABLE_WHEEL_GROUP %}
+-a+ /var/log/journal    - - - - d:group::r-x,d:group:wheel:r-x,group::r-x,group:wheel:r-x
+-a+ /var/log/journal/%m - - - - d:group:wheel:r-x,group:wheel:r-x
 -a+ /var/log/journal/%m/system.journal - - - - group:wheel:r--
-+a+ /var/log/journal    - - - - d:group::r-x,d:group:wheel:r-x,d:group:netadmin:r-x
-+a+ /var/log/journal    - - - - group::r-x,group:wheel:r-x,group:netadmin:r-x
-+a+ /var/log/journal/%m - - - - d:group:wheel:r-x,d:group:netadmin:r-x
-+a+ /var/log/journal/%m - - - - group:wheel:r-x,group:netadmin:r-x
++a+ /var/log/journal    - - - - d:group::r-x,d:group:wheel:r-x,d:group:netadmin:r-x,group::r-x,group:wheel:r-x,group:netadmin:r-x
++a+ /var/log/journal/%m - - - - d:group:wheel:r-x,group:wheel:r-x,group:netadmin:r-x
 +a+ /var/log/journal/%m/system.journal - - - - group:wheel:r--,group:netadmin:r--
- '')')')m4_dnl
+ {% endif %}
+ {% endif %}
  
- d /var/lib/systemd 0755 root root -
