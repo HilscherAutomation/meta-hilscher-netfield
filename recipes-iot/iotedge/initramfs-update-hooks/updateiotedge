@@ -35,9 +35,11 @@ updateiotedge_postoverlay() {
 	# This results in failure to start:
 	#  HTTP 500 Internal Server Error: error while creating mount source path '/iotedge/storage': mkdir /iotedge: read-only file system
 	if [ -e "${ROOTFS_DIR}/etc/aziot/config.toml" ]; then
-		sed -e 's@"/iotedge/storage:/iotedge/storage"@"/var/lib/aziot/storage:/iotedge/storage"@g' \
-		    -i "${ROOTFS_DIR}/etc/aziot/config.toml"
-		chroot "${ROOTFS_DIR}" iotedge config apply
+                if grep -q "/iotedge/storage:/iotedge/storage" "${ROOTFS_DIR}/etc/aziot/config.toml"; then
+			sed -e 's@"/iotedge/storage:/iotedge/storage"@"/var/lib/aziot/storage:/iotedge/storage"@g' \
+			    -i "${ROOTFS_DIR}/etc/aziot/config.toml"
+			chroot "${ROOTFS_DIR}" iotedge config apply
+		fi
 	fi
 
 	# Add edgeagentuser if not existing

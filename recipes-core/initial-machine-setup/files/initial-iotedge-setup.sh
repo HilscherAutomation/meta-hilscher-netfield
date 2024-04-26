@@ -125,8 +125,8 @@ do_x509_onboarding() {
     scope_id=$(cat /var/platform/device_data/oem_data/iotedge/scope_id)
     registration_id=$(cat /var/platform/device_data/oem_data/iotedge/registration_id)
 
-    cat /var/platform/device_data/oem_data/iotedge/device_crt | base64 -d | sudo tee /etc/aziot/device.key
-    chown aziotks:aziotks /etc/aziot/device.key
+    cat /var/platform/device_data/oem_data/iotedge/device_crt | base64 -d | sudo tee /etc/aziot/device.crt
+    chown aziotks:aziotks /etc/aziot/device.crt
 
     if [ -e "/var/platform/device_data/oem_data/iotedge/device_key" ]; then
         cat /var/platform/device_data/oem_data/iotedge/device_key | base64 -d | sudo tee /etc/aziot/device.key
