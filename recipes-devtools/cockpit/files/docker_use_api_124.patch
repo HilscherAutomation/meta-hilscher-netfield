@@ -1,6 +1,6 @@
 diff -aurN a/pkg/docker/client.js b/pkg/docker/client.js
---- a/pkg/docker/client.js	2023-08-04 07:42:43.000000000 +0200
-+++ b/pkg/docker/client.js	2024-03-20 14:26:20.046223571 +0100
+--- a/pkg/docker/client.js	2024-04-26 07:34:26.000000000 +0200
++++ b/pkg/docker/client.js	2024-04-30 14:32:08.932649226 +0200
 @@ -58,7 +58,7 @@
              return;
  
@@ -146,8 +146,8 @@ diff -aurN a/pkg/docker/client.js b/pkg/docker/client.js
                      util.docker_debug('containers search on image id failed:', id, ex);
                  })
 diff -aurN a/pkg/docker/docker.js b/pkg/docker/docker.js
---- a/pkg/docker/docker.js	2023-08-04 07:42:43.000000000 +0200
-+++ b/pkg/docker/docker.js	2024-03-20 14:26:31.190509186 +0100
+--- a/pkg/docker/docker.js	2024-04-26 07:34:26.000000000 +0200
++++ b/pkg/docker/docker.js	2024-04-30 14:33:06.530066852 +0200
 @@ -63,7 +63,7 @@
  
      var options = {
@@ -166,9 +166,41 @@ diff -aurN a/pkg/docker/docker.js b/pkg/docker/docker.js
              .done(function(data) {
                  dfd.resolve(JSON.parse(data));
              })
+@@ -333,7 +333,7 @@
+ 
+         exec = {
+             method: "POST",
+-            path: "/v1.15/containers/" + encodeURIComponent(container_id) + "/exec",
++            path: "/v1.24/containers/" + encodeURIComponent(container_id) + "/exec",
+             headers: { "Content-Type": "application/json" },
+             body: JSON.stringify({
+                 "AttachStdin": tty,
+@@ -371,11 +371,11 @@
+         /* Nothing to prepare? Connect diretly to container? */
+         if (!exec) {
+             if (tty === false) {
+-                return attach("GET /v1.15/containers/" + encodeURIComponent(container_id) +
++                return attach("GET /v1.24/containers/" + encodeURIComponent(container_id) +
+                               "/logs?follow=1&stdout=1&stderr=1&tail=1000&timestamps=0 HTTP/1.0\r\n" +
+                               "Content-Length: 0\r\n\r\n");
+             } else {
+-                return attach("POST /v1.15/containers/" + encodeURIComponent(container_id) +
++                return attach("POST /v1.24/containers/" + encodeURIComponent(container_id) +
+                               "/attach?logs=1&stream=1&stdin=1&stdout=1&stderr=1 HTTP/1.0\r\n" +
+                               "Content-Length: 0\r\n\r\n");
+             }
+@@ -389,7 +389,7 @@
+                 .done(function(data) {
+                     var resp = JSON.parse(data);
+                     var body = JSON.stringify({ Detach: false, Tty: tty });
+-                    return attach("POST /v1.15/exec/" + encodeURIComponent(resp.Id) +
++                    return attach("POST /v1.24/exec/" + encodeURIComponent(resp.Id) +
+                               "/start HTTP/1.0\r\n" +
+                               "Content-Length: " + body.length + "\r\n\r\n" + body);
+                 })
 diff -aurN a/pkg/iotedge-docker/client.js b/pkg/iotedge-docker/client.js
---- a/pkg/iotedge-docker/client.js	2023-08-04 07:42:43.000000000 +0200
-+++ b/pkg/iotedge-docker/client.js	2024-03-20 14:26:47.246920765 +0100
+--- a/pkg/iotedge-docker/client.js	2024-04-26 07:34:26.000000000 +0200
++++ b/pkg/iotedge-docker/client.js	2024-04-30 14:32:08.932649226 +0200
 @@ -58,7 +58,7 @@
              return;
  
@@ -314,8 +346,8 @@ diff -aurN a/pkg/iotedge-docker/client.js b/pkg/iotedge-docker/client.js
                      util.docker_debug('containers search on image id failed:', id, ex);
                  })
 diff -aurN a/pkg/iotedge-docker/iotedge-docker.js b/pkg/iotedge-docker/iotedge-docker.js
---- a/pkg/iotedge-docker/iotedge-docker.js	2023-08-04 07:42:43.000000000 +0200
-+++ b/pkg/iotedge-docker/iotedge-docker.js	2024-03-20 14:26:57.639187193 +0100
+--- a/pkg/iotedge-docker/iotedge-docker.js	2024-04-26 07:34:26.000000000 +0200
++++ b/pkg/iotedge-docker/iotedge-docker.js	2024-04-30 14:33:30.386654501 +0200
 @@ -63,7 +63,7 @@
  
      var options = {
@@ -334,3 +366,35 @@ diff -aurN a/pkg/iotedge-docker/iotedge-docker.js b/pkg/iotedge-docker/iotedge-d
              .done(function(data) {
                  dfd.resolve(JSON.parse(data));
              })
+@@ -333,7 +333,7 @@
+ 
+         exec = {
+             method: "POST",
+-            path: "/v1.15/containers/" + encodeURIComponent(container_id) + "/exec",
++            path: "/v1.24/containers/" + encodeURIComponent(container_id) + "/exec",
+             headers: { "Content-Type": "application/json" },
+             body: JSON.stringify({
+                 "AttachStdin": tty,
+@@ -371,11 +371,11 @@
+         /* Nothing to prepare? Connect diretly to container? */
+         if (!exec) {
+             if (tty === false) {
+-                return attach("GET /v1.15/containers/" + encodeURIComponent(container_id) +
++                return attach("GET /v1.24/containers/" + encodeURIComponent(container_id) +
+                               "/logs?follow=1&stdout=1&stderr=1&tail=1000&timestamps=0 HTTP/1.0\r\n" +
+                               "Content-Length: 0\r\n\r\n");
+             } else {
+-                return attach("POST /v1.15/containers/" + encodeURIComponent(container_id) +
++                return attach("POST /v1.24/containers/" + encodeURIComponent(container_id) +
+                               "/attach?logs=1&stream=1&stdin=1&stdout=1&stderr=1 HTTP/1.0\r\n" +
+                               "Content-Length: 0\r\n\r\n");
+             }
+@@ -389,7 +389,7 @@
+                 .done(function(data) {
+                     var resp = JSON.parse(data);
+                     var body = JSON.stringify({ Detach: false, Tty: tty });
+-                    return attach("POST /v1.15/exec/" + encodeURIComponent(resp.Id) +
++                    return attach("POST /v1.24/exec/" + encodeURIComponent(resp.Id) +
+                               "/start HTTP/1.0\r\n" +
+                               "Content-Length: " + body.length + "\r\n\r\n" + body);
+                 })
