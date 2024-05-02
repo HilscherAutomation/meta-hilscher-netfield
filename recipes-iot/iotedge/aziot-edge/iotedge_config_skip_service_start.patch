@@ -1,6 +1,6 @@
 diff -aurN a/iotedge/src/config/apply.rs b/iotedge/src/config/apply.rs
---- a/iotedge/src/config/apply.rs	2022-07-01 10:46:32.997415858 +0200
-+++ b/iotedge/src/config/apply.rs	2022-07-01 10:53:15.023816346 +0200
+--- a/iotedge/src/config/apply.rs	2024-05-02 10:41:51.470870089 +0200
++++ b/iotedge/src/config/apply.rs	2024-05-02 10:49:00.046186818 +0200
 @@ -3,7 +3,7 @@
  //! This subcommand takes the super-config file, converts it into the individual services' config files,
  //! writes those files, and restarts the services.
@@ -10,17 +10,17 @@ diff -aurN a/iotedge/src/config/apply.rs b/iotedge/src/config/apply.rs
  
  use aziotctl_common::config as common_config;
  
-@@ -149,8 +149,12 @@
+@@ -181,8 +181,12 @@
  
      println!("Azure IoT Edge has been configured successfully!");
      println!();
 -    println!("Restarting service for configuration to take effect...");
--    crate::System::system_restart().map_err(|err| format!("{}", err))?;
+-    crate::System::system_restart().map_err(|err| format!("{err}"))?;
 +    if env::var("OMIT_SERVICE_RESTART").is_ok() {
-+        println!("Skipping service restart!");
++        println!("Skipping service restart!"); 
 +    } else {
 +        println!("Restarting service for configuration to take effect...");
-+        crate::System::system_restart().map_err(|err| format!("{}", err))?;
++        crate::System::system_restart().map_err(|err| format!("{err}"))?;
 +    }
      println!("Done.");
  
