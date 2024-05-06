@@ -136,7 +136,7 @@ boot_cfg_run() {
 	if grep -q "^LABEL=" <<<$bootparam_root; then
 		# Replace LABEL by real block device.
 		label=$(echo $bootparam_root | cut -d'=' -f2 | cut -d'/' -f1)
-		__debug "Waiting for root block device of $bootparam_root ..."
+		echo "Waiting for root block device with label $label ..."
 		while ! dev=$(blkid -L $label); do sleep 1; done
 		bootparam_root=$(sed "s,^LABEL=$label,$dev," <<< $bootparam_root)
 	fi
