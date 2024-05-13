@@ -108,7 +108,7 @@ do_x509_onboarding() {
         echo "<4>Missing device_crt for zero-touch onboarding"
         exit 1
     fi
-    if [ ! -e "$device_key_file" ] || [ ! -e "$device_key_uri_file" ]; then
+    if [ ! -e "$device_key_file" ] && [ ! -e "$device_key_uri_file" ]; then
         echo "<4>Provide device_key or device_key_uri for zero-touch onboarding"
         exit 1
     fi
