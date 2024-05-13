@@ -118,7 +118,7 @@ do_x509_onboarding() {
         exit 1
     fi
 
-    cat "$device_crt_file" | base64 -d | sudo tee /etc/aziot/device.crt
+    base64 -d "$device_crt_file" > /etc/aziot/device.crt
     chown aziotks:aziotks /etc/aziot/device.crt
 
     if [ -e "$device_key_file" ]; then
