@@ -1,0 +1,34 @@
+Flow plugin is used for verification, but this is done in CI pipeline and
+does not need to be included in yocto build
+diff -aurN a/autogen.sh b/autogen.sh
+--- a/autogen.sh	2024-04-26 07:34:26.000000000 +0200
++++ b/autogen.sh	2024-05-13 16:51:05.261621949 +0200
+@@ -45,8 +45,6 @@
+ # Hilscher saved our dev-dependencies via yarn to allow stable offline mirroring without external dependecies
+ rm -rf node_modules
+ node ./dev-scripts/yarn-1.21.1.js install --offline --frozen-lockfile
+-rm -rf flow-typed
+-node ./dev-scripts/yarn-1.21.1.js flow-typed install
+ 
+ find node_modules -name test | xargs rm -rf
+ 
+diff -aurN a/webpack.config.js b/webpack.config.js
+--- a/webpack.config.js	2024-04-26 07:34:26.000000000 +0200
++++ b/webpack.config.js	2024-05-13 16:51:17.277970291 +0200
+@@ -280,7 +280,6 @@
+ var extend = require("extend");
+ var path = require("path");
+ var fs = require("fs");
+-var FlowWebpackPlugin = require('flow-webpack-plugin');
+ /* These can be overridden, typically from the Makefile.am */
+ var srcdir = process.env.SRCDIR || __dirname;
+ var builddir = process.env.BUILDDIR || __dirname;
+@@ -343,7 +342,7 @@
+ 
+ info.files = files;
+ 
+-var plugins = [new copy(info.files), new extract("[name].css"), new FlowWebpackPlugin()];
++var plugins = [new copy(info.files), new extract("[name].css")];
+ 
+ var output = {
+     path: distdir,
