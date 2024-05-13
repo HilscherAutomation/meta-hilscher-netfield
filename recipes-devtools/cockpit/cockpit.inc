@@ -8,6 +8,7 @@ SRC_URI +="file://cockpit.service \
            file://cockpit.conf \
            file://99-cockpit.conf \
            file://add_default_origin_with_port.patch \
+           file://disable_flow_plugin.patch \
 "
 PACKAGES=+"${PN}-apps ${PN}-ovirt ${PN}-packagekit ${PN}-selinux ${PN}-sosreport \
           ${PN}-subscriptions ${PN}-playground ${PN}-kubernetes ${PN}-storaged \
@@ -64,26 +65,6 @@ python populate_packages_prepend () {
                       postinst='[ ! -e "$D${datadir}/cockpit/branding/default" ] && ln -sf $(ls -1 $D${datadir}/cockpit/branding | head -n1) $D${datadir}/cockpit/branding/default || true')
 }
 
-kill_flow_server() {
-  # DeviceManager uses flow, which keeps a server running. Kill it here, otherwise building
-  # multiple machines in a single step (e.g. buildserver) fails with
-  # ERROR in Flow validation
-  #  | Attempting to kill server for `...cockpit/dev-develop+gitAUTOINC+d7feb4fd03-r0/git`
-  #  | Unable to figure out pids of running Flow server. Try manually killing it with 'pkill flow' (be careful on shared devservers)
-  #  | Failed to kill server for `...cockpit/dev-develop+gitAUTOINC+d7feb4fd03-r0/git`
-  if [ -d "${S}/node_modules/flow-bin/" ]; then
-    flow_servers=$(ps aux | grep "${S}/node_modules/flow-bin/flow-.*/flow" | grep -v grep | awk '{print $2}')
-    for tmp_pid in ${flow_servers}; do
-      kill $tmp_pid
-      echo "Killed flow server with PID $tmp_pid"
-    done
-  fi
-}
-
-do_compile_append() {
-  kill_flow_server
-}
-
 do_install_append() {
   install -d ${D}${sysconfdir}/cockpit
   install -m 0644 ${WORKDIR}/cockpit.conf ${D}${sysconfdir}/cockpit
@@ -111,8 +92,6 @@ do_install_append() {
   # Create home directories for users
   install -d ${D}${libdir}/tmpfiles.d
   echo 'd /var/lib/cockpit 0775 root cockpit-ws -' > ${D}${libdir}/tmpfiles.d/cockpit.conf
-
-  kill_flow_server
 }
 
 SECURITY_CFLAGS = "${SECURITY_NO_PIE_CFLAGS}"
