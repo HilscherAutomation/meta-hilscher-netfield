@@ -23,6 +23,11 @@ done
 
 setenv bootmenu_${mi} FastBoot = "run fastboot"
 
+# Execute gpio-based menu, if available
+setenv boot_menu_max ${mi}
+run get_menu
+setenv bootmenu_default $boot_menu
+
 bootmenu 3
 
 exit $?
