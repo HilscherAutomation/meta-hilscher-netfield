@@ -13,10 +13,10 @@ SRC_URI += "git://github.com/microsoft/go-winio.git;name=go-winio;protocol=https
 SRCREV_goterm="a73545aae7d693f786ce4cc687460efca4845f31"
 SRC_URI += "git://github.com/buger/goterm.git;name=goterm;protocol=https;nobranch=1;destsuffix=${WORKDIR}/${BP}/src/import/vendor.fetch/github.com/buger/goterm"
 
-#   github.com/compose-spec/compose-go/v2 v2.0.0-rc.8.0.20240228111658-a0507e98fe60
-# [1] git ls-remote https://github.com/compose-spec/compose-go.git a0507e98fe6033944fc520f3488d4254e79fc6a2
-SRCREV_v2v2_0_0_rc_8_0_20240228111658_a0507e98fe60="a0507e98fe6033944fc520f3488d4254e79fc6a2"
-SRC_URI += "git://github.com/compose-spec/compose-go.git;name=v2v2_0_0_rc_8_0_20240228111658_a0507e98fe60;protocol=https;nobranch=1;destsuffix=${WORKDIR}/${BP}/src/import/vendor.fetch/github.com/compose-spec/compose-go/v2"
+#   github.com/compose-spec/compose-go/v2 v2.0.0
+# [1] git ls-remote https://github.com/compose-spec/compose-go.git 6f3ef94dc35afded9bb20452ff2e7a1c90fe2b3c
+SRCREV_v2v2_0_0="6f3ef94dc35afded9bb20452ff2e7a1c90fe2b3c"
+SRC_URI += "git://github.com/compose-spec/compose-go.git;name=v2v2_0_0;protocol=https;nobranch=1;destsuffix=${WORKDIR}/${BP}/src/import/vendor.fetch/github.com/compose-spec/compose-go/v2"
 
 #   github.com/containerd/console v1.0.3
 # [1] git ls-remote https://github.com/containerd/console.git 060a791de16aeb90b3bb4dcd78dfec3ca45fa5df
@@ -172,6 +172,11 @@ SRC_URI += "git://github.com/notaryproject/notary.git;name=notary;protocol=https
 # [1] git ls-remote https://github.com/tilt-dev/fsnotify.git fff9c274a375301ae46812f257aa68393790c45b
 SRCREV_fsnotify="fff9c274a375301ae46812f257aa68393790c45b"
 SRC_URI += "git://github.com/tilt-dev/fsnotify.git;name=fsnotify;protocol=https;nobranch=1;destsuffix=${WORKDIR}/${BP}/src/import/vendor.fetch/github.com/tilt-dev/fsnotify"
+
+#   go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.45.0
+# [1] git ls-remote https://github.com/open-telemetry/opentelemetry-go-contrib 9d4eb7e7706038b07d33f83f76afbe13f53d171d
+SRCREV_otelhttp="9d4eb7e7706038b07d33f83f76afbe13f53d171d"
+SRC_URI += "git://github.com/open-telemetry/opentelemetry-go-contrib;name=otelhttp;protocol=https;nobranch=1;destsuffix=${WORKDIR}/${BP}/src/import/vendor.fetch/go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
 #   go.opentelemetry.io/otel v1.19.0
 # [1] git ls-remote https://github.com/open-telemetry/opentelemetry-go 5d4abb4f5ce669ce4e98668aaaa9760a18629077
@@ -702,11 +707,6 @@ SRC_URI += "git://github.com/open-telemetry/opentelemetry-go-contrib;name=otelgr
 # [1] git ls-remote https://github.com/open-telemetry/opentelemetry-go-contrib 9d4eb7e7706038b07d33f83f76afbe13f53d171d
 SRCREV_otelhttptrace="9d4eb7e7706038b07d33f83f76afbe13f53d171d"
 SRC_URI += "git://github.com/open-telemetry/opentelemetry-go-contrib;name=otelhttptrace;protocol=https;nobranch=1;destsuffix=${WORKDIR}/${BP}/src/import/vendor.fetch/go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
-
-#   go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.45.0
-# [1] git ls-remote https://github.com/open-telemetry/opentelemetry-go-contrib 9d4eb7e7706038b07d33f83f76afbe13f53d171d
-SRCREV_otelhttp="9d4eb7e7706038b07d33f83f76afbe13f53d171d"
-SRC_URI += "git://github.com/open-telemetry/opentelemetry-go-contrib;name=otelhttp;protocol=https;nobranch=1;destsuffix=${WORKDIR}/${BP}/src/import/vendor.fetch/go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
 #   go.opentelemetry.io/otel/exporters/otlp/otlpmetric v0.42.0
 # [1] git ls-remote https://github.com/open-telemetry/opentelemetry-go 60666c554065ac4da502fe28943eea4b938ab479

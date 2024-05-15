@@ -19,13 +19,13 @@ DESCRIPTION = "Linux container runtime \
  "
 
 SRC_URI = "\
-	git://github.com/moby/moby.git;protocol=https;branch=25.0 \
+	git://github.com/moby/moby.git;protocol=https;branch=26.1 \
 	file://0001-dynbinary-use-go-cross-compiler.patch \
 	file://docker.init \
 	file://hi.Dockerfile \
 	"
 
-SRCREV="e63daec8672d77ac0b2b5c262ef525c7cf17fd20"
+SRCREV="ef1912d8b6aec9fbc049002188be1fc0792f76d5"
 
 # CGO does not play well with thumb -> https://patches.openembedded.org/patch/144011/
 TUNE_CCARGS:remove = "-mthumb"
