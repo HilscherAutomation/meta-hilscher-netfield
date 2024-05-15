@@ -37,11 +37,10 @@ EXTRA_OECONF = " \
     --with-systemdunitdir=${systemd_system_unitdir} \
 "
 
-# FIXME: We need to figure out if new bridge will work with polkit!
-#PACKAGECONFIG ??= " \
-#    ${@bb.utils.filter('DISTRO_FEATURES', 'polkit', d)} \
-#    old-bridge \
-#"
+PACKAGECONFIG ??= " \
+    ${@bb.utils.filter('DISTRO_FEATURES', 'polkit', d)} \
+    old-bridge \
+"
 
 PACKAGECONFIG[pcp] = "--enable-pcp,--disable-pcp,pcp"
 PACKAGECONFIG[dashboard] = "--enable-ssh,--disable-ssh,libssh"
