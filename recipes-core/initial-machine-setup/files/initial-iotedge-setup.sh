@@ -102,17 +102,23 @@ do_x509_onboarding() {
     device_crt_file="/var/platform/device_data/oem_data/iotedge/device_crt"
     device_key_uri_file="/var/platform/device_data/oem_data/iotedge/device_key_uri"
     device_key_file="/var/platform/device_data/oem_data/iotedge/device_key"
+    pkcs11_db_file="/var/platform/device_data/oem_data/iotedge/pkcs11_db"
 
     if [ ! -e "$device_crt_file" ]; then
         echo "<4>Missing device_crt for zero-touch onboarding"
         exit 1
     fi
-    if [ ! -e "$device_key_file" ] || [ ! -e "$device_key_uri_file" ]; then
+    if [ ! -e "$device_key_file" ] && [ ! -e "$device_key_uri_file" ]; then
         echo "<4>Provide device_key or device_key_uri for zero-touch onboarding"
         exit 1
     fi
 
-    cat "$device_crt_file" | base64 -d | sudo tee /etc/aziot/device.crt
+    if [ -e "$device_key_uri_file" ] && [ ! -e "$pkcs11_db_file" ]; then
+        echo "<4>Missing PKCS11 database for x509/TPM onboarding"
+        exit 1
+    fi
+
+    base64 -d "$device_crt_file" > /etc/aziot/device.crt
     chown aziotks:aziotks /etc/aziot/device.crt
 
     if [ -e "$device_key_file" ]; then
@@ -121,6 +127,9 @@ do_x509_onboarding() {
         identity_pk="file:///etc/aziot/device.key"
     else
         identity_pk=$(cat "$device_key_uri_file")
+        mkdir -p /var/lib/aziot/keyd/.tpm2_pkcs11/
+        base64 -d "$pkcs11_db_file" | gunzip > /var/lib/aziot/keyd/.tpm2_pkcs11/tpm2_pkcs11.sqlite3
+        chown aziotks:aziotks -R /var/lib/aziot/keyd/.tpm2_pkcs11
     fi
 
 # DPS x509 provisioning configuration

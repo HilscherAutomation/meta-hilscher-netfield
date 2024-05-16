@@ -31,20 +31,22 @@
 static int lock = 0;
 
 struct kobj_ext_attribute {
-	struct kobj_attribute attr;
+	struct bin_attribute attr;
 	char *val;
 };
 
 /**
  * API function of dynamically created object attributes.
  */
-static ssize_t dd_new_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+
+static ssize_t dd_new_read(struct file *f, struct kobject *kobj, struct bin_attribute *attr, char *buf, loff_t offs, size_t count)
 {
-  struct kobj_ext_attribute *ext_attr = container_of(attr, struct kobj_ext_attribute , attr);
+	struct kobj_ext_attribute *ext_attr = container_of(attr, struct kobj_ext_attribute , attr);
 
-  pr_debug("Entering %s (%s)\n", __func__, attr->attr.name);
+	pr_debug("Entering %s (%s) offs=%u, count=%u\n", __func__, attr->attr.name, (unsigned int)offs, (unsigned int)count);
+	memcpy(buf, ext_attr->val + offs, count);
 
-  return sprintf(buf, "%s\n", ext_attr->val);
+	return count;
 }
 
 /**
@@ -61,12 +63,12 @@ static int dd_create_sysfs_file_obj(struct kobject *kobj, const char *filename, 
 	snprintf((char*)new_attr->attr.attr.name, strlen(filename)+1, filename);
 
 	new_attr->val = kzalloc(strlen(val)+1, GFP_KERNEL);
-	snprintf(new_attr->val, strlen(val)+1, val);
+	new_attr->attr.size = snprintf(new_attr->val, strlen(val)+1, val);
 
 	new_attr->attr.attr.mode = S_IRUGO;
-	new_attr->attr.show = &dd_new_show;
+	new_attr->attr.read = &dd_new_read;
 
-	return sysfs_create_file(kobj, &new_attr->attr.attr);
+	return sysfs_create_bin_file(kobj, &new_attr->attr);
 }
 
 /**
@@ -85,7 +87,7 @@ static struct kobject *dd_create_sysfs_dir_obj(struct kobject *kobj, const char 
 static int dd_create_sysfs_entries(struct kobject *kobj, const char* json, jsmntok_t *token, int n, int nObj)
 {
 	jsmntok_t *t;
-	char keyName[64] = {'\0'}, keyValue[1024] = {'\0'};
+	char keyName[64] = {'\0'};
 	int fakeDirCnt = 0;
 	struct kobject *subkobj;
 
@@ -117,12 +119,21 @@ static int dd_create_sysfs_entries(struct kobject *kobj, const char* json, jsmnt
 				snprintf(keyName, t->end - t->start + 1, "%s", json + t->start);
 			}
 			else {
+				char *keyValue;
+				ssize_t keyValue_len;
+
 				if (*keyName == '\0')
 					sprintf(keyName, "%d", fakeDirCnt++);
+
+				keyValue_len = strnlen(json + t->start, t->end - t->start + 1);
+				keyValue = kzalloc(keyValue_len, GFP_KERNEL);
+
 				snprintf(keyValue, t->end - t->start + 1, "%s", json + t->start);
 				dd_create_sysfs_file_obj(kobj, keyName, keyValue);
 				keyName[0] = '\0';
 				nObj--;
+
+				kfree(keyValue);
 			}
 			break;
 		default:
@@ -134,7 +145,7 @@ static int dd_create_sysfs_entries(struct kobject *kobj, const char* json, jsmnt
 	return n;
 }
 
-static int dd_create_kobj_infrastructure_from_json(struct kobject *kobj, const char *json)
+static int dd_create_kobj_infrastructure_from_json(struct kobject *kobj, const char *json, size_t json_len)
 {
 	jsmn_parser extParser;
 	jsmntok_t *token;
@@ -145,12 +156,12 @@ static int dd_create_kobj_infrastructure_from_json(struct kobject *kobj, const c
 	/* Prepare parser */
 	jsmn_init(&extParser);
 
-	maxTokens=strlen(json);
+	maxTokens=json_len;
 	token = kzalloc(maxTokens * sizeof(*token), GFP_KERNEL);
 
-	nTokens = jsmn_parse(&extParser, json, strlen(json), token, maxTokens);
+	nTokens = jsmn_parse(&extParser, json, json_len, token, maxTokens);
 	if (nTokens < 0) {
-		pr_err("Failed to parse device data.\n");
+		pr_err("Failed to parse device data %d (json_len=%u, token=%px).\n", nTokens, (unsigned int)strlen(json), token);
 		return -EINVAL;
 	}
 
@@ -159,39 +170,58 @@ static int dd_create_kobj_infrastructure_from_json(struct kobject *kobj, const c
 	return nTokens - dd_create_sysfs_entries(kobj, json, token, 1, token->size);
 }
 
+static char json_data[64*1024];
+static uint32_t json_data_len;
+
 /**
  * API function of object attribute 'export'.
  */
-static ssize_t dd_export_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
+static ssize_t dd_export_store(struct file *f, struct kobject *kobj, struct bin_attribute *attr, char *buf, loff_t offs, size_t count)
 {
 	static uint32_t raw_file_counter= 0;
 	char raw_file_name[16];
 
-	pr_debug("Entering %s\n", __func__);
+	pr_debug("Entering %s (off=%u, count=%u)\n", __func__, (unsigned int)offs, (unsigned int)count);
 
 	if (lock) {
 		pr_err("Error: Driver is locked!");
 		return -EPERM;
 	}
 
-	if (dd_create_kobj_infrastructure_from_json(kobj, buf))
-		return -EINVAL;
+	if( (offs == 0) && (count > 1) ) {
+		memset(json_data, 0, sizeof(json_data));
+		json_data_len = 0;
+	}
 
-	/* Offers backward compatibility */
-	if (raw_file_counter == 0)
-		dd_create_sysfs_file_obj(kobj, "raw", buf);
 
-	/* Multiple raw file support.
-	 * NOTE: raw and raw_o are the same! */
-	snprintf(raw_file_name, sizeof(raw_file_name), "raw_%u", raw_file_counter);
-	dd_create_sysfs_file_obj(kobj, raw_file_name, buf);
+	/* Wait for LF */
+	if( (offs == 0) && (count == 1) && (buf[0] == '\n')) {
+		pr_debug("Creating raw%u entry from %u chars", raw_file_counter, json_data_len);
+		if (dd_create_kobj_infrastructure_from_json(kobj, json_data, json_data_len))
+			return -EINVAL;
 
-	raw_file_counter++;
+		/* Offers backward compatibility */
+		if (raw_file_counter == 0)
+			dd_create_sysfs_file_obj(kobj, "raw", json_data);
+
+		/* Multiple raw file support.
+		 * NOTE: raw and raw_o are the same! */
+		snprintf(raw_file_name, sizeof(raw_file_name), "raw_%u", raw_file_counter);
+		dd_create_sysfs_file_obj(kobj, raw_file_name, json_data);
+
+		raw_file_counter++;
+	} else {
+		if(offs + count > sizeof(json_data))
+			return -EINVAL;
+
+		memcpy(json_data + offs, buf, count);
+		json_data_len = offs + count;
+	}
 
 	return count;
 }
 
-static struct kobj_attribute export_attr = __ATTR(export, S_IWUSR, NULL, dd_export_store);
+static struct bin_attribute export_attr = __BIN_ATTR(export, S_IWUSR, NULL, dd_export_store, sizeof(json_data));
 
 /**
  * API function of object attribute 'lock'.
@@ -237,7 +267,7 @@ static int __init dd_init(void)
 	if (rc)
 		goto attr_file_failed;
 
-	rc = sysfs_create_file(dd_kobj, &export_attr.attr);
+	rc = sysfs_create_bin_file(dd_kobj, &export_attr);
 	if (rc)
 		goto attr_file_failed;
 

@@ -68,7 +68,7 @@ diff -aurN a/term-utils/agetty.c b/term-utils/agetty.c
 +
 +			if(serial_number && strlen(serial_number) > MAX_SN_LEN)
 +				sn_offset = strlen(serial_number) - MAX_SN_LEN;
-+			else
++			else if(serial_number)
 +				sn_padding = MAX_SN_LEN - strlen(serial_number);
 +
 +			if(product_number && strlen(product_number) < MAX_PN_LEN)
@@ -87,7 +87,7 @@ diff -aurN a/term-utils/agetty.c b/term-utils/agetty.c
 +	{
 +		char* model = read_text_file("/var/platform/device_data/product_name");
 +
-+		fprintf(ie->output, "%s", model);
++		fprintf(ie->output, "%s", model ? model : "unknown");
 +
 +		free(model);
 +		break;

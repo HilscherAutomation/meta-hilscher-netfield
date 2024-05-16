@@ -205,6 +205,11 @@
               "pattern": "^.*$",
               "description": "PKCS11 uri for iotedge."
             },
+            "pkcs11_db": {
+              "type": "string",
+              "pattern": "^.*$",
+              "description": "Compressed PKCS11 database for TPM onboarding."
+            },
             "tpm_so_pin": {
               "type": "string",
               "pattern": "^.*$",

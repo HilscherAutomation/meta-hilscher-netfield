@@ -77,6 +77,7 @@ device_data_run() {
 	if [ -n "$device_data" ]; then
 		# Replace single backslash with double backslashes (some labels are non-standard JSON)
 		echo -n $device_data |  sed -e 's,\([^\\]\\\)\([^\\]\),\1\\\2,g' > /sys/device_data/export
+		printf "\n" > /sys/device_data/export
 	else
 		# Define some defaults used to create fake device data.
 		productname="unknown"
@@ -88,13 +89,16 @@ device_data_run() {
 		fallback_serial="MAC:$mac"
 
 		echo -n '{"product_name":"'"${productname}"'","serial_number":"'"${fallback_serial}"'"'"${add_dl_data}"'}' > /sys/device_data/export
+		printf "\n" > /sys/device_data/export
 	fi
 
 	# Export the device-data signature as well as the public device key to runtime environment.
 	signature="${dd_sig:-"na"}"
 	pubkey="$(cat $moddir/owner-public.key)"
 	echo -n '{"signature":"'"${signature}"'"}' > /sys/device_data/export
+	printf "\n" > /sys/device_data/export
 	echo -n '{"publickey":"'"${pubkey}"'"}' | sed 's,\n,\\n,' > /sys/device_data/export
+	printf "\n" > /sys/device_data/export
 
 	# Lock the kernel driver to prevent later tampering.
 	echo 1 > /sys/device_data/lock
