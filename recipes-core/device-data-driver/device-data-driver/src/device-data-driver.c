@@ -211,11 +211,11 @@ static ssize_t dd_export_store(struct file *f, struct kobject *kobj, struct bin_
 
 		raw_file_counter++;
 	} else {
-		memcpy(json_data + offs, buf, count);
-		json_data_len = offs + count;
-
 		if(offs + count > sizeof(json_data))
 			return -EINVAL;
+
+		memcpy(json_data + offs, buf, count);
+		json_data_len = offs + count;
 	}
 
 	return count;
