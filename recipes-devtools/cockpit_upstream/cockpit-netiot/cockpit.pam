@@ -1,0 +1,10 @@
+#%PAM-1.0
+auth       required     pam_env.so
+auth       include      common-auth
+auth       optional     pam_ssh_add.so
+account    include      common-account
+password   include      common-password
+session    include      common-session
+session    required     pam_limits.so
+session    optional     pam_ssh_add.so
+session    optional     pam_lastlog.so
