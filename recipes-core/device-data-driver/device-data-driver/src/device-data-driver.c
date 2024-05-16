@@ -125,7 +125,7 @@ static int dd_create_sysfs_entries(struct kobject *kobj, const char* json, jsmnt
 				if (*keyName == '\0')
 					sprintf(keyName, "%d", fakeDirCnt++);
 
-				keyValue_len = snprintf(NULL, 0, "%s", json + t->start);
+				keyValue_len = strnlen(json + t->start, t->end - t->start + 1);
 				keyValue = kzalloc(keyValue_len, GFP_KERNEL);
 
 				snprintf(keyValue, t->end - t->start + 1, "%s", json + t->start);
