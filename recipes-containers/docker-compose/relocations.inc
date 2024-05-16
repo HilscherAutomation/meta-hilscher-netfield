@@ -35,6 +35,7 @@ export sites=" \
     github.com/stretchr/testify:github.com/stretchr/testify \
     github.com/theupdateframework/notary:github.com/theupdateframework/notary \
     github.com/tilt-dev/fsnotify:github.com/tilt-dev/fsnotify \
+    go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp:go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc/instrumentation/net/http/otelhttp:force \
     go.opentelemetry.io/otel:go.opentelemetry.io/otel \
     go.opentelemetry.io/otel/exporters/otlp/otlptrace:go.opentelemetry.io/otel/exporters/otlp/otlptrace/exporters/otlp/otlptrace:force \
     go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc:go.opentelemetry.io/otel/exporters/otlp/otlptrace/exporters/otlp/otlptrace/otlptracegrpc:force \
@@ -141,7 +142,6 @@ export sites=" \
     github.com/xeipuuv/gojsonschema:github.com/xeipuuv/gojsonschema \
     go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc:go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc/instrumentation/google.golang.org/grpc/otelgrpc:force \
     go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace:go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc/instrumentation/net/http/httptrace/otelhttptrace:force \
-    go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp:go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc/instrumentation/net/http/otelhttp:force \
     go.opentelemetry.io/otel/exporters/otlp/otlpmetric:go.opentelemetry.io/otel/exporters/otlp/otlptrace/exporters/otlp/otlpmetric:force \
     go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc:go.opentelemetry.io/otel/exporters/otlp/otlptrace/exporters/otlp/otlpmetric/otlpmetricgrpc:force \
     go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp:go.opentelemetry.io/otel/exporters/otlp/otlptrace/exporters/otlp/otlpmetric/otlpmetrichttp:force \
