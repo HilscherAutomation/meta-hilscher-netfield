@@ -6,6 +6,9 @@ DEPENDS += " u-boot-tools-native "
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
+# Prevent automatically inclusion of kernel-image into rootfs/image
+RRECOMMENDS:${KERNEL_PACKAGE_NAME}-base = ""
+
 # 3G
 SRC_URI:append = " ${@bb.utils.contains('MACHINE_FEATURES', '3g', 'file://3g.scc', '', d)}"
 KERNEL_MODULE_AUTOLOAD:append = " ${@bb.utils.contains('MACHINE_FEATURES', '3g', 'usbserial usb_wwan option qmi_wwan cdc_mbim cdc-wdm', '', d)}"
