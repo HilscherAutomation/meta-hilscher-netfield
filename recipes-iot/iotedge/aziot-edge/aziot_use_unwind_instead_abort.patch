@@ -5,10 +5,10 @@ unwind seems to be recommended:
 From https://github.com/meta-rust/meta-rust/issues/343
   Using panic abort leaves no cookie crumbs in the syslog, which is why unwind is preferred.
 diff -aurN a/Cargo.toml b/Cargo.toml
---- a/Cargo.toml	2022-07-01 11:17:03.116316296 +0200
-+++ b/Cargo.toml	2022-07-01 12:56:27.516715841 +0200
-@@ -14,7 +14,7 @@
- ]
+--- a/Cargo.toml	2024-05-02 09:13:24.846786317 +0200
++++ b/Cargo.toml	2024-05-02 10:40:19.612420380 +0200
+@@ -16,10 +16,10 @@
+ resolver = "2"
  
  [profile.dev]
 -panic = 'abort'
@@ -17,3 +17,6 @@ diff -aurN a/Cargo.toml b/Cargo.toml
  [profile.release]
 -panic = 'abort'
 +panic = 'unwind'
+ # Release builds will have full symbols. The packaging phase will strip symbols from binaries and
+ # make them available in a separate package.
+ # Notes: Snaps don't have a good story for debug symbols, so for now we'll override this setting in
