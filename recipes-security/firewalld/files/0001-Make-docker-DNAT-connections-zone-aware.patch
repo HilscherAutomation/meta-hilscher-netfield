@@ -1,0 +1,141 @@
+From 4525e5b607690f6c2ee55d45e5751e6de4e455fc Mon Sep 17 00:00:00 2001
+From: Michael Trensch <mtrensch@hilscher.com>
+Date: Mon, 10 Oct 2022 11:42:09 +0200
+Subject: [PATCH] Make docker/DNAT connections zone aware
+
+This patch marks *all* incoming packets depending on zone as follows:
+ - 0x10000 = reject
+ - 0x20000 = drop
+
+The mark will be cleared if it passes and allow rule
+---
+ src/firewall/core/ipXtables.py | 30 +++++++++++++++++++++++++++++-
+ src/firewall/core/nftables.py  | 30 +++++++++++++++++++++++++++++-
+ 2 files changed, 58 insertions(+), 2 deletions(-)
+
+diff --git a/src/firewall/core/ipXtables.py b/src/firewall/core/ipXtables.py
+index 258689cd..88e15314 100644
+--- a/src/firewall/core/ipXtables.py
++++ b/src/firewall/core/ipXtables.py
+@@ -871,7 +871,21 @@ class ip4tables(object):
+             if not append:
+                 rule += ["%%ZONE_INTERFACE%%"]
+         rule += [ "-t", table, opt, interface, action, _policy ]
+-        return [rule]
++
++        rule = [rule]
++
++        # Mark incoming packets, depending on zone policy
++        if table == "mangle" and chain == "PREROUTING":
++            target = self._fw.policy._policies[policy].target
++            add_del_rule = {True: "-A", False: "-D" }[enable]
++            if target in ["REJECT", "%%REJECT%%" ]:
++                rule.append([ add_del_rule, "%s_pre" % _policy, "-t", table,
++                              "-j", "MARK", "--set-mark", "0x10000"])
++            if target == "DROP":
++                rule.append([ add_del_rule, "%s_pre" % _policy, "-t", table,
++                              "-j", "MARK", "--set-mark", "0x20000"])
++
++        return rule
+ 
+     def _rule_addr_fragment(self, opt, address, invert=False):
+         if address.startswith("ipset:"):
+@@ -1173,6 +1187,9 @@ class ip4tables(object):
+         if rich_rule:
+             rule_fragment += self._rich_rule_destination_fragment(rich_rule.destination)
+             rule_fragment += self._rich_rule_source_fragment(rich_rule.source)
++
++        mark_rule = rule_fragment.copy()
++
+         if not rich_rule or type(rich_rule.action) != Rich_Mark:
+             rule_fragment += [ "-m", "conntrack", "--ctstate", "NEW,UNTRACKED" ]
+ 
+@@ -1182,6 +1199,10 @@ class ip4tables(object):
+             rules.append(self._rich_rule_audit(policy, rich_rule, enable, table, rule_fragment))
+             rules.append(self._rich_rule_action(policy, rich_rule, enable, table, rule_fragment))
+         else:
++            # Strip mark from incoming packets as we are an accept rule
++            _mark_policy = "PRE_" + _policy.split("_", 1)[1]
++            rules.append([add_del, "%s_allow" % (_mark_policy), "-t", "mangle"] +
++                         mark_rule + [ "-j", "MARK", "--set-mark", "0/0x30000" ])
+             rules.append([add_del, "%s_allow" % (_policy), "-t", table] +
+                          rule_fragment + [ "-j", "ACCEPT" ])
+ 
+@@ -1198,6 +1219,9 @@ class ip4tables(object):
+         if rich_rule:
+             rule_fragment += self._rich_rule_destination_fragment(rich_rule.destination)
+             rule_fragment += self._rich_rule_source_fragment(rich_rule.source)
++
++        mark_rule = rule_fragment.copy()
++
+         if not rich_rule or type(rich_rule.action) != Rich_Mark:
+             rule_fragment += [ "-m", "conntrack", "--ctstate", "NEW,UNTRACKED" ]
+ 
+@@ -1207,6 +1231,10 @@ class ip4tables(object):
+             rules.append(self._rich_rule_audit(policy, rich_rule, enable, table, rule_fragment))
+             rules.append(self._rich_rule_action(policy, rich_rule, enable, table, rule_fragment))
+         else:
++            # Strip mark from incoming packets as we are an accept rule
++            _mark_policy = "PRE_" + _policy.split("_", 1)[1]
++            rules.append([add_del, "%s_allow" % (_mark_policy), "-t", "mangle"] +
++                         rule_fragment + [ "-j", "MARK", "--set-mark", "0/0x30000" ])
+             rules.append([add_del, "%s_allow" % (_policy), "-t", table] +
+                          rule_fragment + [ "-j", "ACCEPT" ])
+ 
+diff --git a/src/firewall/core/nftables.py b/src/firewall/core/nftables.py
+index a4194390..f579a47e 100644
+--- a/src/firewall/core/nftables.py
++++ b/src/firewall/core/nftables.py
+@@ -859,7 +859,25 @@ class nftables(object):
+             if not append:
+                 rule.update(self._zone_interface_fragment())
+ 
+-        return [{verb: {"rule": rule}}]
++        rule = [{verb: {"rule": rule}}]
++
++        # Mark incoming packets, depending on zone policy
++        if table == "filter" and chain == "PREROUTING":
++            add_del = { True: "insert", False: "delete" }[enable]
++            if target in ["REJECT", "%%REJECT%%"]:
++                rule.append({add_del: {"rule": {"family": "inet",
++                                                "table": TABLE_NAME,
++                                                "chain": "%s_%s" % (table, _policy),
++                                                "expr": [{"key": {"meta": {"key": "mark"}}, "value": 0x10000}]}}})
++            if target in ["DROP"]:
++                rule.append({add_del: {"rule": {"family": "inet",
++                                                "table": TABLE_NAME,
++                                                "chain": "%s_%s" % (table, _policy),
++                                                "expr": [{"key": {"meta": {"key": "mark"}}, "value": 0x20000}]}}})
++
++        return rule
++
++
+ 
+     def build_zone_source_address_rules(self, enable, zone, policy,
+                                         address, table, chain):
+@@ -1263,6 +1281,11 @@ class nftables(object):
+             rules.append(self._rich_rule_audit(policy, rich_rule, enable, table, expr_fragments))
+             rules.append(self._rich_rule_action(policy, rich_rule, enable, table, expr_fragments))
+         else:
++            # Strip mark from incoming packets as we are an accept rule
++            rules.append({add_del: {"rule": {"family": "inet",
++                                             "table": TABLE_NAME,
++                                             "chain": "%s_%s_allow" % (table, "mangle"),
++                                             "expr": expr_fragments + [{"key": {"meta": {"key": "mark"}}, "value": 0}]}}})
+             rules.append({add_del: {"rule": {"family": "inet",
+                                              "table": TABLE_NAME,
+                                              "chain": "%s_%s_allow" % (table, _policy),
+@@ -1298,6 +1321,11 @@ class nftables(object):
+             rules.append(self._rich_rule_audit(policy, rich_rule, enable, table, expr_fragments))
+             rules.append(self._rich_rule_action(policy, rich_rule, enable, table, expr_fragments))
+         else:
++            # Strip mark from incoming packets as we are an accept rule
++            rules.append({add_del: {"rule": {"family": "inet",
++                                             "table": TABLE_NAME,
++                                             "chain": "%s_%s_allow" % (table, "mangle"),
++                                             "expr": expr_fragments + [{"key": {"meta": {"key": "mark"}}, "value": 0}]}}})
+             rules.append({add_del: {"rule": {"family": "inet",
+                                              "table": TABLE_NAME,
+                                              "chain": "%s_%s_allow" % (table, _policy),
+-- 
+2.25.1

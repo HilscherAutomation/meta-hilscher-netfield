@@ -5,7 +5,7 @@ LICENSE="GPL-2.0-only"
 LIC_FILES_CHKSUM="file://COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263"
 
 SRC_URI = "https://github.com/${BPN}/${BPN}/releases/download/v${PV}/${BPN}-${PV}.tar.gz"
-SRC_URI[sha256sum] = "45a8a7dbc084ef56ce306154d3834922e7f1fc2bf11b6c821f579cad51313226"
+SRC_URI[sha256sum] = "d8c64540039a7a5cbda7999aaa4426495a1d8dc32504439d977e80f4f16ae31c"
 
 S="${WORKDIR}/${BPN}-${PV}"
 
@@ -25,11 +25,11 @@ EXTRA_OECONF = " \
 "
 
 PACKAGECONFIG ??= "nftables"
-PACKAGECONFIG[nftables]="--with-nft=${sbindir}/nft,,,nftables"
+PACKAGECONFIG[nftables]=",,,nftables"
 
 inherit python3native
 RDEPENDS:${PN}= "python3 python3-core python3-dbus python3-slip-dbus python3-decorator python3-pygobject python3-six \
- iptables ebtables ipset bash"
+ nftables-python iptables ebtables ipset bash"
 
 SYSTEMD_PACKAGES="${PN}"
 SYSTEMD_SERVICE:${PN} = "firewalld.service"

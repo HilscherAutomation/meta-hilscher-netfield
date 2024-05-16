@@ -8,7 +8,7 @@ SRC_URI:append = " file://firewalld.conf       \
                    file://zones/nat_drop.xml   \
                    file://zones/nat_trusted.xml\
                    file://disable_logfile.patch\
-                   file://0001-This-patch-adds-all-enabled-input-ports-into-FWDI_-z.patch \
+                   file://0001-Make-docker-DNAT-connections-zone-aware.patch \
                    file://firewalld_setup_docker \
                    file://optimize_nm_integration.patch \
 "

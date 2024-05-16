@@ -5,10 +5,12 @@ inherit allarch
 
 do_install() {
     install -d ${D}${datadir}/cockpit/
-    # Insert whiteout file
+    # Insert override file
     for hideplugin in docker generalSettings iotedge-docker networkservices onboard terminal; do
-        mknod -m 0666 ${D}${datadir}/cockpit/$hideplugin c 0 0
+        echo '{"menu": null}' > ${D}${datadir}/cockpit/$hideplugin/override.json
     done
+
+    echo '{"menu": { "terminal": null }}' > ${D}${datadir}/cockpit/systemd/override.json
 }
 
 # Add plugin removal packages manually, as PACKAGES_DYNAMIC does not work with
@@ -21,4 +23,4 @@ FILES:${PN}-remove-general-settings = "${datadir}/cockpit/generalSettings"
 FILES:${PN}-remove-iotedge-docker = "${datadir}/cockpit/iotedge-docker"
 FILES:${PN}-remove-networkservices = "${datadir}/cockpit/networkservices"
 FILES:${PN}-remove-onboarding = "${datadir}/cockpit/onboard"
-FILES:${PN}-remove-terminal = "${datadir}/cockpit/terminal"
+FILES:${PN}-remove-terminal = "${datadir}/cockpit/systemd"
