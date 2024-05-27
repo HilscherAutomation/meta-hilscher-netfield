@@ -7,6 +7,7 @@ Usage: $0 [OPTION] ..."
 By default, a default image will be build for a predefined list of machines(platforms).
 
   -b <build_dir>              Basename of build directory which will be extended by parts of machine layer. (default: "build")
+  -B                          Create SPDX SBOM
   -c                          Enable CVE check
   -d <deploy_dir>             Deploy directory (default: "dist")
   -D                          Build a debug image
@@ -31,10 +32,13 @@ EOF
 	exit 1
 }
 
-while getopts ":b:cd:De:f:gi:p:P:s:t" o; do
+while getopts ":b:Bcd:De:f:gi:p:P:s:t" o; do
 	case "${o}" in
 		b)
 			build_dir="${OPTARG}"
+			;;
+		B)
+			create_sbom="1"
 			;;
 		c)  cve_check_enabled="1"
 			;;
@@ -163,10 +167,12 @@ EOF
 
 	# Set build parameters
 	if touch conf/local.overrides.conf; then
-		# create spdx SBOM
-		if ! grep -q 'INHERIT += "create-spdx"' conf/local.overrides.conf ; then
-			echo 'INHERIT += "create-spdx"' >> conf/local.overrides.conf
-			echo 'SPDX_PRETTY = "1"' >> conf/local.overrides.conf
+		if [ "$create_sbom" = "1" ]; then
+			# create spdx SBOM
+			if ! grep -q 'INHERIT += "create-spdx"' conf/local.overrides.conf ; then
+				echo 'INHERIT += "create-spdx"' >> conf/local.overrides.conf
+				echo 'SPDX_PRETTY = "1"' >> conf/local.overrides.conf
+			fi
 		fi
 
 		# Remove old entry and append the new one
@@ -268,16 +274,18 @@ EOF
 		rm -rf "${src_release_dir}"
 	fi
 
-	# Copy SBOM
-	if echo "$target" | grep "-oem-all$"; then
-		# OEM image, so we need the netfield-image-oem base image's manifest
-		# strip -all first as license is netfield-image-oem-${machine}-...
-		local fulltarget=$(echo "$target" | sed 's@-all$@@')
-		sbom_file=$(readlink -f tmp/deploy/images/$machine/${fulltarget}-${machine}.spdx.tar.zst)
-	else
-		sbom_file=$(readlink -f tmp/deploy/images/$machine/${target}-${machine}.spdx.tar.zst)
+	if [ "$create_sbom" = "1" ]; then
+		# Copy SBOM
+		if echo "$target" | grep "-oem-all$"; then
+			# OEM image, so we need the netfield-image-oem base image's manifest
+			# strip -all first as license is netfield-image-oem-${machine}-...
+			local fulltarget=$(echo "$target" | sed 's@-all$@@')
+			sbom_file=$(readlink -f tmp/deploy/images/$machine/${fulltarget}-${machine}.spdx.tar.zst)
+		else
+			sbom_file=$(readlink -f tmp/deploy/images/$machine/${target}-${machine}.spdx.tar.zst)
+		fi
+		cp -L $sbom_file $DEPLOY_DIR/$machine/$FW_VERSION/
 	fi
-	cp -L $sbom_file $DEPLOY_DIR/$machine/$FW_VERSION/
 
 	# Run CVE check
 	if [ "$cve_check_enabled" = "1" ]; then
