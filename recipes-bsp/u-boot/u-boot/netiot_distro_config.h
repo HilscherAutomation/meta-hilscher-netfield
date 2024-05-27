@@ -11,7 +11,7 @@
 #ifdef CONFIG_SYS_BOOTM_LEN
 	#undef CONFIG_SYS_BOOTM_LEN
 #endif
-#define CONFIG_SYS_BOOTM_LEN SZ_32M
+#define CONFIG_SYS_BOOTM_LEN SZ_64M
 
 /* max number of arguments */
 #define CONFIG_SYS_MAXARGS 64
