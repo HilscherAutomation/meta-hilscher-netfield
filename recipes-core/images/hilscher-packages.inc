@@ -77,6 +77,7 @@ IMAGE_INSTALL += "firewalld"
 # netFIELD Specific stuff
 IMAGE_INSTALL += "docker iotedge docker-compose"
 IMAGE_INSTALL += "opa-docker-authz"
+IMAGE_INSTALL += "kubernetes"
 
 # Package management to /opt/apps
 #IMAGE_INSTALL += "opkg"
