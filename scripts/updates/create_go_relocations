@@ -2,6 +2,7 @@
 
 from html.parser import HTMLParser
 from subprocess import Popen, PIPE
+import os
 import json
 import re
 import shutil
@@ -45,6 +46,11 @@ for required in go_mod['Require']:
                     version = replace['New']['Version']
                 break
 
+    if 'staging' in modulepath:
+        continue
+    if '..' in modulepath:
+        continue
+
     # TODO: Hacky
     if modulepath == 'dario.cat/mergo':
         modulepath = 'github.com/darccio/mergo'
@@ -58,7 +64,10 @@ for required in go_mod['Require']:
     else:
         raise Exception('Unable to gather root module path for %s' % modulepath)
 
-    srcuri_name = modulepath.split('/')[-1]
+    if re.match(r'v\d', modulepath.split("/")[-1]):
+        srcuri_name = modulepath.split('/')[-2] + "-" + modulepath.split('/')[-1]
+    else:
+        srcuri_name = modulepath.split('/')[-1]
     # Make srcuri_name unique
     if srcuri_name in used_srcuri_names:
         srcuri_name = srcuri_name + version.replace('-', '_').replace('.', '_')
@@ -73,30 +82,40 @@ for required in go_mod['Require']:
 
     print('Processing: %s (root=%s)' % (modulepath, root))
 
-    # Try to extract location of repository
-    req = urllib.request.Request('https://' + root + '?go-get=1')
-    resp = None
-    retrycount = 0
-    while resp is None:
-        try:
-            resp = urllib.request.urlopen(req);
-        except urllib.request.HTTPError as e:
-            retrycount += 1
-            time.sleep(2)
-            if retrycount > 5:
-                raise
-
     class GoImportHTMLParser(HTMLParser):
 
-        def __init__(self):
+        def __init__(self, root):
             super().__init__()
+            self.root = root
             self.__srv = []
+            self._process()
 
         def handle_starttag(self, tag, attrs):
             if tag == 'meta' and list(filter(lambda a: (a[0] == 'name' and a[1] == 'go-import'), attrs)):
                 content = list(filter(lambda a: (a[0] == 'content'), attrs))
                 if content:
                     self.__srv = content[0][1].split()
+
+        def _process(self):
+            if 'bitbucket.org' in self.root:
+                 self.__srv = [self.root, 'git', 'https://' + self.root]
+            else:
+                resp = self._fetch()
+                self.feed(resp.read().decode('utf-8'))
+
+        def _fetch(self):
+            req = urllib.request.Request('https://' + self.root + "?go-get=1")
+            resp = None
+            retrycount = 0
+            while resp is None:
+                try:
+                    resp = urllib.request.urlopen(req)
+                except urllib.request.HTTPError as e:
+                    retrycount += 1
+                    time.sleep(2)
+                    if retrycount > 5:
+                        raise
+            return resp
 
         @property
         def rootpath(self):
@@ -110,8 +129,7 @@ for required in go_mod['Require']:
         def repourl(self):
             return self.__srv[2]
 
-    parser = GoImportHTMLParser()
-    parser.feed(resp.read().decode('utf-8'))
+    parser = GoImportHTMLParser(root)
     parser.close()
 
     repo = parser.repourl
@@ -248,7 +266,8 @@ do_compile:prepend() {
 }
 """)
 
-# Generate vendoring file
+# Generate vendoring 
+os.environ['GOWORK'] = 'off'
 run_process(['go', 'mod', 'vendor'])
 shutil.move('vendor/modules.txt', 'modules.txt')
 shutil.rmtree('vendor')
