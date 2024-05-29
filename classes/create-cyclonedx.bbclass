@@ -67,7 +67,10 @@ python do_create_component_sbom() {
 
     bb.debug(2, f"Component ${component}")
 
-    dest = Path(os.path.join(d.getVar('CYCLONEDX_SSTATEDIR'), d.getVar('PN'), d.getVar('PN') + '.sbom.json'))
+    dest = Path(os.path.join(d.getVar('CYCLONEDX_SSTATEDIR'), d.getVar('PN')))
+    if d.getVar('PACKAGE_ARCH') == d.getVar('MACHINE_ARCH'):
+        dest = dest / d.getVar('MACHINE_ARCH')
+    dest = dest / (d.getVar('PN') + '.sbom.json')
     dest.parent.mkdir(exist_ok=True, parents=True)
     with dest.open("w") as f:
         f.write(json.dumps(component, indent=4))
@@ -140,6 +143,10 @@ python do_create_image_sbom() {
     # Add installed recipes/components
     for recipe in installed_recipes:
         comp_sbom = Path(os.path.join(d.getVar('DEPLOY_DIR_CYCLONEDX'),
+                                      recipe, d.getVar('MACHINE_ARCH'),
+                                      recipe + '.sbom.json'))
+        if not comp_sbom.is_file():
+            comp_sbom = Path(os.path.join(d.getVar('DEPLOY_DIR_CYCLONEDX'),
                                       recipe, recipe + '.sbom.json'))
 
         with comp_sbom.open("r") as f:
