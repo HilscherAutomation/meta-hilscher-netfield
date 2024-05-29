@@ -7,7 +7,7 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=751419260aa954499f7abaabaa882bbe"
 
 SECTION = "console/utils"
 
-SRC_URI = "git://github.com/scop/bash-completion.git;protocol=https;branch=master \
+SRC_URI = "git://github.com/scop/bash-completion.git;protocol=https;branch=main \
 	   file://backport-bash-complete-packageconfig.patch \
 	   "
 SRCREV = "7c81ef895455d0f7543c65789ff62808e7465578"
