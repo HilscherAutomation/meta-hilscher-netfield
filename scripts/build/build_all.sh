@@ -278,7 +278,7 @@ EOF
 		if echo "$target" | grep "-oem-all$"; then
 			# OEM image, so we need the netfield-image-oem base image's manifest
 			# strip -all first as license is netfield-image-oem-${machine}-...
-			local fulltarget=$(echo "$target" | sed 's@-all$@@')
+			fulltarget=$(echo "$target" | sed 's@-all$@@')
 			sbom_file=$(readlink -f tmp/deploy/images/$machine/${fulltarget}-${machine}.sbom.json)
 		else
 			sbom_file=$(readlink -f tmp/deploy/images/$machine/${target}-${machine}.sbom.json)
