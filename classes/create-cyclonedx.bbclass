@@ -1,0 +1,166 @@
+#
+# SPDX-License-Identifier: MIT
+#
+
+CYCLONEDX_BOM_COMPONENT_NAME ??= "${DISTRO_NAME}"
+CYCLONEDX_BOM_COMPONENT_VERSION ??= "${FIRMWARE_VERSION}"
+
+CYCLONEDX_SSTATEDIR = "${WORKDIR}/cyclonedx"
+DEPLOY_DIR_CYCLONEDX ??= "${DEPLOY_DIR}/cyclonedx"
+
+# The product name that the CVE database uses.  Defaults to BPN, but may need to
+# be overriden per recipe (for example tiff.bb sets CVE_PRODUCT=libtiff).
+CVE_PRODUCT ??= "${BPN}"
+CVE_VERSION ??= "${PV}"
+
+python do_create_component_sbom() {
+    import json
+    import oe.cve_check
+    from pathlib import Path
+
+    # Create the component SBOM
+    name = d.getVar("CVE_PRODUCT")
+    version = d.getVar("CVE_VERSION")
+
+    component = []
+    patches = []
+
+    # Determine patched vulnerabilities
+    for _, patched_cve in enumerate(oe.cve_check.get_patched_cves(d)):
+        patch_entry = {
+            "type" : "backport",
+            "resolves" : [
+                { "type" : "security",
+                  "id" : patched_cve,
+                  "source" : {
+                      "name" : "NVD",
+                      "url" : f"https://nvd.nist.gov/vuln/detail/{patched_cve}"
+                  }
+                }
+            ]
+        }
+        patches.append(patch_entry)
+
+    # update it with the new package info
+    names = name.split()
+    for index, cpe in enumerate(oe.cve_check.get_cpe_ids(name, version)):
+        # Create basic entry
+        bb.debug(2, f"Creating component entry for {name}@{version} ({cpe})")
+        entry = {
+            "name": names[index],
+            "version": version,
+            "cpe": cpe,
+            "type" : 'library' if d.getVar('SECTION') == 'libs' else 'application',
+            "licenses" : [{
+                "expression" : d.getVar('LICENSE').replace(' & ', ' AND ').replace(' | ', ' OR '),
+            }],
+            "pedigree" : {
+                "patches": []
+            }
+        }
+
+        # Add list of backported vulnerability fixes
+        for patch in patches:
+            entry['pedigree']['patches'].append(patch)
+
+        component.append(entry);
+
+    bb.debug(2, f"Component ${component}")
+
+    dest = Path(os.path.join(d.getVar('CYCLONEDX_SSTATEDIR'), d.getVar('PN'), d.getVar('PN') + '.sbom.json'))
+    dest.parent.mkdir(exist_ok=True, parents=True)
+    with dest.open("w") as f:
+        f.write(json.dumps(component, indent=4))
+}
+
+SSTATETASKS += "do_create_component_sbom"
+do_create_component_sbom[sstate-inputdirs] = "${CYCLONEDX_SSTATEDIR}"
+do_create_component_sbom[sstate-outputdirs] = "${DEPLOY_DIR_CYCLONEDX}"
+
+python do_create_component_sbom_setscene () {
+    sstate_setscene(d)
+}
+addtask do_create_component_sbom_setscene
+
+addtask create_component_sbom after do_fetch before do_build
+do_create_component_sbom[dirs] = "${CYCLONEDX_SSTATEDIR}/${PN}"
+do_create_component_sbom[cleandirs] = "${CYCLONEDX_SSTATEDIR}"
+do_create_component_sbom[depends] += "${PATCHDEPENDENCY}"
+do_create_component_sbom[deptask] = "do_create_component_sbom"
+
+python do_create_image_sbom() {
+    import json
+    import oe.packagedata
+    import os
+    import uuid
+    from datetime import datetime
+    from pathlib import Path
+    from oe.rootfs import image_list_installed_packages
+
+    image_name = d.getVar("IMAGE_NAME")
+    image_link_name = d.getVar("IMAGE_LINK_NAME")
+    imgdeploydir = Path(d.getVar("IMGDEPLOYDIR"))
+    packages = image_list_installed_packages(d)
+
+    sbom = {
+        "bomFormat": "CycloneDX",
+        "specVersion": "1.4",
+        "serialNumber": "urn:uuid:" + str(uuid.uuid4()),
+        "version": 1,
+        "metadata": {
+            "timestamp": datetime.now().isoformat(),
+            "component": {
+                "type": "operating-system",
+                "name": d.getVar('CYCLONEDX_BOM_COMPONENT_NAME'),
+                "version": d.getVar('CYCLONEDX_BOM_COMPONENT_VERSION'),
+                "properties": [
+                    {
+                        "name": "machine",
+                        "value": d.getVar('MACHINE'),
+                    }
+                ]
+            }
+        },
+        "components": []
+    }
+
+    # Find installed recipes via package names
+    installed_recipes = []
+    for pkg in sorted(packages.keys()):
+        pkg_info = os.path.join(d.getVar('PKGDATA_DIR'),
+                                'runtime-reverse', pkg)
+        pkg_dic = oe.packagedata.read_pkgdatafile(pkg_info)
+
+        recipe_name = pkg_dic['PN']
+        if recipe_name in installed_recipes:
+            bb.debug(2, f"Skipping already found recipe {recipe_name} for package {pkg}")
+        else:
+            installed_recipes.append(recipe_name)
+
+    # Add installed recipes/components
+    for recipe in installed_recipes:
+        comp_sbom = Path(os.path.join(d.getVar('DEPLOY_DIR_CYCLONEDX'),
+                                      recipe, recipe + '.sbom.json'))
+
+        with comp_sbom.open("r") as f:
+            comp = json.loads(f.read())
+            # component SBOM contains array of possible component names,
+            # so covert it for final SBOM
+            for tmp in comp:
+                sbom['components'].append(tmp)
+
+    # Write final SBOM
+    image_sbom = Path(os.path.join(imgdeploydir,
+                                   image_name + '.sbom.json'))
+    with image_sbom.open("w") as f:
+        f.write(json.dumps(sbom, indent=4))
+
+    image_sbom_link = Path(os.path.join(imgdeploydir,
+                                        image_link_name + '.sbom.json'))
+
+    image_sbom_link.symlink_to(image_name + '.sbom.json')
+}
+
+do_rootfs[recrdeptask] += "do_create_component_sbom"
+
+ROOTFS_POSTUNINSTALL_COMMAND =+ "do_create_image_sbom;"

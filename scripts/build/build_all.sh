@@ -7,7 +7,7 @@ Usage: $0 [OPTION] ..."
 By default, a default image will be build for a predefined list of machines(platforms).
 
   -b <build_dir>              Basename of build directory which will be extended by parts of machine layer. (default: "build")
-  -B                          Create SPDX SBOM
+  -B                          Create CycloneDX SBOM
   -c                          Enable CVE check
   -d <deploy_dir>             Deploy directory (default: "dist")
   -D                          Build a debug image
@@ -168,10 +168,9 @@ EOF
 	# Set build parameters
 	if touch conf/local.overrides.conf; then
 		if [ "$create_sbom" = "1" ]; then
-			# create spdx SBOM
-			if ! grep -q 'INHERIT += "create-spdx"' conf/local.overrides.conf ; then
-				echo 'INHERIT += "create-spdx"' >> conf/local.overrides.conf
-				echo 'SPDX_PRETTY = "1"' >> conf/local.overrides.conf
+			# create CycloneDX SBOM
+			if ! grep -q 'INHERIT += "create-cyclonedx"' conf/local.overrides.conf ; then
+				echo 'INHERIT += "create-cyclonedx"' >> conf/local.overrides.conf
 			fi
 		fi
 
@@ -280,9 +279,9 @@ EOF
 			# OEM image, so we need the netfield-image-oem base image's manifest
 			# strip -all first as license is netfield-image-oem-${machine}-...
 			local fulltarget=$(echo "$target" | sed 's@-all$@@')
-			sbom_file=$(readlink -f tmp/deploy/images/$machine/${fulltarget}-${machine}.spdx.tar.zst)
+			sbom_file=$(readlink -f tmp/deploy/images/$machine/${fulltarget}-${machine}.sbom.json)
 		else
-			sbom_file=$(readlink -f tmp/deploy/images/$machine/${target}-${machine}.spdx.tar.zst)
+			sbom_file=$(readlink -f tmp/deploy/images/$machine/${target}-${machine}.sbom.json)
 		fi
 		cp -L $sbom_file $DEPLOY_DIR/$machine/$FW_VERSION/
 	fi
