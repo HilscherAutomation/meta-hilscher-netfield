@@ -41,4 +41,10 @@ delete_unwanted_cifx_files() {
     rm ${IMAGE_ROOTFS}/etc/init.d/cifxeth
 }
 
-ROOTFS_POSTUNINSTALL_COMMAND:append = " delete_unwanted_cifx_files;"
+add_etc_target() {
+    # Add /etc/target to get rid of kernel warning:
+    #   "cannot open /etc/target"
+    mkdir -p ${IMAGE_ROOTFS}/etc/target
+}
+
+ROOTFS_POSTUNINSTALL_COMMAND:append = " delete_unwanted_cifx_files;add_etc_target;"
