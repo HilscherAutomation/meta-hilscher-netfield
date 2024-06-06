@@ -156,8 +156,8 @@ FILES:${PN}-ws = " \
     ${systemd_system_unitdir}/system-cockpithttps.slice \
     ${libdir}/tmpfiles.d/cockpit-tempfiles.conf \
     ${sbindir}/remotectl \
-    ${libdir}/security/pam_ssh_add.so \
-    ${libdir}/security/pam_cockpit_cert.so \
+    ${base_libdir}/security/pam_ssh_add.so \
+    ${base_libdir}/security/pam_cockpit_cert.so \
     ${libexecdir}/cockpit-ws \
     ${libexecdir}/cockpit-wsinstance-factory \
     ${libexecdir}/cockpit-tls \
@@ -200,6 +200,8 @@ do_compile:prepend() {
 }
 
 do_install:append() {
+    install -d ${D}${base_libdir}
+    mv ${D}${libdir}/security ${D}${base_libdir}
     pkgdatadir=${datadir}/cockpit
 
     chmod 4750 ${D}${libexecdir}/cockpit-session
