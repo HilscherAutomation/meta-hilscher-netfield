@@ -5,15 +5,17 @@ LICENSE = "LGPL-2.1-only"
 LIC_FILES_CHKSUM = "file://COPYING;md5=4fbd65380cdd255951079008b364516c"
 
 SRC_URI += " \
-    https://github.com/cockpit-project/cockpit/releases/download/${PV}/cockpit-${PV}.tar.xz \
+    gitsm://github.com/cockpit-project/cockpit;protocol=https;branch=main \
     file://0001-Warn-not-error-if-xsltproc-is-not-found.patch \
     file://cockpit.pam \
     "
-SRC_URI[sha256sum] = "b84a638b827f408f54d84af94f8d87abf204101a8a52b3e4fb30f1bbc6e35941"
+SRCREV="3a998b015807a33762fe40572665ea8a9a6481f4"
+S="${WORKDIR}/git"
 
 inherit gettext pkgconfig autotools systemd features_check
 inherit ${@bb.utils.contains('PACKAGECONFIG', 'old-bridge', '', 'python3targetconfig', d)}
 
+DEPENDS += "nodejs-native"
 DEPENDS += "glib-2.0-native intltool-native gnutls virtual/gettext json-glib krb5 libpam systemd python3-setuptools-native"
 DEPENDS += "${@bb.utils.contains('PACKAGECONFIG', 'old-bridge', '', 'python3-pip-native', d)}"
 
@@ -37,11 +39,10 @@ EXTRA_OECONF = " \
     --with-systemdunitdir=${systemd_system_unitdir} \
 "
 
-# FIXME: We need to figure out if new bridge will work with polkit!
-#PACKAGECONFIG ??= " \
-#    ${@bb.utils.filter('DISTRO_FEATURES', 'polkit', d)} \
-#    old-bridge \
-#"
+PACKAGECONFIG ??= " \
+    ${@bb.utils.filter('DISTRO_FEATURES', 'polkit', d)} \
+    old-bridge \
+"
 
 PACKAGECONFIG[pcp] = "--enable-pcp,--disable-pcp,pcp"
 PACKAGECONFIG[dashboard] = "--enable-ssh,--disable-ssh,libssh"
@@ -187,6 +188,16 @@ FILES:${PN} += " \
 RDEPENDS:${PN} += "${PN}-bridge"
 # Needs bash for /usr/libexec/cockpit-certificate-helper
 RDEPENDS:${PN} += "bash"
+
+do_configure:prepend() {
+    echo "m4_define(VERSION_NUMBER, [${PV}])" > ${S}/version.m4
+}
+
+do_compile:prepend() {
+    cd ${S}
+    ./build.js
+    cd ${B}
+}
 
 do_install:append() {
     pkgdatadir=${datadir}/cockpit
