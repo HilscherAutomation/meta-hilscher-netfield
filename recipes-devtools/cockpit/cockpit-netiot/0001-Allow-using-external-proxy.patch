@@ -1,0 +1,46 @@
+From 0c24b2b1d2a562edff11bd3229cda85f67986e21 Mon Sep 17 00:00:00 2001
+From: Michael Trensch <mtrensch@hilscher.com>
+Date: Thu, 16 May 2024 12:44:40 +0200
+Subject: [PATCH 1/3] Allow using external proxy.
+
+This patch adjusts the service files to disable TLS, which is done by an
+external reveverse-proxy, and restrict listening port to localhost
+---
+ src/systemd/cockpit.service.in | 4 ++--
+ src/systemd/cockpit.socket.in  | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/systemd/cockpit.service.in b/src/systemd/cockpit.service.in
+index 1fea0de3b..51e7ef284 100644
+--- a/src/systemd/cockpit.service.in
++++ b/src/systemd/cockpit.service.in
+@@ -6,11 +6,11 @@ Requires=cockpit-wsinstance-http.socket cockpit-wsinstance-https-factory.socket
+ After=cockpit-wsinstance-http.socket cockpit-wsinstance-https-factory.socket
+ 
+ [Service]
++OOMScoreAdjust=-1000
+ RuntimeDirectory=cockpit/tls
+ # systemd ≥ 241 sets this automatically
+ Environment=RUNTIME_DIRECTORY=/run/cockpit/tls
+-ExecStartPre=+@libexecdir@/cockpit-certificate-ensure --for-cockpit-tls
+-ExecStart=@libexecdir@/cockpit-tls
++ExecStart=@libexecdir@/cockpit-tls --no-tls
+ User=@user@
+ Group=@group@
+ NoNewPrivileges=true
+diff --git a/src/systemd/cockpit.socket.in b/src/systemd/cockpit.socket.in
+index 97ca6b37c..ed15a01ef 100644
+--- a/src/systemd/cockpit.socket.in
++++ b/src/systemd/cockpit.socket.in
+@@ -4,7 +4,7 @@ Documentation=man:cockpit-ws(8)
+ Wants=cockpit-motd.service
+ 
+ [Socket]
+-ListenStream=9090
++ListenStream=127.0.0.1:25000
+ ExecStartPost=-@datadir@/@PACKAGE@/motd/update-motd '' localhost
+ ExecStartPost=-/bin/ln -snf active.motd /run/cockpit/motd
+ ExecStopPost=-/bin/ln -snf inactive.motd /run/cockpit/motd
+-- 
+2.25.1
+

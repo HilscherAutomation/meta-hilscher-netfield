@@ -1,0 +1,44 @@
+From c96b4c113282b75a0c16d0ef841a3515ea947aae Mon Sep 17 00:00:00 2001
+From: Michael Trensch <mtrensch@hilscher.com>
+Date: Thu, 16 May 2024 12:48:03 +0200
+Subject: [PATCH 2/3] netFIELDOS does not use the default zones of firewalls,
+ thus they need to be inserted into list, otherwise the firewall dialog will
+ not work
+
+---
+ pkg/networkmanager/firewall-client.js | 3 +--
+ pkg/networkmanager/firewall.jsx       | 4 ++--
+ 2 files changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/pkg/networkmanager/firewall-client.js b/pkg/networkmanager/firewall-client.js
+index 0a7a848bb..b610d841b 100644
+--- a/pkg/networkmanager/firewall-client.js
++++ b/pkg/networkmanager/firewall-client.js
+@@ -34,8 +34,7 @@ const firewall = {
+     zones: {},
+     activeZones: new Set(),
+     /* Zones predefined by firewalld, from untrusted to trusted */
+-    predefinedZones: ['drop', 'block', 'public', 'external',
+-        'dmz', 'work', 'home', 'internal', 'trusted'],
++    predefinedZones: ['drop', 'nat_drop', 'block', 'nat_trusted', 'trusted'],
+     defaultZone: null,
+     availableInterfaces: [],
+     ready: false
+diff --git a/pkg/networkmanager/firewall.jsx b/pkg/networkmanager/firewall.jsx
+index c36d9183d..77c47eca4 100644
+--- a/pkg/networkmanager/firewall.jsx
++++ b/pkg/networkmanager/firewall.jsx
+@@ -786,8 +786,8 @@ class ActivateZoneModal extends React.Component {
+ 
+     render() {
+         const Dialogs = this.context;
+-        const zones = Object.keys(firewall.zones).filter(z => firewall.zones[z].target === "default" && !firewall.activeZones.has(z));
+-        const customZones = zones.filter(z => firewall.predefinedZones.indexOf(z) === -1);
++        const zones = Object.keys(firewall.zones).filter(z => firewall.predefinedZones.indexOf(z) !== -1);
++        const customZones = Object.keys(firewall.zones).filter(z => firewall.predefinedZones.indexOf(z) === -1);
+         const interfaces = firewall.availableInterfaces.filter(i => {
+             let inZone = false;
+             firewall.activeZones.forEach(z => {
+-- 
+2.25.1
+

@@ -1,0 +1,25 @@
+From 775b527e93ab837081f881d556a8708c601b5115 Mon Sep 17 00:00:00 2001
+From: Michael Trensch <mtrensch@hilscher.com>
+Date: Thu, 16 May 2024 12:49:12 +0200
+Subject: [PATCH 3/3] Hide wheel group, which is not used on netFIELDOS
+
+---
+ pkg/users/users.js | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/pkg/users/users.js b/pkg/users/users.js
+index 08029bdfa..376e96257 100755
+--- a/pkg/users/users.js
++++ b/pkg/users/users.js
+@@ -39,7 +39,7 @@ import "./users.scss";
+ 
+ superuser.reload_page_on_change();
+ 
+-export const admins = ['sudo', 'root', 'wheel'];
++export const admins = ['sudo', 'root'];
+ const sortGroups = groups => {
+     return groups.sort((a, b) => {
+         if (a.isAdmin)
+-- 
+2.25.1
+
