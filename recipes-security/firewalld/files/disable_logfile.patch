@@ -1,7 +1,7 @@
 diff -aurN a/src/firewalld.in b/src/firewalld.in
---- a/src/firewalld.in	2018-11-08 14:40:44.000000000 +0100
-+++ b/src/firewalld.in	2019-08-19 13:56:15.755862997 +0200
-@@ -83,19 +83,6 @@
+--- a/src/firewalld.in	2022-07-26 14:42:51.151838701 +0200
++++ b/src/firewalld.in	2022-07-26 14:44:33.134379674 +0200
+@@ -83,20 +83,6 @@
              log.addInfoLogging("*", log.stdout)
              log.addDebugLogging("*", log.stdout)
  
@@ -12,7 +12,8 @@ diff -aurN a/src/firewalld.in b/src/firewalld.in
 -        log.error("Failed to open log file '%s': %s", config.FIREWALLD_LOGFILE,
 -                  str(e))
 -    else:
--        log.addInfoLogging("*", log_file, [ log.FATAL, log.ERROR, log.WARNING ])
+-        log.addInfoLogging("*", log_file, [ log.FATAL, log.ERROR, log.WARNING,
+-                                            log.TRACEBACK ])
 -        log.addDebugLogging("*", log_file)
 -        if args.debug:
 -            log.addInfoLogging("*", log_file)

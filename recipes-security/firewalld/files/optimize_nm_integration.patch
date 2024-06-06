@@ -1,47 +1,18 @@
-From 4a1d7d3164f75b5f65f73bbc5e90289ce8a9431b Mon Sep 17 00:00:00 2001
-From: Michael Trensch <mtrensch@hilscher.com>
-Date: Tue, 7 Feb 2023 08:42:30 +0100
-Subject: [PATCH] Firewalld only uses the network connections actively passed
- by NetworkManager via dbus (see
- https://firewalld.org/documentation/zone/connections-interfaces-and-sources.html)
-
-NetworkManager only adds active connections, thus firewalld only shows
-zones of active interfaces
-
-This patch adds:
- - When saving runtime to permanent, the zone is updated in NetworkManager
- - Removes all zones from interfaces/connections in NetworkManager,
-   when not explicitely assigned in firewalld (Default zone)
- - Search for inactive interfaces in NetworkManager during zone setup
-   to also show inactive interfaces per default. Hot-plugged interfaces
-   may need a firewall-cmd --reload
- - Ommit removeInterface notification from NetworkManager to have all
-   interfaces (up and down) in internal list
-
-NOTE: If multiple connections share the same interface (e.g. WiFi client
-      with multiple SSIDs) this will not work
----
- src/firewall-cmd.in              | 18 +++++++++++++++-
- src/firewall/core/fw_nm.py       | 35 +++++++++++++++++++++++++++++---
- src/firewall/core/fw_zone.py     |  9 ++++++++
- src/firewall/server/firewalld.py | 26 ++++++++++++++++--------
- 4 files changed, 76 insertions(+), 12 deletions(-)
-
 diff --git a/src/firewall-cmd.in b/src/firewall-cmd.in
-index f78fedb4..8bdaae0c 100755
+index 2db183e6..6dd10c0b 100755
 --- a/src/firewall-cmd.in
 +++ b/src/firewall-cmd.in
-@@ -36,7 +36,8 @@ from firewall import errors
- from firewall.functions import joinArgs, splitArgs
+@@ -37,7 +37,8 @@ from firewall import errors
+ from firewall.functions import joinArgs, splitArgs, getPortRange
  from firewall.core.fw_nm import nm_is_imported, \
      nm_get_connection_of_interface, nm_get_zone_of_connection, \
 -    nm_set_zone_of_connection, nm_get_interfaces_in_zone
 +    nm_set_zone_of_connection, nm_get_interfaces_in_zone, \
 +    nm_get_connections
  from firewall.core.io.zone import zone_reader
+ from firewall.core.io.policy import policy_reader
  from firewall.core.io.service import service_reader
- from firewall.core.io.ipset import ipset_reader
-@@ -473,7 +474,22 @@ def try_set_zone_of_interface(_zone, interface):
+@@ -517,7 +518,22 @@ def try_set_zone_of_interface(_zone, interface):
                      cmd.print_msg("The interface is under control of NetworkManager, setting zone to default.")
                  else:
                      cmd.print_msg("The interface is under control of NetworkManager, setting zone to '%s'." % _zone)
@@ -65,7 +36,7 @@ index f78fedb4..8bdaae0c 100755
      return False
  
 diff --git a/src/firewall/core/fw_nm.py b/src/firewall/core/fw_nm.py
-index 37282a1a..ec114c2e 100644
+index 0e38dd47..98665141 100644
 --- a/src/firewall/core/fw_nm.py
 +++ b/src/firewall/core/fw_nm.py
 @@ -24,7 +24,8 @@
@@ -78,9 +49,9 @@ index 37282a1a..ec114c2e 100644
  
  import gi
  from gi.repository import GLib
-@@ -171,17 +172,36 @@ def nm_get_interfaces():
-         for dev in active_con.get_devices():
-             active_interfaces.append(dev.get_iface())
+@@ -175,17 +176,36 @@ def nm_get_interfaces():
+             if ip_iface:
+                 active_interfaces.append(ip_iface)
  
 +    connections = nm_get_client().get_connections()
 +
@@ -116,7 +87,7 @@ index 37282a1a..ec114c2e 100644
  def nm_get_connection_of_interface(interface):
      """Get connection from NM that is using the interface
      @param interface name
-@@ -195,7 +215,7 @@ def nm_get_connection_of_interface(interface):
+@@ -199,7 +219,7 @@ def nm_get_connection_of_interface(interface):
  
      active_con = device.get_active_connection()
      if active_con is None:
@@ -125,7 +96,7 @@ index 37282a1a..ec114c2e 100644
  
      try:
          con = active_con.get_connection()
-@@ -226,3 +246,12 @@ def nm_get_dbus_interface():
+@@ -230,3 +250,12 @@ def nm_get_dbus_interface():
      if not _nm_imported:
          return ""
      return NM.DBUS_INTERFACE
@@ -138,49 +109,22 @@ index 37282a1a..ec114c2e 100644
 +        c_itf = s_conn.get_interface_name();
 +        if not c_itf in assigned_interfaces:
 +            nm_set_zone_of_connection(None, c.get_uuid())
-diff --git a/src/firewall/core/fw_zone.py b/src/firewall/core/fw_zone.py
-index bca88273..9badfb0a 100644
---- a/src/firewall/core/fw_zone.py
-+++ b/src/firewall/core/fw_zone.py
-@@ -35,6 +35,8 @@ from firewall.core.fw_transaction import FirewallTransaction, \
- from firewall import errors
- from firewall.errors import FirewallError
- from firewall.fw_types import LastUpdatedOrderedDict
-+from firewall.core.fw_nm import nm_get_interfaces_in_zone
-+
- 
- class FirewallZone(object):
-     def __init__(self, fw):
-@@ -158,6 +160,13 @@ class FirewallZone(object):
-             for args in obj.interfaces:
-                 error = self._first_except(error, self.add_interface, obj.name, args,
-                                            use_zone_transaction=zone_transaction)
-+
-+            nm_interfaces = nm_get_interfaces_in_zone(obj.name)
-+            for intf in nm_interfaces:
-+                if intf not in obj.interfaces:
-+                    error = self._first_except(error, self.add_interface, obj.name, intf,
-+                                               use_zone_transaction=zone_transaction)
-+
-             for args in obj.sources:
-                 error = self._first_except(error, self.add_source, obj.name, args,
-                                            use_zone_transaction=zone_transaction)
 diff --git a/src/firewall/server/firewalld.py b/src/firewall/server/firewalld.py
-index b2340e3c..5f2065c8 100644
+index f5f902d6..80c3199c 100644
 --- a/src/firewall/server/firewalld.py
 +++ b/src/firewall/server/firewalld.py
-@@ -31,6 +31,7 @@ import dbus
+@@ -25,6 +25,7 @@ from gi.repository import GLib
+ import copy
+ import dbus
  import dbus.service
- import slip.dbus
- import slip.dbus.service
 +import os
  
  from firewall import config
  from firewall.core.fw import Firewall
-@@ -52,7 +53,9 @@ from firewall.core.io.ipset import IPSet
+@@ -49,7 +50,9 @@ from firewall.core.io.ipset import IPSet
  from firewall.core.io.icmptype import IcmpType
  from firewall.core.io.helper import Helper
- from firewall.core.fw_nm import nm_get_bus_name, nm_get_connection_of_interface, \
+ from firewall.core.fw_nm import nm_get_connection_of_interface, \
 -                                nm_set_zone_of_connection
 +                                nm_set_zone_of_connection, \
 +                                nm_reset_zone_for_unassigned_interfaces, \
@@ -188,30 +132,29 @@ index b2340e3c..5f2065c8 100644
  from firewall.core.fw_ifcfg import ifcfg_set_zone_of_interface
  from firewall import errors
  from firewall.errors import FirewallError
-@@ -439,18 +442,15 @@ class FirewallD(slip.dbus.service.Object):
+@@ -443,17 +446,14 @@ class FirewallD(DbusServiceObject):
+         # zones
  
          config_names = self.config.getZoneNames()
-         nm_bus_name = nm_get_bus_name()
 +        assigned_interfaces = []
          for name in self.fw.zone.get_zones():
-             conf = self.getZoneSettings(name)
+             conf = self.getZoneSettings2(name)
              settings = FirewallClientZoneSettings(conf)
-             if nm_bus_name is not None:
-                 changed = False
--                for interface in settings.getInterfaces():
--                    if self.fw.zone.interface_get_sender(name, interface) == nm_bus_name:
--                        log.debug1("Zone '%s': interface binding for '%s' has been added by NM, ignoring." % (name, interface))
--                        settings.removeInterface(interface)
--                        changed = True
--                # For the remaining interfaces, attempt to let NM manage them
--                for interface in settings.getInterfaces():
-+                interfaces_copy = settings.getInterfaces().copy()
-+                for interface in interfaces_copy:
-+                    assigned_interfaces.append(interface)
-                     try:
-                         connection = nm_get_connection_of_interface(interface)
-                         if connection and nm_set_zone_of_connection(name, connection):
-@@ -482,6 +482,7 @@ class FirewallD(slip.dbus.service.Object):
+             changed = False
+-            for interface in settings.getInterfaces():
+-                if interface in self.fw._nm_assigned_interfaces:
+-                    log.debug1("Zone '%s': interface binding for '%s' has been added by NM, ignoring." % (name, interface))
+-                    settings.removeInterface(interface)
+-                    changed = True
+-            # For the remaining interfaces, attempt to let NM manage them
+-            for interface in settings.getInterfaces():
++            interfaces_copy = settings.getInterfaces().copy()
++            for interface in interfaces_copy:
++                assigned_interfaces.append(interface)
+                 try:
+                     connection = nm_get_connection_of_interface(interface)
+                     if connection and nm_set_zone_of_connection(name, connection):
+@@ -499,6 +499,7 @@ class FirewallD(DbusServiceObject):
                      (name, e))
                  error = True
  
@@ -219,7 +162,7 @@ index b2340e3c..5f2065c8 100644
          # helpers
  
          config_names = self.config.getHelperNames()
-@@ -1199,6 +1200,15 @@ class FirewallD(slip.dbus.service.Object):
+@@ -1289,6 +1290,15 @@ class FirewallD(DbusServiceObject):
          """
          zone = dbus_to_python(zone, str)
          interface = dbus_to_python(interface, str)
@@ -235,6 +178,3 @@ index b2340e3c..5f2065c8 100644
          log.debug1("zone.removeInterface('%s', '%s')" % (zone, interface))
          self.accessCheck(sender)
          _zone = self.fw.zone.remove_interface(zone, interface)
--- 
-2.25.1
-
