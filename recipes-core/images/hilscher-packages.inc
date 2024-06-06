@@ -86,7 +86,8 @@ IMAGE_INSTALL += "opa-docker-authz"
 IMAGE_INSTALL += "rng-tools"
 
 # Administration tools
-IMAGE_INSTALL += "cockpit cockpit-onboarding cockpit-docker cockpit-iotedge-docker cockpit-general-settings cockpit-terminal cockpit-branding-default"
+IMAGE_INSTALL += "cockpit cockpit-ws cockpit-bridge cockpit-branding-default \
+    cockpit-shell cockpit-systemd cockpit-users cockpit-networkmanager"
 IMAGE_INSTALL += "sudo"
 
 # Tools / Addons
