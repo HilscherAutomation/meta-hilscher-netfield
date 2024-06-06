@@ -4,6 +4,7 @@ SRC_URI:append = " \
     file://0001-Allow-using-external-proxy.patch \
     file://0002-netFIELDOS-does-not-use-the-default-zones-of-firewal.patch \
     file://0003-Hide-wheel-group-which-is-not-used-on-netFIELDOS.patch \
+    file://firewall_dont_add_cockpit.patch \
     file://cockpit.pam \
     file://cockpit.conf \
     file://99-cockpit.conf \
