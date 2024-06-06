@@ -170,7 +170,7 @@ CONFFILES:${PN}-ws += " \
     ${sysconfdir}/issue.d/cockpit.issue \
     ${sysconfdir}/motd.d/cockpit \
 "
-RDEPENDS:${PN}-ws += "openssl-bin"
+RDEPENDS:${PN}-ws += "openssl-bin openssh-misc"
 SYSTEMD_SERVICE:${PN}-ws = "cockpit.socket"
 
 FILES:${PN} += " \
