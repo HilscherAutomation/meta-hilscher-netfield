@@ -18,7 +18,6 @@ VERSION="$1"
 cp "${SCRIPTDIR}"/create_go_relocations "$tmpdir"/
 git clone -b v"${VERSION}" https://github.com/docker/compose "$tmpdir"/compose
 hash=$(git -C "$tmpdir"/compose rev-parse HEAD)
-git -C "$tmpdir"/compose am "${SCRIPTDIR}"/../../recipes-containers/docker-compose/files/*.patch
 
 docker run -it --rm -v "$tmpdir":/build --workdir /build/compose golang:1.20 ../create_go_relocations
 

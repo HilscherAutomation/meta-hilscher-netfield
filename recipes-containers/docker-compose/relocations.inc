@@ -1,6 +1,7 @@
 export sites=" \
     github.com/AlecAivazis/survey/v2:github.com/AlecAivazis/survey/v2 \
     github.com/Microsoft/go-winio:github.com/Microsoft/go-winio \
+    github.com/acarl005/stripansi:github.com/acarl005/stripansi \
     github.com/buger/goterm:github.com/buger/goterm \
     github.com/compose-spec/compose-go/v2:github.com/compose-spec/compose-go/v2 \
     github.com/containerd/console:github.com/containerd/console \
@@ -14,6 +15,7 @@ export sites=" \
     github.com/docker/docker:github.com/docker/docker \
     github.com/docker/go-connections:github.com/docker/go-connections \
     github.com/docker/go-units:github.com/docker/go-units \
+    github.com/eiannone/keyboard:github.com/eiannone/keyboard \
     github.com/fsnotify/fsevents:github.com/fsnotify/fsevents \
     github.com/google/go-cmp:github.com/google/go-cmp \
     github.com/hashicorp/go-multierror:github.com/hashicorp/go-multierror \
@@ -29,7 +31,9 @@ export sites=" \
     github.com/opencontainers/go-digest:github.com/opencontainers/go-digest \
     github.com/opencontainers/image-spec:github.com/opencontainers/image-spec \
     github.com/otiai10/copy:github.com/otiai10/copy \
+    github.com/r3labs/sse:github.com/r3labs/sse \
     github.com/sirupsen/logrus:github.com/sirupsen/logrus \
+    github.com/skratchdot/open-golang:github.com/skratchdot/open-golang \
     github.com/spf13/cobra:github.com/spf13/cobra \
     github.com/spf13/pflag:github.com/spf13/pflag \
     github.com/stretchr/testify:github.com/stretchr/testify \
@@ -39,6 +43,7 @@ export sites=" \
     go.opentelemetry.io/otel:go.opentelemetry.io/otel \
     go.opentelemetry.io/otel/exporters/otlp/otlptrace:go.opentelemetry.io/otel/exporters/otlp/otlptrace/exporters/otlp/otlptrace:force \
     go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc:go.opentelemetry.io/otel/exporters/otlp/otlptrace/exporters/otlp/otlptrace/otlptracegrpc:force \
+    go.opentelemetry.io/otel/metric:go.opentelemetry.io/otel/metric/metric:force \
     go.opentelemetry.io/otel/sdk:go.opentelemetry.io/otel/sdk/sdk:force \
     go.opentelemetry.io/otel/trace:go.opentelemetry.io/otel/trace/trace:force \
     go.uber.org/goleak:go.uber.org/goleak \
@@ -61,6 +66,7 @@ export sites=" \
     github.com/aws/aws-sdk-go-v2/internal/configsources:github.com/aws/aws-sdk-go-v2/internal/configsources/internal/configsources:force \
     github.com/aws/aws-sdk-go-v2/internal/endpoints/v2:github.com/aws/aws-sdk-go-v2/internal/endpoints/v2/internal/endpoints/v2:force \
     github.com/aws/aws-sdk-go-v2/internal/ini:github.com/aws/aws-sdk-go-v2/internal/ini/internal/ini:force \
+    github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding:github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding/service/internal/accept-encoding:force \
     github.com/aws/aws-sdk-go-v2/service/internal/presigned-url:github.com/aws/aws-sdk-go-v2/service/internal/presigned-url/service/internal/presigned-url:force \
     github.com/aws/aws-sdk-go-v2/service/sso:github.com/aws/aws-sdk-go-v2/service/sso/service/sso:force \
     github.com/aws/aws-sdk-go-v2/service/ssooidc:github.com/aws/aws-sdk-go-v2/service/ssooidc/service/ssooidc:force \
@@ -71,6 +77,7 @@ export sites=" \
     github.com/cespare/xxhash/v2:github.com/cespare/xxhash/v2 \
     github.com/containerd/continuity:github.com/containerd/continuity \
     github.com/containerd/log:github.com/containerd/log \
+    github.com/containerd/ttrpc:github.com/containerd/ttrpc \
     github.com/containerd/typeurl/v2:github.com/containerd/typeurl/v2 \
     github.com/docker/distribution:github.com/docker/distribution \
     github.com/docker/docker-credential-helpers:github.com/docker/docker-credential-helpers \
@@ -88,11 +95,12 @@ export sites=" \
     github.com/gogo/googleapis:github.com/gogo/googleapis \
     github.com/gogo/protobuf:github.com/gogo/protobuf \
     github.com/golang/protobuf:github.com/golang/protobuf \
-    github.com/google/gnostic:github.com/google/gnostic \
+    github.com/google/gnostic-models:github.com/google/gnostic-models \
     github.com/google/gofuzz:github.com/google/gofuzz \
     github.com/google/shlex:github.com/google/shlex \
     github.com/google/uuid:github.com/google/uuid \
     github.com/gorilla/mux:github.com/gorilla/mux \
+    github.com/gorilla/websocket:github.com/gorilla/websocket \
     github.com/grpc-ecosystem/go-grpc-middleware:github.com/grpc-ecosystem/go-grpc-middleware \
     github.com/grpc-ecosystem/grpc-gateway/v2:github.com/grpc-ecosystem/grpc-gateway/v2 \
     github.com/hashicorp/errwrap:github.com/hashicorp/errwrap \
@@ -113,6 +121,7 @@ export sites=" \
     github.com/miekg/pkcs11:github.com/miekg/pkcs11 \
     github.com/mitchellh/copystructure:github.com/mitchellh/copystructure \
     github.com/mitchellh/reflectwalk:github.com/mitchellh/reflectwalk \
+    github.com/moby/docker-image-spec:github.com/moby/docker-image-spec \
     github.com/moby/locker:github.com/moby/locker \
     github.com/moby/spdystream:github.com/moby/spdystream \
     github.com/moby/sys/mountinfo:github.com/moby/sys/mountinfo/mountinfo \
@@ -123,6 +132,7 @@ export sites=" \
     github.com/modern-go/concurrent:github.com/modern-go/concurrent \
     github.com/modern-go/reflect2:github.com/modern-go/reflect2 \
     github.com/munnerz/goautoneg:github.com/munnerz/goautoneg \
+    github.com/mxk/go-flowrate:github.com/mxk/go-flowrate \
     github.com/pelletier/go-toml:github.com/pelletier/go-toml \
     github.com/pkg/errors:github.com/pkg/errors \
     github.com/pmezard/go-difflib:github.com/pmezard/go-difflib \
@@ -147,22 +157,20 @@ export sites=" \
     go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp:go.opentelemetry.io/otel/exporters/otlp/otlptrace/exporters/otlp/otlpmetric/otlpmetrichttp:force \
     go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp:go.opentelemetry.io/otel/exporters/otlp/otlptrace/exporters/otlp/otlptrace/otlptracehttp:force \
     go.opentelemetry.io/otel/exporters/prometheus:go.opentelemetry.io/otel/exporters/prometheus/exporters/prometheus:force \
-    go.opentelemetry.io/otel/metric:go.opentelemetry.io/otel/metric/metric:force \
     go.opentelemetry.io/otel/sdk/metric:go.opentelemetry.io/otel/sdk/metric \
     go.opentelemetry.io/proto/otlp:go.opentelemetry.io/proto/otlp/otlp:force \
     golang.org/x/crypto:golang.org/x/crypto \
-    golang.org/x/mod:golang.org/x/mod \
     golang.org/x/net:golang.org/x/net \
     golang.org/x/oauth2:golang.org/x/oauth2 \
     golang.org/x/term:golang.org/x/term \
     golang.org/x/text:golang.org/x/text \
     golang.org/x/time:golang.org/x/time \
-    golang.org/x/tools:golang.org/x/tools \
     google.golang.org/appengine:google.golang.org/appengine \
     google.golang.org/genproto:google.golang.org/genproto \
     google.golang.org/genproto/googleapis/api:google.golang.org/genproto/googleapis/api/googleapis/api:force \
     google.golang.org/genproto/googleapis/rpc:google.golang.org/genproto/googleapis/rpc/googleapis/rpc:force \
     google.golang.org/protobuf:google.golang.org/protobuf \
+    gopkg.in/cenkalti/backoff.v1:gopkg.in/cenkalti/backoff.v1 \
     gopkg.in/inf.v0:gopkg.in/inf.v0 \
     gopkg.in/yaml.v2:gopkg.in/yaml.v2 \
     k8s.io/api:k8s.io/api \
