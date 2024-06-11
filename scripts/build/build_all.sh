@@ -95,7 +95,7 @@ PLATFORMS="${platforms:-$PLATFORMS}"
 # If not set, use this default PLATFORMS for machines to be built.
 if [ -z "${PLATFORMS}" ]; then
 	# Default machines to build: Intel
-	PLATFORMS="$PLATFORMS niot-e-tijcx-gb niot-e-vm-en"
+	PLATFORMS="$PLATFORMS niot-e-tijcx-gb niot-e-vm-en generic-x64 netfield-unity"
 	# Default machines to build: Raspberry
 	PLATFORMS="$PLATFORMS niot-e-tpi51-en-re"
 	# Default machines to build: imx8
