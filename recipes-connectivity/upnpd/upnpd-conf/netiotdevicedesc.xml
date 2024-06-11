@@ -5,14 +5,14 @@
     <minor>0</minor>
   </specVersion>
   <device>
-    <deviceType>urn:hilscher-com:device:iotgw:1</deviceType>
+    <deviceType>urn:netfieldos:device:iotgw:2</deviceType>
     <friendlyName></friendlyName>
-    <manufacturer>Hilscher Gesellschaft fuer Systemautomation mbH</manufacturer>
-    <manufacturerURL>http://www.hilscher.com</manufacturerURL>
-    <modelDescription>netIOT Edge Gateway</modelDescription>
-    <modelName>netIOT Edge Gateway</modelName>
+    <manufacturer></manufacturer>
+    <manufacturerURL></manufacturerURL>
+    <modelDescription></modelDescription>
+    <modelName></modelName>
     <modelNumber>1.0</modelNumber>
-    <modelURL>http://www.hilscher.com/products/product-groups/industrial-internet-industry-40/netiot-edge/</modelURL>
+    <modelURL></modelURL>
     <serialNumber></serialNumber>
     <UDN>uuid:</UDN>
     <UPC></UPC>

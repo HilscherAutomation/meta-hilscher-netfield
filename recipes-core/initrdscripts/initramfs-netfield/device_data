@@ -88,7 +88,7 @@ device_data_run() {
 
 		fallback_serial="MAC:$mac"
 
-		echo -n '{"product_name":"'"${productname}"'","serial_number":"'"${fallback_serial}"'"'"${add_dl_data}"'}' > /sys/device_data/export
+		echo -n '{"emulated":true,"product_name":"'"${productname}"'","serial_number":"'"${fallback_serial}"'"'"${add_dl_data}"'}' > /sys/device_data/export
 		printf "\n" > /sys/device_data/export
 	fi
 
