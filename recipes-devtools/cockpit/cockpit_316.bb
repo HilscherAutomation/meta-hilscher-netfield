@@ -102,7 +102,7 @@ FILES:${PN}-networkmanager = " \
     ${datadir}/cockpit/networkmanager \
     ${datadir}/metainfo/org.cockpit-project.cockpit-networkmanager.metainfo.xml \
 "
-RDEPENDS:${PN}-networkmanager = "networkmanager"
+RDEPENDS:${PN}-networkmanager = "networkmanager wireguard-tools"
 
 FILES:${PN}-machines = " \
     ${datadir}/cockpit/machines \

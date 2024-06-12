@@ -16,6 +16,9 @@ KERNEL_MODULE_AUTOLOAD:append = " ${@bb.utils.contains('MACHINE_FEATURES', '3g',
 # rfkill
 SRC_URI:append = " ${@bb.utils.contains_any('MACHINE_FEATURES', ['3g', 'wifi'], 'file://rfkill.cfg', '', d)}"
 
+# wireguard support (cockpit now supports VPN wireguard configs)
+SRC_URI:append = " file://wireguard.cfg"
+
 # tun/tap (cifx0 ethernet i/f)
 KERNEL_MODULE_AUTOLOAD:append = " tun"
 
