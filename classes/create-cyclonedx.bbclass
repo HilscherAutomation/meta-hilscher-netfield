@@ -27,6 +27,7 @@ python do_create_component_sbom() {
 
     # Extract all downloaded sources
     def add_vcs_uris(d, entry):
+        added_urls = set()
         fetch = bb.fetch2.Fetch((d.getVar('SRC_URI') or '').split(), d)
         for url in fetch.urls:
             type = bb.fetch2.decodeurl(url)[0]
@@ -55,17 +56,20 @@ python do_create_component_sbom() {
                 else:
                     bb.fatal(f"Unable to extract SHA256 for {url}")
 
-                vcs_entry = {
-                    "type": "vcs",
-                    "url": upstream_url,
-                    "hashes": [
-                        {
-                            "alg": "SHA-256",
-                            "content": sha256,
-                        }
-                    ]
-                }
-                entry["externalReferences"].append(vcs_entry)
+                if upstream_url not in added_urls:
+                    added_urls.add(upstream_url)
+
+                    vcs_entry = {
+                        "type": "vcs",
+                        "url": upstream_url,
+                        "hashes": [
+                            {
+                                "alg": "SHA-256",
+                                "content": sha256,
+                            }
+                        ]
+                    }
+                    entry["externalReferences"].append(vcs_entry)
 
     # Get all patched CVEs including URL/content
     def get_cve_patches(d):
