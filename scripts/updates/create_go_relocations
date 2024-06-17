@@ -62,8 +62,12 @@ for required in go_mod['Require']:
     # Make srcuri_name unique
     if srcuri_name in used_srcuri_names:
         srcuri_name = srcuri_name + version.replace('-', '_').replace('.', '_')
-        if srcuri_name in used_srcuri_names:
-            raise Exception('Unable to generate unique module name for %s' % modulepath);
+        i=0
+        unique_name = srcuri_name
+        while unique_name in used_srcuri_names:
+            i = i + 1
+            unique_name = srcuri_name + str(i)
+        srcuri_name = unique_name
 
     used_srcuri_names.append(srcuri_name)
 

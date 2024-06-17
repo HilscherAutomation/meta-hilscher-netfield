@@ -7,7 +7,7 @@ COMPOSE_PKG = "github.com/docker/compose/v2"
 
 SRC_URI="git://${GO_IMPORT};protocol=https;branch=main \
          file://modules.txt"
-SRCREV="f937e42aaf7d0ecc186c8abc229960e4e01c51b5"
+SRCREV="bf1dd0c267fa4fc63a43fecd62c0919de1cd5db3"
 
 include src_uri.inc
 
