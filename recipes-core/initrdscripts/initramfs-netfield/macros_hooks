@@ -44,6 +44,20 @@ postmod() {
 	echo "################################################################################" >/dev/console
 }
 
+get_physical_boot_device() {
+	# Replace LABEL of bootparam_bootCfg by real block device.
+	if grep -q "^LABEL=" <<<$bootparam_bootCfg; then
+		label=$(echo $bootparam_bootCfg | cut -d'=' -f2 | cut -d'/' -f1)
+		__debug "Waiting for block device of $bootparam_bootCfg ..."
+		while ! dev=$(blkid -L $label); do sleep 1; done
+		bootparam_bootCfg=$(sed "s,^LABEL=$label,$dev," <<< $bootparam_bootCfg)
+	fi
+
+	boot_dev=$(dirname $bootparam_bootCfg)
+
+	echo "/dev/$(lsblk -no pkname $boot_dev)"
+}
+
 __app=$0
 __func=$1
 __module=$2
@@ -73,8 +87,13 @@ macros_hooks_enabled() {
 }
 
 macros_hooks_run() {
+	# Limit the LVM scan to the active boot device only!
+	physical_boot_device=$(get_physical_boot_device)
+	sed -i -e "s;filter = .*;filter = \[\"a|$physical_boot_device|\"\, \"r|.*|\"\];" /etc/lvm/lvm.conf
+
 	if [ $bootparam_mydebug ]; then
 		premod $module
+		__debug "physical_boot_device = $physical_boot_device"
 		add_module_pre_hook $(find /init.d/ -name *-macros_hooks)
 		add_module_post_hook $(find /init.d/ -name *-macros_hooks)
 	fi

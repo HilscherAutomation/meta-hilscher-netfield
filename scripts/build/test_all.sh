@@ -82,8 +82,8 @@ for machine in $PLATFORMS; do
 	. poky/oe-init-build-env ${BUILD_DIR}${build_dir_suffix}
 
 	# Remove old entry and append the new one.
-	sed -i "/TEST_TARGET_IP_$machine =/d" conf/local.overrides.test.conf
-	echo "TEST_TARGET_IP_$machine = \"$dut\"" >> conf/local.overrides.test.conf
+	sed -i "/TEST_TARGET_IP:$machine =/d" conf/local.overrides.test.conf
+	echo "TEST_TARGET_IP:$machine = \"$dut\"" >> conf/local.overrides.test.conf
 
 	# Test target on DUT
 	MACHINE="$machine" bitbake $target -c testimage

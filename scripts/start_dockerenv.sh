@@ -12,4 +12,4 @@ else
 fi
 
 docker build -t yocto-buildenv:18.04.2 $SCRIPTDIR/docker/.
-docker run --rm -it --add-host subversion01.hilscher.local:192.168.100.17 --add-host subversion01:192.168.100.17 -v $(pwd):/build -u $BUILD_UID yocto-buildenv:18.04.2
+docker run --rm -it --add-host bitbucket.hilscher.com:192.168.99.18 --add-host nxybuilder01.hilscher.local:192.168.100.52 --add-host subversion01.hilscher.local:192.168.100.17 --add-host subversion01:192.168.100.17 -v $(pwd):/build -u $BUILD_UID yocto-buildenv:18.04.2
