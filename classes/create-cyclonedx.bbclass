@@ -25,21 +25,118 @@ python do_create_component_sbom() {
     component = []
     patches = []
 
-    # Determine patched vulnerabilities
-    for _, patched_cve in enumerate(oe.cve_check.get_patched_cves(d)):
-        patch_entry = {
-            "type" : "backport",
-            "resolves" : [
-                { "type" : "security",
-                  "id" : patched_cve,
-                  "source" : {
-                      "name" : "NVD",
-                      "url" : f"https://nvd.nist.gov/vuln/detail/{patched_cve}"
-                  }
+    # Extract all downloaded sources
+    def add_vcs_uris(d, entry):
+        added_urls = set()
+        fetch = bb.fetch2.Fetch((d.getVar('SRC_URI') or '').split(), d)
+        for url in fetch.urls:
+            type = bb.fetch2.decodeurl(url)[0]
+            if type not in ['file', 'crate']:
+                scheme = bb.fetch2.decodeurl(url)[0]
+                network_loc = bb.fetch2.decodeurl(url)[1]
+                path = bb.fetch2.decodeurl(url)[2]
+
+                params = bb.fetch2.decodeurl(url)[5]
+                if 'protocol' in params:
+                    scheme = scheme + '+' + params['protocol']
+                upstream_url = scheme + "://" + network_loc + path
+
+                name = params.get('name', '')
+
+                sha256_search_vars = []
+
+                urldata = fetch.ud[url]
+                if hasattr(urldata, 'sha256_expected') and urldata.sha256_expected is not None:
+                    sha256 = urldata.sha256_expected
+                elif hasattr(urldata, 'revisions') and urldata.revisions is not None:
+                    if name != '':
+                        sha256 = urldata.revisions[name]
+                    else:
+                        sha256 = urldata.revisions["default"]
+                else:
+                    bb.fatal(f"Unable to extract SHA256 for {url}")
+
+                if upstream_url not in added_urls:
+                    added_urls.add(upstream_url)
+
+                    vcs_entry = {
+                        "type": "vcs",
+                        "url": upstream_url,
+                        "hashes": [
+                            {
+                                "alg": "SHA-256",
+                                "content": sha256,
+                            }
+                        ]
+                    }
+                    entry["externalReferences"].append(vcs_entry)
+
+    # Get all patched CVEs including URL/content
+    def get_cve_patches(d):
+        import oe.patch
+        import re
+
+        ret = []
+
+        cve_match = re.compile(r"CVE:( CVE-\d{4}-\d+)+")
+        cve_file_name_match = re.compile(r".*(CVE-\d{4}-\d+)", re.IGNORECASE)
+
+        patches = oe.patch.src_patches(d)
+        for url in patches:
+            patch_text = None
+            patched_cves = set()
+
+            patch_file = bb.fetch.decodeurl(url)[2]
+
+            # Check patch file name for CVE ID
+            fname_match = cve_file_name_match.search(patch_file)
+            if fname_match:
+                cve = fname_match.group(1).upper()
+                bb.debug(2, "Found %s from patch file name %s" % (cve, patch_file))
+                patched_cves.add(cve)
+
+            if os.path.isfile(patch_file):
+                # Check content
+                with open(patch_file, "r", encoding="utf-8") as f:
+                    try:
+                        patch_text = f.read()
+                    except UnicodeDecodeError:
+                        bb.debug(1, "Failed to read patch %s using UTF-8 encoding"
+                                " trying with iso8859-1" %  patch_file)
+                        f.close()
+                        with open(patch_file, "r", encoding="iso8859-1") as f:
+                            patch_text = f.read()
+
+                # Search for one or more "CVE: " lines
+                for match in cve_match.finditer(patch_text):
+                    # Get only the CVEs without the "CVE: " tag
+                    cves = patch_text[match.start()+5:match.end()]
+                    for cve in cves.split():
+                        if cve not in patched_cves:
+                            bb.debug(2, "Patch %s solves %s" % (patch_file, cve))
+                            patched_cves.add(cve)
+
+            for patched_cve in patched_cves:
+                patch_entry = {
+                    "type" : "backport",
+                    "resolves" : [
+                        { "type" : "security",
+                          "id" : patched_cve,
+                          "source" : {
+                              "name" : "NVD",
+                              "url" : f"https://nvd.nist.gov/vuln/detail/{patched_cve}"
+                          }
+                        }
+                    ]
                 }
-            ]
-        }
-        patches.append(patch_entry)
+                if os.path.isfile(patch_file):
+                    patch_entry["diff"] = { "text": { "content": patch_text }}
+                else:
+                    patch_entry["diff"] = { "url": patch_file }
+
+                ret.append(patch_entry)
+
+        return ret
 
     # update it with the new package info
     names = name.split()
@@ -54,12 +151,22 @@ python do_create_component_sbom() {
             "licenses" : [{
                 "expression" : d.getVar('LICENSE').replace(' & ', ' AND ').replace(' | ', ' OR '),
             }],
-            "pedigree" : {
-                "patches": []
-            }
+            "externalReferences": [
+                {
+                    "url": d.getVar('HOMEPAGE'),
+                    "type": "website"
+                },
+            ],
         }
 
+        add_vcs_uris(d, entry)
+
         # Add list of backported vulnerability fixes
+        patches = get_cve_patches(d)
+        if len(patches) > 0:
+            entry['pedigree'] = {}
+            entry['pedigree']['patches'] = []
+
         for patch in patches:
             entry['pedigree']['patches'].append(patch)
 
