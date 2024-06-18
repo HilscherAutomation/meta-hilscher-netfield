@@ -11,7 +11,7 @@ GO_IMPORT = "github.com/mikefarah/yq"
 
 export GOPROXY="https://proxy.golang.org,direct"
 
-require recipes-devtools/go/fix-go-1.21.inc
+require recipes-devtools/go/fix-go-1.22.inc
 inherit go-mod
 
 # Remove binaries from git, which result in sysroot errors on non intel platforms:
