@@ -15,7 +15,7 @@ SRCREV="f609c4313f9a9c101e1f90434b0641ab66999fcb"
 
 include src_uri.inc
 
-require recipes-devtools/go/fix-go-1.21.inc
+require recipes-devtools/go/fix-go-1.22.inc
 inherit go-mod systemd
 
 SYSTEMD_PACKAGES="${PN}"
