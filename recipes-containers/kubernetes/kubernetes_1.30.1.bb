@@ -57,11 +57,8 @@ do_compile() {
 	ln -sf ${S}/src/import/vendor.copy vendor
 	cp ${WORKDIR}/modules.txt vendor/
 
-	GO_LDFLAGS="-s -w -X internal.Version=${PV} -X ${GO_IMPORT}/internal.Version=${PV}"
-	GO_BUILDTAGS=""
-
 	# to limit what is built, use 'WHAT', i.e. make WHAT=cmd/kubelet
-	make KUBE_VERBOSE=9 cross GO=${GO} CGO_FLAGS=${CGO_FLAGS} GOLDFLAGS="-s -w" KUBE_BUILD_PLATFORMS=${GOOS}/${GOARCH}
+	make cross GO=${GO} CGO_FLAGS=${CGO_FLAGS} GOLDFLAGS="-s -w" KUBE_BUILD_PLATFORMS=${GOOS}/${GOARCH}
 }
 
 do_install() {
