@@ -1,33 +1,17 @@
-HOMEPAGE = "https://github.com/kubernetes-sigs/cri-tools"
 SUMMARY = "CLI and validation tools for Kubelet Container Runtime Interface (CRI)"
-DESCRIPTION = "What is the scope of this project? \
-\
-cri-tools aims to provide a series of debugging and validation tools for \
-Kubelet CRI, which includes: \
-\
-  * crictl: CLI for kubelet CRI. \
-  * critest: validation test suites for kubelet CRI. \
-\
-What is not in scope for this project? \
-\
-  * Building a new kubelet container runtime based on CRI. \
-  * Managing pods/containers for CRI-compatible runtimes by end-users, e.g. \
-    pods created by crictl may be removed automatically by kubelet because of \
-    non-exist on the kube-apiserver. \
- "
+HOMEPAGE = "https://github.com/kubernetes-sigs/cri-tools"
 
-SRCREV_cri-tools = "23f44eaa489ecd8931ee64de08baa7be9dbdb394"
+SRCREV_cri-tools = "87adf58b79394b151413c2e0ccfdc7e6332460dc"
 SRC_URI = "\
 	git://github.com/kubernetes-sigs/cri-tools.git;branch=master;name=cri-tools;protocol=https \
-        file://0001-build-allow-environmental-CGO-settings-and-pass-dont.patch \
+    file://0001-build-allow-environmental-CGO-settings-and-pass-dont.patch \
 	"
 
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://src/import/LICENSE;md5=e3fc50a88d0a364313df4b21ef20c29e"
 
 GO_IMPORT = "import"
-
-PV = "1.23.0+git${SRCREV_cri-tools}"
+PV = "1.30.0"
 
 RPROVIDES:${PN} += "crictl"
 PACKAGES =+ "${PN}-critest"
@@ -63,7 +47,10 @@ do_compile() {
 
 do_install() {
     install -d ${D}${bindir}
-    install -m 755 -D ${S}/src/import/build/bin/* ${D}/${bindir}
+    for f in $(find ${S}/src/import/build/bin/ -type f); do
+	echo "installing $f to ${D}/${bindir}"
+        install -m 755 -D $f ${D}/${bindir}
+    done
 }
 
 FILES:${PN}-critest = "${bindir}/critest"
