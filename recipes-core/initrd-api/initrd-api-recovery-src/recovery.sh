@@ -176,6 +176,9 @@ if [ -z "${firmware}" -o -z "${deploy_dev}" ]; then
 	exit 1
 fi
 
+# Limit LVM to target device!
+sed -i -e "s;filter = .*;filter = \[\"a|$deploy_dev|\"\, \"r|.*|\"\];" /etc/lvm/lvm.conf
+
 backup_nvd
 
 if [ -z "${PBZIP}" ]; then
@@ -205,7 +208,7 @@ __fatal() {
 	vmsg_errout $@
 }
 . /init.d/*-initrd_api
-boot_dev=$(blkid -L system) && initrd_api_run
+boot_dev=$(blkid -t LABEL=system -o device $deploy_dev*) && initrd_api_run
 vmsg "... done"
 
 restore_nvd
