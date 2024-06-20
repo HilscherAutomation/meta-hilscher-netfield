@@ -1,1 +1,0 @@
-SUBSYSTEM=="spidev",ACTION=="add",MODE="0660",GROUP="cifx"

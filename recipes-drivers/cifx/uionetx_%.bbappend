@@ -1,0 +1,2 @@
+
+inherit module sign-wrapper

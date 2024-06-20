@@ -2,7 +2,7 @@ SUMMARY = "cifX device driver example applications for Hilscher netX devices"
 HOMEPAGE = "www.hilscher.com"
 LICENSE = "CLOSED"
 
-DEPENDS = "libcifx"
+DEPENDS = "libcifx libnl"
 
 SRC_URI = "file://cifxtun.c \
            file://cifxtun.service"
@@ -21,7 +21,7 @@ S = "${WORKDIR}"
 FILES:${PN} = "/opt/cifx/demo"
 
 do_compile() {
-  ${CC} ${LDFLAGS} cifxtun.c -o cifxtun -I=/usr/include/cifx -lcifx -lpthread
+  ${CC} ${LDFLAGS} cifxtun.c -o cifxtun -I=/usr/include/cifx -lcifx -lpthread -lnl-cli-3
 }
 
 do_install() {

@@ -3,13 +3,13 @@ LICENSE = "CLOSED"
 
 SRC_URI = "file://cifx-data-collector.c"
 
-DEPENDS = "libcifx"
-RDEPENDS:${PN} = "libcifx"
+DEPENDS = "libcifx libnl"
+RDEPENDS:${PN} = "libcifx libnl"
 
 S = "${WORKDIR}"
 
 do_compile() {
-             ${CC} ${LDFLAGS} -I=/usr/include/cifx/ cifx-data-collector.c -lcifx -o cifx-data-collector
+             ${CC} ${LDFLAGS} -I=/usr/include/cifx/ cifx-data-collector.c -lcifx -lnl-cli-3 -o cifx-data-collector
 }
 
 do_install() {

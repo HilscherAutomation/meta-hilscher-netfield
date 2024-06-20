@@ -7,7 +7,7 @@ SRC_URI = "file://netx_sdpm_read.c \
 
 do_compile() {
     ${CC} ${LDFLAGS} ${WORKDIR}/netx_sdpm_read.c -o ${B}/netx_sdpm_read
-    ${CC} ${LDFLAGS} ${WORKDIR}/cifx_read_hwinfo.c -I=/usr/include/cifx -lcifx -lpthread -o ${B}/cifx_read_hwinfo
+    ${CC} ${LDFLAGS} ${WORKDIR}/cifx_read_hwinfo.c -I=/usr/include/cifx -lcifx -lpthread -lnl-cli-3 -o ${B}/cifx_read_hwinfo
 }
 
 do_install() {
@@ -18,8 +18,8 @@ do_install() {
 }
 
 PACKAGES =+ "${PN}-read-hwinfo"
-DEPENDS = "libcifx"
-RDEPENDS:${PN}-read-hwinfo = "libcifx"
+DEPENDS = "libcifx libnl"
+RDEPENDS:${PN}-read-hwinfo = "libcifx libnl"
 RDEPENDS:${PN} = "kernel-module-spidev"
 
 FILES:${PN} = "/opt/cifx/examples/"
