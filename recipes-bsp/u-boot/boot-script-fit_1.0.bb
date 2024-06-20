@@ -8,13 +8,36 @@ DEPENDS = "u-boot-mkimage-native dtc-native"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
-# Note: The boot-menu* files need to be provided via the platform specific layer
-SRC_URI_append += "file://boot-menu-fastboot.cmd \
-                   file://boot-menu-debug.cmd \
+# boot-menu:
+#   The 'common' boot menu allows switching between installed images. If debug-tweaks
+#   is set, the u-boot autoboot process can be interrupted and the console will be entered.
+#   In contrast to that in a release build boot process can not be stopped and the console
+#   can not be entered.
+# boot-menu-fastboot:
+#   Same as 'boot-menu' + fastboot menu option.
+# boot-menu-fastboot-console:
+#   Same as boot-menu-fastboot + console option. Special use case: Some devices may
+#   not have a common user interface (to abort booting to drop to console)
+#   but it is possible to control the boot menu (e.g. via gpio). The 'console' menu
+#   entry handles the custom console setup (e.g. netconsole) as well.
+SRC_URI_append += "file://boot-menu.cmd \
+                   file://boot-menu-fastboot.cmd \
+                   file://boot-menu-fastboot-console.cmd \
                    file://boot-recovery.cmd \
                   "
 
-BOOT_SCRIPTS = "boot-menu-fastboot.cmd boot-menu-debug.cmd boot-recovery.cmd"
+BOOT_SCRIPTS = "boot-menu.cmd boot-menu-fastboot.cmd boot-menu-fastboot-console.cmd boot-recovery.cmd"
+
+do_patch[vardeps] += "IMAGE_FEATURES"
+do_patch() {
+	generic_boot_options=""
+	if [ "${@bb.utils.contains('IMAGE_FEATURES', 'debug-tweaks', 'true', 'false',d)}" = "true" ]; then
+		generic_boot_options=" loglevel=7"
+	fi
+	for BOOT_SCRIPT in ${BOOT_SCRIPTS}; do
+		sed -i -e 's,@BOOT_OPTIONS@,'"${generic_boot_options}"',g' ${BOOT_SCRIPT}
+	done
+}
 
 do_deploy[vardepsexclude] += "DATETIME"
 do_deploy() {
