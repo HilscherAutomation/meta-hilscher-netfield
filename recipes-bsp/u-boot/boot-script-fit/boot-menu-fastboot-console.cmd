@@ -1,4 +1,4 @@
-# Generic debug boot script used on the platform device.
+# Generic boot menu script providing boot image selection, fastboot and console.
 
 # menu index count
 setexpr mi 0
@@ -12,7 +12,7 @@ for part in ${plat_system_part}; do
 			test "${conf}" = "boot.cfg" && type=" "
 			test "${conf}" = "aboot.cfg" && type="(ALTERNATIVE)"
 			setenv bootmenu_${mi} ${plat_dev_if}${plat_dev}: ${description} ${type} = "
-				setenv bootargs ${basebootargs} bootCfg=${plat_dev_linux}${part}/${conf} loglevel=7;
+				setenv bootargs ${basebootargs} bootCfg=${plat_dev_linux}${part}/${conf}@BOOT_OPTIONS@;
 				load ${plat_dev_if} ${plat_dev}:${part} ${loadaddr} ${kernel};
 				bootm ${loadaddr} ${loadaddr} ${fdt_addr}
 			"
