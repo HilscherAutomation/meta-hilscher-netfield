@@ -32,10 +32,11 @@ do_patch[vardeps] += "IMAGE_FEATURES"
 do_patch() {
 	generic_boot_options=""
 	if [ "${@bb.utils.contains('IMAGE_FEATURES', 'debug-tweaks', 'true', 'false',d)}" = "true" ]; then
-		generic_boot_options=" loglevel=7"
+		generic_boot_options="loglevel=7"
 	fi
+	[ -n "${generic_boot_options}" ] && generic_boot_options=" ${generic_boot_options}"
 	for BOOT_SCRIPT in ${BOOT_SCRIPTS}; do
-		sed -i -e 's,@BOOT_OPTIONS@,'"${generic_boot_options}"',g' ${BOOT_SCRIPT}
+		sed -i -e 's, @BOOT_OPTIONS@,'"${generic_boot_options}"',g' ${BOOT_SCRIPT}
 	done
 }
 

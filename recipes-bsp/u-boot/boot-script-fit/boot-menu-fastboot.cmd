@@ -12,7 +12,7 @@ for part in ${plat_system_part}; do
 			test "${conf}" = "boot.cfg" && type=" "
 			test "${conf}" = "aboot.cfg" && type="(ALTERNATIVE)"
 			setenv bootmenu_${mi} ${plat_dev_if}${plat_dev}: ${description} ${type} = "
-				setenv bootargs ${basebootargs} bootCfg=${plat_dev_linux}${part}/${conf}@BOOT_OPTIONS@;
+				setenv bootargs ${basebootargs} bootCfg=${plat_dev_linux}${part}/${conf} @BOOT_OPTIONS@;
 				load ${plat_dev_if} ${plat_dev}:${part} ${loadaddr} ${kernel};
 				bootm ${loadaddr} ${loadaddr} ${fdt_addr}
 			"
