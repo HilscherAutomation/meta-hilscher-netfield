@@ -957,6 +957,3 @@ SRC_URI += "git://github.com/rivo/uniseg;name=uniseg;protocol=https;nobranch=1;d
 
 SRCREV_pb="f907f6f5dd81f77c2bbc1cde92e4c5a04720cb11"
 SRC_URI += "git://github.com/cheggaaa/pb;name=pb;protocol=https;nobranch=1;destsuffix=${WORKDIR}/${BP}/src/import/vendor.fetch/github.com/cheggaaa/pb"
-
-SRCREV_gax-go="bd5b16380fd03dc758d11cef74ba2e3bc8b0e8c2"
-SRC_URI += "git://github.com/googleapis/gax-go;name=gax-go;protocol=https;nobranch=1;destsuffix=${WORKDIR}/${BP}/src/import/vendor.fetch/github.com/googleapis/gax-go"

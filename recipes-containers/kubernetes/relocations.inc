@@ -1,7 +1,7 @@
 export sites=" \
     bitbucket.org/bertimus9/systemstat:bitbucket.org/bertimus9/systemstat \
-    cloud.google.com/go/compute/metadata:cloud.google.com/go/compute/metadata \
     cloud.google.com/go/compute:cloud.google.com/go/compute \
+    cloud.google.com/go/compute/metadata:cloud.google.com/go/compute/compute/metadata:force \
     github.com/Azure/go-ansiterm:github.com/Azure/go-ansiterm \
     github.com/GoogleCloudPlatform/k8s-cloud-provider:github.com/GoogleCloudPlatform/k8s-cloud-provider \
     github.com/JeffAshton/win_pdh:github.com/JeffAshton/win_pdh \
@@ -71,7 +71,7 @@ export sites=" \
     github.com/google/shlex:github.com/google/shlex \
     github.com/google/uuid:github.com/google/uuid \
     github.com/googleapis/enterprise-certificate-proxy:github.com/googleapis/enterprise-certificate-proxy \
-    github.com/googleapis/gax-go/v2:github.com/googleapis/gax-go/v2 \
+    github.com/googleapis/gax-go/v2:github.com/googleapis/gax-go/v2/v2 \
     github.com/gorilla/websocket:github.com/gorilla/websocket \
     github.com/gregjones/httpcache:github.com/gregjones/httpcache \
     github.com/grpc-ecosystem/go-grpc-middleware:github.com/grpc-ecosystem/go-grpc-middleware \
@@ -146,7 +146,7 @@ export sites=" \
     go.etcd.io/etcd/etcdctl/v3:go.etcd.io/etcd/pkg/v3/etcdctl:force \
     go.etcd.io/etcd/tests:go.etcd.io/etcd/pkg/v3/tests:force \
     go.opencensus.io:go.opencensus.io \
-    go.opentelemetry.io/contrib/instrumentation/github.com/emicklei/go-restful/otelrestful:go.opentelemetry.io/contrib/instrumentation/github.com/emicklei/go-restful/otelrestful \
+    go.opentelemetry.io/contrib/instrumentation/github.com/emicklei/go-restful/otelrestful:go.opentelemetry.io/contrib/instrumentation/github.com/emicklei/go-restful/otelrestful/instrumentation/github.com/emicklei/go-restful/otelrestful \
     go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc:go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc/instrumentation/google.golang.org/grpc/otelgrpc:force \
     go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp:go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc/instrumentation/net/http/otelhttp:force \
     go.opentelemetry.io/otel:go.opentelemetry.io/otel \
@@ -191,11 +191,10 @@ export sites=" \
     sigs.k8s.io/json:sigs.k8s.io/json \
     sigs.k8s.io/knftables:sigs.k8s.io/knftables \
     sigs.k8s.io/kustomize/api:sigs.k8s.io/kustomize/kustomize/v5/api \
-    sigs.k8s.io/kustomize/kustomize/v5:sigs.k8s.io/kustomize/kustomize/v5 \
+    sigs.k8s.io/kustomize/kustomize/v5:sigs.k8s.io/kustomize/kustomize/v5/kustomize \
     sigs.k8s.io/kustomize/kyaml:sigs.k8s.io/kustomize/kustomize/v5/kyaml \
     sigs.k8s.io/structured-merge-diff/v4:sigs.k8s.io/structured-merge-diff/v4 \
     sigs.k8s.io/yaml:sigs.k8s.io/yaml \
-    github.com/googleapis/gax-go/v2/apierror:github.com/googleapis/gax-go/v2 \
 "
 do_compile:prepend() {
     cd ${S}/src/import
