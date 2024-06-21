@@ -135,8 +135,8 @@ class BaseTest(OERuntimeTestCase):
         'gpio24', 
     )
     gpio_list_niot_e_tijcx_gb = (
-        'gpiochip0', 'gpiochip330', 'gpiochip338', 'gpiochip382', 'gpiochip410',
-        'gpio330', 'gpio331', 'gpio332', 'gpio333', 'gpio334', 'gpio335', 'gpio336', 'gpio337',
+        'gpiochip0', 'gpiochip842', 'gpiochip850', 'gpiochip894', 'gpiochip922',
+        'gpio842', 'gpio843', 'gpio844', 'gpio845', 'gpio846', 'gpio847', 'gpio848', 'gpio849',
     )
     gpio_list_netfield_unity = (
         'gpio33', 'gpio37', 'gpio43', 'gpio47', 'gpiochip40', 'gpiochip797',
