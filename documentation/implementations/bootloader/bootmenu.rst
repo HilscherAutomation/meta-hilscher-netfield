@@ -9,8 +9,12 @@ Boot Menu
 Depending on it's configuration the bootloader provides a boot menu offering the following options:
 
 * :ref:`Multi Boot/Dual Boot<bootmenu_multiboot>`
-* :ref:`Fastboot<bootmenu_fastboot>`
+* :ref:`Fastboot (optional)<bootmenu_fastboot>`
 * :ref:`Console (debug only)<bootmenu_console>`
+
+The 'Multi Boot/Dual Boot' menu entry will be always available. 'Fastboot' substitutes the usb update/recovery and therefore is only availble on devices without usb.
+Only in case of a debug image: In case of a debug image the u-boot autoboot process can be interrupted and a command shell will be opened. Devices without a common
+human interface can not stop the autoboot process instead they provide the 'Console' as an extra menu entry as the menu selection will still be possible.
 
 For information about the internals of the boot menu refer to :doc:`netFIELD OS Boot Script<bootscript>`.
 
