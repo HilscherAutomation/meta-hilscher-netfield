@@ -9,8 +9,10 @@ CVE_VERSION = "1.30.1"
 
 GO_IMPORT="github.com/kubernetes/kubernetes"
 
-SRCREV = "6911225c3f747e1cd9d109c305436d08b668f086"
-SRC_URI = "git://github.com/kubernetes/kubernetes;branch=release-1.30;protocol=https"
+SRCREV_kubernetes = "6911225c3f747e1cd9d109c305436d08b668f086"
+SRCREV_release = "6583af34183777b52070d7723331d55c588a9c45"
+SRC_URI = "git://github.com/kubernetes/kubernetes;branch=release-1.30;name=kubernetes;protocol=https \
+           git://github.com/kubernetes/release;branch=master;name=release;destsuffix=git/release;protocol=https"
 include src_uri.inc
 
 SRC_URI:append = " \
@@ -70,19 +72,19 @@ do_install() {
 
     install -m 755 -D ${S}/src/${GO_IMPORT}/_output/local/bin/${TARGET_GOOS}/${TARGET_GOARCH}/* ${D}/${bindir}
 
-    install -m 0644 ${WORKDIR}/git/release/cmd/kubepkg/templates/latest/deb/kubelet/lib/systemd/system/kubelet.service ${D}${systemd_unitdir}/system/
-    install -m 0644 ${WORKDIR}/git/release/cmd/kubepkg/templates/latest/deb/kubeadm/10-kubeadm.conf  ${D}${systemd_unitdir}/system/kubelet.service.d/
+    install -m 0644 ${WORKDIR}/git/release/cmd/krel/templates/latest/kubelet/kubelet.service ${D}${systemd_unitdir}/system/
+    install -m 0644 ${WORKDIR}/git/release/cmd/krel/templates/latest/kubeadm/10-kubeadm.conf ${D}${systemd_unitdir}/system/kubelet.service.d/
 
     if ${@bb.utils.contains('DISTRO_FEATURES','systemd','true','false',d)}; then
 	install -d "${D}${BIN_PREFIX}${base_bindir}"
-	install -m 755 "${UNPACKDIR}/k8s-init" "${D}${BIN_PREFIX}${base_bindir}"
+	install -m 755 "${WORKDIR}/k8s-init" "${D}${BIN_PREFIX}${base_bindir}"
 
 	install -d ${D}${sysconfdir}/sysctl.d
-	install -m 0644 "${UNPACKDIR}/99-kubernetes.conf" "${D}${sysconfdir}/sysctl.d"
+	install -m 0644 "${WORKDIR}/99-kubernetes.conf" "${D}${sysconfdir}/sysctl.d"
     fi
 }
 
-CNI_NETWORKING_FILES ?= "${UNPACKDIR}/cni-containerd-net.conflist"
+CNI_NETWORKING_FILES ?= "${WORKDIR}/cni-containerd-net.conflist"
 
 PACKAGES =+ "kubeadm kubectl kubelet kube-proxy ${PN}-misc ${PN}-host"
 
