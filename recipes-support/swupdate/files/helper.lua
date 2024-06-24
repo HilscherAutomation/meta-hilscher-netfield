@@ -56,15 +56,20 @@ end
 function mount_system()
 	os.execute("mkdir -p /mnt/system")
 
+	-- NOTE:
+	--   Retrieving the system partition device is done in a tricky way at this point,
+	--   because the link /dev/disk/by-label/system might be wrong when netfieldOS is installed
+	--   on eMMC and SD-Card (e.g. niot-e-nfl90-q2n16-n-rev1)!
+
 	-- Check if system partition is read-only (default) If this fails directly mount it rw
-	if os.execute("mount -o ro /dev/disk/by-label/system /mnt/system") == true then
+	if os.execute("mount -o ro $(blkid -o device -t LABEL=system /dev/$(lsblk -no pkname $(grep -o 'bootCfg.*/boot.cfg' /proc/cmdline | cut -d= -f2 | cut -d/ -f1-3))*) /mnt/system") == true then
 		os.execute("mount -o remount,rw,nodelalloc /mnt/system")
 	else
-		os.execute("mount -o nodelalloc /dev/disk/by-label/system /mnt/system")
+		os.execute("mount -o nodelalloc $(blkid -o device -t LABEL=system /dev/$(lsblk -no pkname $(grep -o 'bootCfg.*/boot.cfg' /proc/cmdline | cut -d= -f2 | cut -d/ -f1-3))*) /mnt/system")
 	end
 
 	-- Due to a problem during production we may need to resize system partition
-	os.execute("resize2fs /dev/disk/by-label/system")
+	os.execute("resize2fs $(blkid -o device -t LABEL=system /dev/$(lsblk -no pkname $(grep -o 'bootCfg.*/boot.cfg' /proc/cmdline | cut -d= -f2 | cut -d/ -f1-3))*)")
 
 	return true
 end
