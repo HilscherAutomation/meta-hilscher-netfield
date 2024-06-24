@@ -1,4 +1,4 @@
-# Generic boot menu script providing boot image selection and fastboot.
+# Generic boot menu script providing boot image selection.
 
 # menu index count
 setexpr mi 0
@@ -16,15 +16,13 @@ for part in ${plat_system_part}; do
 				load ${plat_dev_if} ${plat_dev}:${part} ${loadaddr} ${kernel};
 				bootm ${loadaddr} ${loadaddr} ${fdt_addr}
 			"
+			setenv boot_menu_max ${mi}
 			setexpr mi ${mi} + 1
 		fi
 	done
 done
 
-setenv bootmenu_${mi} FastBoot = "run fastboot"
-
 # Execute gpio-based menu, if available
-setenv boot_menu_max ${mi}
 run get_menu
 setenv bootmenu_default $boot_menu
 
