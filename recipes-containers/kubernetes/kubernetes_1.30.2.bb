@@ -4,16 +4,15 @@ HOMEPAGE = "git://github.com/kubernetes/kubernetes;branch=master;protocol=https"
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM="file://src/github.com/kubernetes/kubernetes/LICENSE;md5=3b83ef96387f14655fc854ddc3c6bd57"
 
-PV = "1.30.1"
-CVE_VERSION = "1.30.1"
+PV = "1.30.2"
+CVE_VERSION = "1.30.2"
 
 GO_IMPORT="github.com/kubernetes/kubernetes"
 
-SRCREV_kubernetes = "6911225c3f747e1cd9d109c305436d08b668f086"
+SRCREV_kubernetes = "39683505b630ff2121012f3c5b16215a1449d5ed"
 SRCREV_release = "6583af34183777b52070d7723331d55c588a9c45"
 SRC_URI = "git://github.com/kubernetes/kubernetes;branch=release-1.30;name=kubernetes;protocol=https \
            git://github.com/kubernetes/release;branch=master;name=release;destsuffix=git/release;protocol=https"
-include src_uri.inc
 
 SRC_URI:append = " \
 	file://0001-build-golang.sh-convert-remaining-go-calls-to-use.patch;patchdir=src/${GO_IMPORT} \
@@ -22,11 +21,9 @@ SRC_URI:append = " \
 	file://cni-containerd-net.conflist \
 	file://k8s-init \
 	file://99-kubernetes.conf \
-	file://modules.txt \
 "
 
 DEPENDS += " \
-	rsync-native \
 	coreutils-native \
 	go-native \
 "
@@ -35,8 +32,6 @@ inherit systemd
 inherit go
 inherit goarch
 inherit cni_networking
-
-include relocations.inc
 
 do_compile() {
 	export GOPATH="${S}/src/import/.gopath:${S}/src/import/vendor:${STAGING_DIR_TARGET}/${prefix}/local/go:${WORKDIR}/git/"
@@ -54,11 +49,6 @@ do_compile() {
 	export GOBIN=""
 	export GOFLAGS="-v -mod=vendor -trimpath"
 
-	# copy vendor files
-	rm -rf vendor
-	ln -sf ${S}/src/import/vendor.copy vendor
-	cp ${WORKDIR}/modules.txt vendor/
-
 	# to limit what is built, use 'WHAT', i.e. make WHAT=cmd/kubelet
 	make cross GO=${GO} CGO_FLAGS=${CGO_FLAGS} GOLDFLAGS="-s -w" KUBE_BUILD_PLATFORMS=${GOOS}/${GOARCH}
 }
@@ -70,7 +60,11 @@ do_install() {
 
     install -d ${D}${sysconfdir}/kubernetes/manifests/
 
-    install -m 755 -D ${S}/src/${GO_IMPORT}/_output/local/bin/${TARGET_GOOS}/${TARGET_GOARCH}/* ${D}/${bindir}
+    if [ "${TARGET_GOARCH}" = "amd64" ]; then
+        install -m 755 -D ${S}/src/${GO_IMPORT}/_output/local/go/bin/* ${D}/${bindir}
+    else
+        install -m 755 -D ${S}/src/${GO_IMPORT}/_output/local/go/bin/${TARGET_GOOS}_${TARGET_GOARCH}/* ${D}/${bindir}
+    fi
 
     install -m 0644 ${WORKDIR}/git/release/cmd/krel/templates/latest/kubelet/kubelet.service ${D}${systemd_unitdir}/system/
     install -m 0644 ${WORKDIR}/git/release/cmd/krel/templates/latest/kubeadm/10-kubeadm.conf ${D}${systemd_unitdir}/system/kubelet.service.d/
