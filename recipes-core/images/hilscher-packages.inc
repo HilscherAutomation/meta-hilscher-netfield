@@ -107,19 +107,19 @@ ROOTFS_POSTUNINSTALL_COMMAND:append = " do_install_manifest ;"
 
 # Setup initial passwords
 inherit extrausers
-EXTRA_USERS_PARAMS += "usermod -s /sbin/nologin root;"
+EXTRA_USERS_PARAMS += '${@bb.utils.contains("IMAGE_FEATURES", 'debug-tweaks', '', 'usermod -s /sbin/nologin root;',d)}'
 EXTRA_USERS_PARAMS += "groupadd -g 1000 admin;"
 EXTRA_USERS_PARAMS += "useradd -c 'System Administrator' -u 1000 -p '$(openssl passwd admin)' -G sudo,docker -s /bin/zsh admin;"
-
-# Make sure to not set PermitEmptyPasswords in sshd_config, which does not work with pam_abl
-ssh_allow_empty_password () {
-  :
-}
 
 do_force_admin_pw_change() {
   tmp1=$(cat ${IMAGE_ROOTFS}${sysconfdir}/shadow | grep "^admin" | cut -d ':' -f1-2)
   tmp2=$(cat ${IMAGE_ROOTFS}${sysconfdir}/shadow | grep "^admin" | cut -d ':' -f4-)
   sed -i -e "s@^admin:.*@$tmp1:0:$tmp2@" ${IMAGE_ROOTFS}${sysconfdir}/shadow
+
+  if ${@bb.utils.contains("IMAGE_FEATURES", 'debug-tweaks', 'true', 'false', d)}; then
+      # Set empty root password
+      sed -i 's/^root:[*x]:/root::/' ${IMAGE_ROOTFS}${sysconfdir}/shadow
+  fi
 }
 
 do_create_homes() {
