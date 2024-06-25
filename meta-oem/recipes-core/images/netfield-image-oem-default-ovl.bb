@@ -12,7 +12,7 @@ OEM_IMAGE_INSTALL = " \
 	os-release \
 	nginx-conf \
 	upnpd-conf \
-	upnpd-oem-${VENDOR_ID} \
+	upnpd-conf-oem-${VENDOR_ID} \
 "
 require oem-base.inc
 

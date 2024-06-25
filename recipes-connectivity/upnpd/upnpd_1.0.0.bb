@@ -6,11 +6,8 @@ LIC_FILES_CHKSUM = ""
 
 SRC_URI = "file://upnpd \
            file://upnpd.sh \
-           file://netiotdevicedesc.xml \
            file://upnpd.service \
-           file://init-desc \
            file://00-upnpd.conf \
-           file://logo.png \
            file://nm-dispatcher"
 
 S = "${WORKDIR}/upnpd"
@@ -25,13 +22,9 @@ PACKAGES = "${PN} ${PN}-dbg"
 
 do_install() {
   install -d -m 0775 "${D}/opt/upnpd"
-  install -d -m 0775 "${D}/opt/upnpd/desc"
 
   install upnpd "${D}/opt/upnpd"
   install ${WORKDIR}/upnpd.sh "${D}/opt/upnpd"
-  install -m 0664 ${WORKDIR}/netiotdevicedesc.xml "${D}/opt/upnpd"
-  install -m 0774 ${WORKDIR}/logo.png             "${D}/opt/upnpd/desc"
-  install -m 0774 ${WORKDIR}/init-desc            "${D}/opt/upnpd/"
 
   install -d "${D}${systemd_unitdir}/system/"
   install -m 0644 ${WORKDIR}/upnpd.service "${D}${systemd_unitdir}/system/upnpd@.service"
@@ -47,13 +40,9 @@ do_install() {
   echo '# -1 = use https port of nginx' >> ${D}${sysconfdir}/default/upnpd
   echo 'UPNPD_PRESENTATION_PORT="-1"' >> ${D}${sysconfdir}/default/upnpd
 }
-PACKAGES =+ "${PN}-conf"
 RDEPENDS:${PN} += "${PN}-conf net-tools"
 
-FILES:${PN}-conf = "/opt/upnpd/netiotdevicedesc.xml"
 FILES:${PN}     += "/opt/upnpd/upnpd /opt/upnpd/upnpd.sh"
-FILES:${PN}     += "/opt/upnpd/init-desc"
-FILES:${PN}     += "/opt/upnpd/desc"
 FILES:${PN}     += "${sysconfdir}"
 FILES:${PN}-dbg += "/opt/upnpd/.debug"
 
