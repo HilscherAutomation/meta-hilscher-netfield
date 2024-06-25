@@ -1,0 +1,12 @@
+diff -aurN a/cmd/krel/templates/latest/kubelet/kubelet.service b/cmd/krel/templates/latest/kubelet/kubelet.service
+--- a/cmd/krel/templates/latest/kubelet/kubelet.service	2024-06-24 14:36:58.735905034 +0200
++++ b/cmd/krel/templates/latest/kubelet/kubelet.service	2024-06-25 12:20:30.083575512 +0200
+@@ -5,7 +5,7 @@
+ After=network-online.target
+ 
+ [Service]
+-ExecStart=/usr/bin/kubelet
++ExecStart=/usr/bin/kubelet --config-dir=/etc/kubernetes/kubelet.conf.d
+ Restart=always
+ StartLimitInterval=0
+ RestartSec=10
