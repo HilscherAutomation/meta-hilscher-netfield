@@ -2,7 +2,7 @@ from oeqa.runtime.case import OERuntimeTestCase
 from oeqa.core.decorator.depends import OETestDepends
 from oeqa.runtime.decorator.package import OEHasPackage
 
-import bb, os, stat, grp, pwd
+import sys, bb, os, stat, grp, pwd
 
 class BaseTest(OERuntimeTestCase):
 
@@ -127,6 +127,8 @@ class BaseTest(OERuntimeTestCase):
     ''' ======================================== '''
 
     def test_netadmin_group_permissions(self):
+        bb.verbnote("Entering test-case: %s" % (sys._getframe().f_code.co_name))
+
         group = "netadmin"
         ug_info = self.get_user_group_ids(group)
 
@@ -241,9 +243,13 @@ class BaseTest(OERuntimeTestCase):
 
         self.assertEqual(errors, 0, "Invalid polkit permissions for %s!\n" % ug_info)
 
+        bb.verbnote("Exiting test-case: %s" % (sys._getframe().f_code.co_name))
+
     ''' ======================================== '''
 
     def test_timeadmin_group_permissions(self):
+        bb.verbnote("Entering test-case: %s" % (sys._getframe().f_code.co_name))
+
         group = "timeadmin"
         ug_info = self.get_user_group_ids(group)
 
@@ -305,9 +311,13 @@ class BaseTest(OERuntimeTestCase):
 
         self.assertEqual(errors, 0, "Invalid polkit permissions for %s!\n" % ug_info)
 
+        bb.verbnote("Exiting test-case: %s" % (sys._getframe().f_code.co_name))
+
     ''' ======================================== '''
 
     def test_docker_readonly_group_permissions(self):
+        bb.verbnote("Entering test-case: %s" % (sys._getframe().f_code.co_name))
+
         group = "docker-readonly"
         ug_info = self.get_user_group_ids(group)
 
@@ -351,5 +361,7 @@ class BaseTest(OERuntimeTestCase):
         cmd = "userdel -r %s" % user
         status, output = self.target.run(cmd)
         #self.assertEqual(status, 0, "'%s' failed\n" % cmd)
+
+        bb.verbnote("Exiting test-case: %s" % (sys._getframe().f_code.co_name))
 
     ''' ======================================== '''
