@@ -55,7 +55,7 @@ IMAGE_INSTALL += "tzdata tzdata-misc tzdata-africa \
 
 IMAGE_INSTALL += "nginx"
 IMAGE_INSTALL += "ntp"
-IMAGE_INSTALL += "hostapd iw wpa-supplicant crda bluez5"
+IMAGE_INSTALL += "hostapd iw wpa-supplicant wireless-regdb-static bluez5"
 IMAGE_INSTALL += "networkmanager networkmanager-openvpn"
 IMAGE_INSTALL += "dosfstools e2fsprogs e2fsprogs-resize2fs btrfs-tools lvm2 iscsi-initiator-utils nfs-utils-client"
 IMAGE_INSTALL += "fsarchiver fsarchiver-helpers"
