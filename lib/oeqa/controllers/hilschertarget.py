@@ -25,10 +25,21 @@ class HilscherTarget(OESSHTarget):
 
         time.sleep(30)
 
-        try:
-            pexpect.run('/bin/sh -c "while ! ssh root@' + self.ip + ' exit; do echo Waiting for SSH ...; done"', timeout=120)
-        except:
-            bb.fatal("Waiting for %s (%s) timed out!" % (self.target_ip, self.ip))
+        magic_exit_code = 123
+        cmd = "exit %d" % magic_exit_code
+
+        end_time = time.time() + 121
+        bb.verbnote("Waiting for SSH daemon on %s (%s) - timeout in %d seconds" % (self.target_ip, self.ip, end_time - time.time()))
+        while True:
+            status, output = super(HilscherTarget, self).run(cmd, timeout=1) # Note: The underlying SSHCall expands this timeout to 10sec.
+            if status == magic_exit_code:
+                break
+            if time.time() > end_time:
+                bb.fatal("Waiting for %s (%s) timed out!" % (self.target_ip, self.ip))
+
+            bb.verbnote("Waiting for SSH daemon on %s (%s) - timeout in %d seconds" % (self.target_ip, self.ip, end_time - time.time()))
+
+        bb.verbnote("Waiting for SSH daemon on %s (%s) successfully done" % (self.target_ip, self.ip))
 
         return 0
 
