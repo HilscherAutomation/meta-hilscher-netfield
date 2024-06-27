@@ -9,3 +9,5 @@ SRC_URI:append = " file://networkmanager_readline5.patch \
 "
 
 RDEPENDS:${PN}:append = " networkmanager-conf"
+
+PACKAGECONFIG:remove = "ifupdown"
