@@ -1,8 +1,15 @@
+# this makefile is for convenience
+# to start tests manually
+# make test DEVICE_IP=10.11.4.000
+
+DEVICE_IP?=10.11.4.228
+
 build:
 	rm -rf *.zip *.tar *.tar.gz
-	git archive --format=tar --output=compose-tests.tar master
+	# git archive --format=tar --output=compose-tests.tar master
+	tar cvf compose-tests.tar apps test_docker.py
 
-CMD:=$(CMD)'echo  Starting test on device 10.11.4.228;
+CMD:=$(CMD)'echo  Starting test on device $(DEVICE_IP);
 CMD:=$(CMD) date;
 CMD:=$(CMD) echo  -----------------------------------;
 CMD:=$(CMD) echo  Clean and Setup Working Directory;
@@ -37,10 +44,10 @@ echo:
 	echo $(CMD)
 
 test: build
-	scp compose-tests.tar root@10.11.4.228:/tmp/compose-tests.tar
-	@echo  Connecting to root@10.11.4.228
+	scp compose-tests.tar root@$(DEVICE_IP):/tmp/compose-tests.tar
+	@echo  Connecting to root@$(DEVICE_IP)
 	@echo  ----------------------------------
-	@ssh root@10.11.4.228 $(CMD)
+	@ssh root@$(DEVICE_IP) $(CMD)
 
 
 .PHONY: build
