@@ -15,7 +15,12 @@ class HilscherTarget(OESSHTarget):
         self.target_ip = self.ip
 
         ''' To prevents early connection issues when booting, translate and save the real target IP address. '''
-        self.ip = subprocess.getoutput("ping -c1 " + self.ip + " | head -n1 | cut -d\'(\' -f2 | cut -d\')\' -f1")
+        command_for_real_target_ip = "ping -c1 " + self.ip + " | head -n1 | cut -d\'(\' -f2 | cut -d\')\' -f1"
+        exit_code, output = subprocess.getstatusoutput(command_for_real_target_ip)
+        if exit_code == 0:
+            self.ip = output
+        else:
+            bb.fatal(f"couldn't detect real target IP with command: {command_for_real_target_ip}")
 
         self.swu_update_file = os.path.dirname(kwargs['rootfs'])+ "/" + os.path.basename(kwargs['rootfs']).split('.')[0] + ".update.swu"
         self.swu_recovery_file = os.path.dirname(kwargs['rootfs'])+ "/" + os.path.basename(kwargs['rootfs']).split('.')[0] + ".recovery.swu"
@@ -55,7 +60,7 @@ class HilscherTarget(OESSHTarget):
 
         ''' Update target device. '''
         cmd = "swupdate-client " + dst
-        status, output = super(HilscherTarget, self).run(cmd)
+        status, output = self.run(cmd)
         if status:
              bb.fatal("Command '%s' returned non-zero exit status %d: %s" % (cmd, status, output))
 
