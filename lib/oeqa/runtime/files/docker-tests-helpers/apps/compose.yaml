@@ -1,0 +1,29 @@
+services:
+  ping-client:
+    build: .
+    environment: &environment
+        PING_SERVER_HOST: ping-server
+        PING_SERVER_PORT: 3000
+    depends_on:
+      - ping-server
+    command: python client.py
+  ping-server:
+    build: .
+    environment: *environment
+    command: python server.py
+  volume-writer:
+    build: .
+    environment:
+        MY_VOLUME_PATH: /my-vol
+    command: python write-to-volume.py
+    volumes:
+      - my-vol:/my-vol
+  cat:
+    build: .
+    command: cat /my-vol/written_by_container.txt
+    volumes:
+      - my-vol:/my-vol
+
+volumes:
+  my-vol:
+    external: true
