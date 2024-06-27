@@ -16,5 +16,5 @@ RDEPENDS_${PN}_append += "networkmanager-conf"
 # dhcpcd and applying a patch as mentioned here: https://mail.gnome.org/archives/networkmanager-list/2009-April/msg00097.html
 SRC_URI_append += "file://dhcpcd_enable_zeroconf.patch"
 PACKAGECONFIG_append += "dhcpcd"
-PACKAGECONFIG_remove += "dhclient"
+PACKAGECONFIG_remove += "dhclient ifupdown"
 PACKAGECONFIG[dhcpcd] = "--with-dhcpcd=${sbindir}/dhcpcd --with-config-dhcp-default=dhcpcd,,,dhcpcd"

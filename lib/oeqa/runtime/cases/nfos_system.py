@@ -2,17 +2,20 @@ from oeqa.runtime.case import OERuntimeTestCase
 from oeqa.core.decorator.depends import OETestDepends
 from oeqa.runtime.decorator.package import OEHasPackage
 
-import re
-import time
+import sys, bb, re, time
 
 class BaseTest(OERuntimeTestCase):
 
     ''' ======================================== '''
     def test_backup_mount(self):
+        bb.verbnote("Entering test-case: %s" % (sys._getframe().f_code.co_name))
+
         cmd = 'mount | grep backup'
         status, output = self.target.run(cmd)
 
         self.assertEqual(output, "/dev/mapper/data-backup on /mnt/backup type ext4 (rw,relatime)", 'Invalid or missing backup partition mount!\n')
+
+        bb.verbnote("Exiting test-case: %s" % (sys._getframe().f_code.co_name))
 
     ''' ======================================== '''
     def convert_to_bytes(self, size_str):
@@ -32,6 +35,8 @@ class BaseTest(OERuntimeTestCase):
         return size_magnitude * size_multiplier
 
     def test_partitioning(self):
+        bb.verbnote("Entering test-case: %s" % (sys._getframe().f_code.co_name))
+
         boot_rescue_system_lvm = (
             ['boot', self.td.get('IMAGE_PART_BOOT_SIZE')],
             ['rescue', self.td.get('IMAGE_PART_RESCUE_SIZE')],
@@ -62,12 +67,20 @@ class BaseTest(OERuntimeTestCase):
 
         self.assertEqual(errors, 0, 'Invalid or missing partitions!\n')
 
+        bb.verbnote("Exiting test-case: %s" % (sys._getframe().f_code.co_name))
+
     def test_arp_support(self):
+        bb.verbnote("Entering test-case: %s" % (sys._getframe().f_code.co_name))
+
         cmd = 'arp'
         status, output = self.target.run(cmd)
         self.assertEqual(status, 0, 'Error running arp command!\n')
 
+        bb.verbnote("Exiting test-case: %s" % (sys._getframe().f_code.co_name))
+
     def test_backup(self):
+        bb.verbnote("Entering test-case: %s" % (sys._getframe().f_code.co_name))
+
         TEST_FILE='/home/admin/test_file'
         BACKUP_FILE='test.fsa'
 
@@ -102,7 +115,11 @@ class BaseTest(OERuntimeTestCase):
         # Delete backup file
         self.target.run('rm -f /mnt/backup/' + BACKUP_FILE)
 
+        bb.verbnote("Exiting test-case: %s" % (sys._getframe().f_code.co_name))
+
     def test_zram(self):
+        bb.verbnote("Entering test-case: %s" % (sys._getframe().f_code.co_name))
+
         cmd = 'zramctl -o NAME,DISKSIZE'
         status, output = self.target.run(cmd)
         self.assertEqual(status, 0, 'Error querying zram (%s)' % output)
@@ -113,7 +130,10 @@ class BaseTest(OERuntimeTestCase):
         self.assertEqual(status, 0, 'Error querying swap (%s)' % output)
         self.assertIn('/dev/zram0', output, 'Unexpected swap configuration (%s)' % output)
 
+        bb.verbnote("Exiting test-case: %s" % (sys._getframe().f_code.co_name))
+
     def test_firewall(self):
+        bb.verbnote("Entering test-case: %s" % (sys._getframe().f_code.co_name))
 
         def firewall_reset_zone(interface):
             # Reset firewall zone
@@ -173,7 +193,11 @@ class BaseTest(OERuntimeTestCase):
             # Reset firewall zone
             firewall_reset_zone(interface)
 
+        bb.verbnote("Exiting test-case: %s" % (sys._getframe().f_code.co_name))
+
     def test_hostname_change(self):
+        bb.verbnote("Entering test-case: %s" % (sys._getframe().f_code.co_name))
+
         status, output = self.target.run('hostname')
         self.assertEqual(status, 0, 'Error querying old hostname (%s)' % output)
         old_hostname = output
@@ -196,3 +220,5 @@ class BaseTest(OERuntimeTestCase):
             set_and_check_hostname(hostname);
 
         set_and_check_hostname(old_hostname);
+
+        bb.verbnote("Exiting test-case: %s" % (sys._getframe().f_code.co_name))

@@ -2,7 +2,7 @@ from oeqa.runtime.case import OERuntimeTestCase
 from oeqa.core.decorator.depends import OETestDepends
 from oeqa.runtime.decorator.package import OEHasPackage
 
-import re
+import sys, bb, re
 
 class BaseTest(OERuntimeTestCase):
 
@@ -34,8 +34,8 @@ class BaseTest(OERuntimeTestCase):
         'pinctrl@30330000',
     )
     dev_list_niot_e_tpi51_en_re = (
-        '3f007000.dma', 
-        '3f200000.gpio', 
+        '3f007000.dma',
+        '3f200000.gpio',
         '3f201000.serial',
         '3f204000.spi', '3f215000.aux',
         '3f804000.i2c',
@@ -53,6 +53,8 @@ class BaseTest(OERuntimeTestCase):
     }
 
     def test_proc_iomem_entries(self):
+        bb.verbnote("Entering test-case: %s" % (sys._getframe().f_code.co_name))
+
         dev_list = self.machine_dev_list.get(self.td.get('MACHINE'))
         self.assertIsNotNone(dev_list, 'Invalid or missing machine specific dev_list!')
 
@@ -65,6 +67,8 @@ class BaseTest(OERuntimeTestCase):
                 bb.error("%s: No match" % cmd)
 
         self.assertEqual(errors, 0, 'Invalid or missing device(s): test_proc_iomem_entries failed!\n')
+
+        bb.verbnote("Exiting test-case: %s" % (sys._getframe().f_code.co_name))
 
     ''' ======================================== '''
     led_list_netfield_compact_x8m_revX = (
@@ -98,6 +102,8 @@ class BaseTest(OERuntimeTestCase):
     }
 
     def test_sys_class_leds_files(self):
+        bb.verbnote("Entering test-case: %s" % (sys._getframe().f_code.co_name))
+
         led_list = self.machine_led_list.get(self.td.get('MACHINE'))
         self.assertIsNotNone(led_list, 'Invalid or missing machine specific led_list!')
 
@@ -110,6 +116,8 @@ class BaseTest(OERuntimeTestCase):
                 bb.error(output)
 
         self.assertEqual(errors, 0, 'Invalid or missing device(s): test_sys_class_leds_files failed!\n')
+
+        bb.verbnote("Exiting test-case: %s" % (sys._getframe().f_code.co_name))
 
     ''' ======================================== '''
     gpio_list_netfield_compact_x8m_revX = (
@@ -125,7 +133,7 @@ class BaseTest(OERuntimeTestCase):
     )
     gpio_list_niot_e_tpi51_en_re = (
         'gpiochip0', 'gpiochip100', 'gpiochip504',
-        'gpio24', 
+        'gpio24',
     )
     gpio_list_niot_e_tijcx_gb = (
         'gpiochip0', 'gpiochip330', 'gpiochip338', 'gpiochip382', 'gpiochip410',
@@ -142,6 +150,8 @@ class BaseTest(OERuntimeTestCase):
     }
 
     def test_sys_class_gpio_files(self):
+        bb.verbnote("Entering test-case: %s" % (sys._getframe().f_code.co_name))
+
         gpio_list = self.machine_gpio_list.get(self.td.get('MACHINE'))
         self.assertIsNotNone(gpio_list, 'Invalid or missing machine specific gpio_list!')
 
@@ -154,3 +164,5 @@ class BaseTest(OERuntimeTestCase):
                 bb.error(output)
 
         self.assertEqual(errors, 0, 'Invalid or missing device(s): test_sys_class_gpio_files failed!\n')
+
+        bb.verbnote("Exiting test-case: %s" % (sys._getframe().f_code.co_name))
