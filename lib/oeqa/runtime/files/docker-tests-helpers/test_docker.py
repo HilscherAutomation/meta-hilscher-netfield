@@ -194,9 +194,7 @@ class TestDockerCreate(unittest.TestCase):
             cwd="./apps",
         )
         images = get_images()
-        image_ping_server = [
-            i for i in images if "ping-server" in i["Repository"]
-        ][0]
+        image_ping_server = [i for i in images if "ping-server" in i["Repository"]][0]
         id = image_ping_server["ID"]
         server = subprocess.Popen(
             f"docker run --rm -p 8000:8000/udp --env PING_SERVER_HOST=0.0.0.0 --env PING_SERVER_PORT=8000 -t {id} python server.py",
@@ -216,6 +214,55 @@ class TestDockerCreate(unittest.TestCase):
         client.wait()
         self.assertEqual(0, client.returncode)
         self.assertEqual(0, server.returncode)
+
+    def test_compose_volume(self):
+        subprocess.run(
+            "docker-compose build",
+            shell=True,
+            capture_output=True,
+            cwd="./apps",
+            check=True,
+        )
+        subprocess.run(
+            "docker volume rm my-vol",
+            shell=True,
+            capture_output=True,
+            cwd="./apps",
+            check=True,
+        )
+
+        subprocess.run(
+            "docker volume create --name=my-vol",
+            shell=True,
+            capture_output=True,
+            cwd="./apps",
+            check=True,
+        )
+
+        subprocess.run(
+            "docker-compose run volume-writer",
+            shell=True,
+            capture_output=True,
+            cwd="./apps",
+            check=True,
+        )
+
+        result = subprocess.run(
+            "docker-compose run cat",
+            shell=True,
+            capture_output=True,
+            cwd="./apps",
+            check=True,
+        )
+        self.assertIn("I'm here.", result.stdout.decode(errors="ignore"))
+
+        subprocess.run(
+            "docker-compose down",
+            shell=True,
+            capture_output=True,
+            cwd="./apps",
+            check=True,
+        )
 
     def test_inspect(self):
         subprocess.run(
@@ -283,8 +330,7 @@ class TestDockerCreate(unittest.TestCase):
         exited_containers = [
             c
             for c in get_all_containers()
-            if (c["State"]) == "exited"
-            and ("ping-client" in c["Names"])
+            if (c["State"]) == "exited" and ("ping-client" in c["Names"])
         ]
 
         self.assertTrue(len(exited_containers) > 0)

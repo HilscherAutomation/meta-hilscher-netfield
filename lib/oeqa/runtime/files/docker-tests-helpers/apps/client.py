@@ -26,7 +26,7 @@ for i in range(10):
         logger.info(f"Timeout {i}/10. Retrying...")
         continue
 else:
-    raise RuntimeError("Couldn't reach the pint server")
+    raise RuntimeError("Couldn't reach the ping server")
 
 assert pong != b"ping", "Response doesn't match to 'ping'"
 logger.info(f"Received 'pong'")
