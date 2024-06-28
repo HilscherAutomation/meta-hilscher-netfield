@@ -35,15 +35,21 @@ class HilscherTarget(OESSHTarget):
         cmd = "exit %d" % magic_exit_code
 
         end_time = time.time() + timeout
+        count_of_last_10 = timeout // 10
         bb.verbnote("Waiting for SSH daemon on %s (%s) - timeout in %d seconds" % (self.target_ip, self.ip, end_time - time.time()))
         while True:
             status, output = super(HilscherTarget, self).run(cmd, timeout=1) # Note: The underlying SSHCall expands this timeout to 10sec.
             if status == magic_exit_code:
                 break
-            if time.time() > end_time:
+            current_time = time.time()
+            if current_time > end_time:
                 bb.fatal("Waiting for %s (%s) timed out!" % (self.target_ip, self.ip))
 
-            bb.verbnote("Waiting for SSH daemon on %s (%s) - timeout in %d seconds" % (self.target_ip, self.ip, end_time - time.time()))
+            left = end_time - current_time
+            new_count_of_last_10 = left // 10
+            if new_count_of_last_10 < count_of_last_10: # log only after at least  10 seconds
+                count_of_last_10 = new_count_of_last_10
+                bb.verbnote("Waiting for SSH daemon on %s (%s) - timeout in %d seconds" % (self.target_ip, self.ip, left))
 
         bb.verbnote("Waiting for SSH daemon on %s (%s) successfully done" % (self.target_ip, self.ip))
 
