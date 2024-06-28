@@ -23,7 +23,7 @@ IMAGE_INSTALL += "logrotate"
 IMAGE_INSTALL += "systemd-netlogd"
 
 # Include zsh, which has superior features compare to bash3 (GPLv2)
-IMAGE_INSTALL += "zsh docker-ce-cli-zsh-completion systemd-zsh-completion"
+IMAGE_INSTALL += "zsh docker-zsh-completion systemd-zsh-completion"
 
 # AppArmor
 IMAGE_INSTALL += "${@bb.utils.contains('DISTRO_FEATURES', 'apparmor', 'apparmor', '', d)}"
