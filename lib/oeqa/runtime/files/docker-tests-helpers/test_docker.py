@@ -118,6 +118,13 @@ class TestDockerCreate(unittest.TestCase):
     def setUp(self) -> None:
         rm_exited_containers()
         logging.debug("Setup: Removing exited containers.")
+        subprocess.run(
+            "docker volume create --name=my-vol",
+            shell=True,
+            capture_output=True,
+            cwd="./apps",
+            check=True,
+        )
 
     def test_pull_and_run(self):
         images = get_images()
@@ -368,3 +375,10 @@ class TestDockerCreate(unittest.TestCase):
     def tearDown(self):
         rm_exited_containers()
         logging.debug("Tear Down: Removing exited containers.")
+        subprocess.run(
+            "docker volume rm my-vol",
+            shell=True,
+            capture_output=True,
+            cwd="./apps",
+            check=True,
+        )
