@@ -76,7 +76,9 @@ export sites=" \
     github.com/cenkalti/backoff/v4:github.com/cenkalti/backoff/v4 \
     github.com/cespare/xxhash/v2:github.com/cespare/xxhash/v2 \
     github.com/containerd/continuity:github.com/containerd/continuity \
+    github.com/containerd/errdefs:github.com/containerd/errdefs \
     github.com/containerd/log:github.com/containerd/log \
+    github.com/containerd/platforms:github.com/containerd/platforms \
     github.com/containerd/ttrpc:github.com/containerd/ttrpc \
     github.com/containerd/typeurl/v2:github.com/containerd/typeurl/v2 \
     github.com/docker/distribution:github.com/docker/distribution \
@@ -91,6 +93,7 @@ export sites=" \
     github.com/go-openapi/jsonpointer:github.com/go-openapi/jsonpointer \
     github.com/go-openapi/jsonreference:github.com/go-openapi/jsonreference \
     github.com/go-openapi/swag:github.com/go-openapi/swag \
+    github.com/go-viper/mapstructure/v2:github.com/go-viper/mapstructure/v2 \
     github.com/gofrs/flock:github.com/gofrs/flock \
     github.com/gogo/googleapis:github.com/gogo/googleapis \
     github.com/gogo/protobuf:github.com/gogo/protobuf \
@@ -101,7 +104,6 @@ export sites=" \
     github.com/google/uuid:github.com/google/uuid \
     github.com/gorilla/mux:github.com/gorilla/mux \
     github.com/gorilla/websocket:github.com/gorilla/websocket \
-    github.com/grpc-ecosystem/go-grpc-middleware:github.com/grpc-ecosystem/go-grpc-middleware \
     github.com/grpc-ecosystem/grpc-gateway/v2:github.com/grpc-ecosystem/grpc-gateway/v2 \
     github.com/hashicorp/errwrap:github.com/hashicorp/errwrap \
     github.com/hashicorp/go-cleanhttp:github.com/hashicorp/go-cleanhttp \
@@ -156,7 +158,6 @@ export sites=" \
     go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc:go.opentelemetry.io/otel/exporters/otlp/otlptrace/exporters/otlp/otlpmetric/otlpmetricgrpc:force \
     go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp:go.opentelemetry.io/otel/exporters/otlp/otlptrace/exporters/otlp/otlpmetric/otlpmetrichttp:force \
     go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp:go.opentelemetry.io/otel/exporters/otlp/otlptrace/exporters/otlp/otlptrace/otlptracehttp:force \
-    go.opentelemetry.io/otel/exporters/prometheus:go.opentelemetry.io/otel/exporters/prometheus/exporters/prometheus:force \
     go.opentelemetry.io/otel/sdk/metric:go.opentelemetry.io/otel/sdk/metric \
     go.opentelemetry.io/proto/otlp:go.opentelemetry.io/proto/otlp/otlp:force \
     golang.org/x/crypto:golang.org/x/crypto \
@@ -175,7 +176,6 @@ export sites=" \
     gopkg.in/yaml.v2:gopkg.in/yaml.v2 \
     k8s.io/api:k8s.io/api \
     k8s.io/apimachinery:k8s.io/apimachinery \
-    k8s.io/apiserver:k8s.io/apiserver \
     k8s.io/client-go:k8s.io/client-go \
     k8s.io/klog/v2:k8s.io/klog/v2 \
     k8s.io/kube-openapi:k8s.io/kube-openapi \
