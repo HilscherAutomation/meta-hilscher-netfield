@@ -1,0 +1,11 @@
+diff -aurN a/lib/systemd/system/codemeter.service b/lib/systemd/system/codemeter.service
+--- a/lib/systemd/system/codemeter.service	2024-06-17 23:26:00.000000000 +0200
++++ b/lib/systemd/system/codemeter.service	2024-07-09 09:55:27.996584371 +0200
+@@ -3,6 +3,7 @@
+ After=network.target
+ 
+ [Service]
++User=daemon
+ ExecStart=/usr/sbin/CodeMeterLin -f
+ ExecReload=/bin/kill -USR1 $MAINPID
+ 

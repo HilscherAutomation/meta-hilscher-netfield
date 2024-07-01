@@ -42,6 +42,9 @@ IMAGE_INSTALL += "${@bb.utils.contains('MACHINE_FEATURES', 'tpm', 'tpm-tools tro
 IMAGE_INSTALL += "packagegroup-security-tpm2 libtss2-tcti-device tpm2-openssl swtpm opensc libp11 \
                   openssl-pkcs11-provider"
 
+# WIBU License server
+IMAGE_INSTALL += "codemeter-lite"
+
 # zeroconf, netbios and upnp support
 IMAGE_INSTALL += "avahi-daemon nbnsd"
 IMAGE_INSTALL += "upnpd libupnp"
