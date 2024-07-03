@@ -35,11 +35,11 @@
 
   /dev/tty                 rw,
 
-  # Allow reading device_data (product_name/serial_number)
+  # Allow reading device_data (e.g product_name/serial_number)
   /bin/cat{,.coreutils}                 rix,
   /bin/hostname{,.coreutils,.net-tools} rix,
-  /var/platform/device_data/{product_name,serial_number} r,
-  /sys/device_data/{product_name,serial_number}          r,
+  /var/platform/device_data/** r,
+  /sys/device_data/**          r,
   # Allow reading nginx port
   /etc/nginx/nginx.conf r,
   # Allow ifconfig readout
