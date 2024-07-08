@@ -1,3 +1,4 @@
+from typing import Set
 import unittest
 import logging
 import subprocess
@@ -56,8 +57,8 @@ def get_images():
         capture_output=True,
     )
     output = result.stdout.decode(errors="ignore")
-    containers = [json.loads(line) for line in output.splitlines()]
-    return containers
+    images = [json.loads(line) for line in output.splitlines()]
+    return images
 
 
 def get_volumes():
@@ -99,12 +100,11 @@ def get_networks():
     return volumes
 
 
-def rm_exited_containers():
+def rm_containers():
     containers = get_all_containers()
-    exited_containers = [c for c in containers if c["State"] == "exited"]
-    if exited_containers:
-        containers_list = " ".join(c["ID"] for c in exited_containers)
-        rm_command = f"docker container rm {containers_list}"
+    if containers:
+        containers_list = " ".join(c["ID"] for c in containers)
+        rm_command = f"docker container rm -f {containers_list}"
         subprocess.run(rm_command, shell=True, capture_output=True, check=True)
 
 
@@ -113,10 +113,10 @@ class TestDockerCreate(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         logging.basicConfig()
-        logging.root.setLevel(logging.ERROR)
+        logging.root.setLevel(logging.WARNING)
 
     def setUp(self) -> None:
-        rm_exited_containers()
+        rm_containers()
         logging.debug("Setup: Removing exited containers.")
         subprocess.run(
             "docker volume create --name=my-vol",
@@ -201,7 +201,7 @@ class TestDockerCreate(unittest.TestCase):
             cwd="./apps",
         )
         images = get_images()
-        image_ping_server = [i for i in images if "ping-server" in i["Repository"]][0]
+        image_ping_server = [i for i in images if "ping-image" in i["Repository"]][0]
         id = image_ping_server["ID"]
         server = subprocess.Popen(
             f"docker run --rm -p 8000:8000/udp --env PING_SERVER_HOST=0.0.0.0 --env PING_SERVER_PORT=8000 -t {id} python server.py",
@@ -373,12 +373,39 @@ class TestDockerCreate(unittest.TestCase):
         self.assertEqual(privileged.returncode, 0)
 
     def tearDown(self):
-        rm_exited_containers()
+        rm_containers()
         logging.debug("Tear Down: Removing exited containers.")
         subprocess.run(
             "docker volume rm my-vol",
             shell=True,
             capture_output=True,
             cwd="./apps",
+            check=True,
+        )
+
+    @classmethod
+    def tearDownClass(cls):
+        subprocess.run(
+            "docker container prune -f",
+            shell=True,
+            capture_output=True,
+            check=True,
+        )
+        subprocess.run(
+            "docker image rm ping-image ubuntu hello-world:linux",
+            shell=True,
+            capture_output=True,
+            check=True,
+        )
+        subprocess.run(
+            "docker image prune -a -f",
+            shell=True,
+            capture_output=True,
+            check=True,
+        )
+        subprocess.run(
+            "docker system prune -f",
+            shell=True,
+            capture_output=True,
             check=True,
         )

@@ -1,6 +1,7 @@
 services:
   ping-client:
     build: .
+    image: ping-image
     environment: &environment
         PING_SERVER_HOST: ping-server
         PING_SERVER_PORT: 3000
@@ -9,10 +10,12 @@ services:
     command: python client.py
   ping-server:
     build: .
+    image: ping-image
     environment: *environment
     command: python server.py
   volume-writer:
     build: .
+    image: ping-image
     environment:
         MY_VOLUME_PATH: /my-vol
     command: python write-to-volume.py
@@ -20,6 +23,7 @@ services:
       - my-vol:/my-vol
   cat:
     build: .
+    image: ping-image
     command: cat /my-vol/written_by_container.txt
     volumes:
       - my-vol:/my-vol
