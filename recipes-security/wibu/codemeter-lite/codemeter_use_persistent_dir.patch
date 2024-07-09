@@ -1,0 +1,16 @@
+Place data directory below backup/nvd directory to survive recovery
+diff -aurN a/lib/systemd/system/codemeter.service b/lib/systemd/system/codemeter.service
+--- a/lib/systemd/system/codemeter.service	2024-06-17 23:26:00.000000000 +0200
++++ b/lib/systemd/system/codemeter.service	2024-07-09 09:39:24.983480659 +0200
+@@ -3,6 +3,11 @@
+ 
+ [Service]
+ User=daemon
++ExecStartPre=+/bin/mkdir -p /mnt/backup/nvd/codemeter/Backup
++ExecStartPre=+/bin/mkdir -p /mnt/backup/nvd/codemeter/CmAct
++ExecStartPre=+/bin/mkdir -p /mnt/backup/nvd/codemeter/CmCloud
++ExecStartPre=+/bin/mkdir -p /mnt/backup/nvd/codemeter/NamedUser
++ExecStartPre=+/bin/chown daemon:daemon -R /mnt/backup/nvd/codemeter
+ ExecStart=/usr/sbin/CodeMeterLin -f
+ ExecReload=/bin/kill -USR1 $MAINPID
+ 
