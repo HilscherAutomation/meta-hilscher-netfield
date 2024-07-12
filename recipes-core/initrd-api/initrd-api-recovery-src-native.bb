@@ -10,6 +10,8 @@ SRC_URI = "file://common \
            file://runscript.sh \
           "
 
+do_configure[vardeps] += "PHYSICAL_SYSTEM_DEVICE"
+
 do_configure() {
 	[ -z "${PHYSICAL_SYSTEM_DEVICE}" ] && bbfatal "Error PHYSICAL_SYSTEM_DEVICE not defined!"
 
