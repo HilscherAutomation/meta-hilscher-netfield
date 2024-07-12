@@ -5,6 +5,7 @@ import shutil
 import tempfile
 from oeqa.runtime.case import OERuntimeTestCase
 from oeqa.core.target.ssh import OESSHTarget
+
 # from oeqa.runtime.context import OETestContext
 
 
@@ -42,5 +43,5 @@ class BaseTest(OERuntimeTestCase):
                     "rm -vrf compose-tests compose-tests.tar     ;"
                     "exit $(cat docker_test_result)              ;")
             rt, output = self.target.run(cmd)
+            bb.verbnote(output)
             self.assertEqual(rt, 0, output)
-

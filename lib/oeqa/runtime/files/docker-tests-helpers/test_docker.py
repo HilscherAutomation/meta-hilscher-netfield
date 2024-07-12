@@ -1,13 +1,41 @@
-from typing import Set
 import unittest
 import logging
 import subprocess
 import json
+from pathlib import Path
+from typing import Tuple
+import sys
+
+a = Path("/etc/os-release")
+kv = dict([i.split("=") for i in a.read_text().splitlines()])
+operating_system_name = kv["NAME"]  # "netFIELD OS"
+is_on_netfield_os = operating_system_name == '"netFIELD OS"'
+
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter("%(message)s")
+handler.setFormatter(formatter)
+logger = logging.getLogger("test_docker_on_device")
+logger.setLevel(logging.DEBUG)
+logger.addHandler(handler)
+
+logger.info(f"is_on_netfield_os={is_on_netfield_os}")
 
 
-def dprint(x):
-    print(x)
-    return x
+def run_cmd(cmd: str, *, throw: bool = False, **kwargs) -> Tuple[bool, str, str]:
+    logger.debug(f"\n=============CMD=================")
+    logger.debug(f"{cmd}")
+    ret = subprocess.run(cmd, shell=True, capture_output=True, check=False, **kwargs)
+    std_output: str = ret.stdout.decode(errors="ignore")
+    err_output: str = ret.stderr.decode(errors="ignore")
+    logger.debug(f"------------STDOUT---------------")
+    logger.debug(f"{std_output.strip()}")
+    logger.debug(f"------------STDERR---------------")
+    logger.debug(f"{err_output.strip()}")
+    logger.debug(f"=================================")
+    if throw and ret.returncode != 0:
+        raise RuntimeError(f"'{cmd}' returned non-zero.")
+    return ret.returncode == 0, std_output, err_output
 
 
 def get_all_containers():
@@ -28,12 +56,7 @@ def get_all_containers():
     #  'State': 'running',
     #  'Status': 'Up 4 months'}
 
-    result = subprocess.run(
-        "docker container list --all --format '{{json . }}'",
-        shell=True,
-        capture_output=True,
-    )
-    output = result.stdout.decode(errors="ignore")
+    _, output, _ = run_cmd("docker container list --all --format '{{json . }}'")
     containers = [json.loads(line) for line in output.splitlines()]
     return containers
 
@@ -50,13 +73,7 @@ def get_images():
     #  'Tag': 'latest',
     #  'UniqueSize': 'N/A',
     #  'VirtualSize': '4.267MB'}
-
-    result = subprocess.run(
-        "docker image list --all --format '{{json . }}'",
-        shell=True,
-        capture_output=True,
-    )
-    output = result.stdout.decode(errors="ignore")
+    _, output, _ = run_cmd("docker image list --all --format '{{json . }}'")
     images = [json.loads(line) for line in output.splitlines()]
     return images
 
@@ -70,12 +87,7 @@ def get_volumes():
     #  'Name': 'my-vol',
     #  'Scope': 'local',
     #  'Size': 'N/A'}
-    result = subprocess.run(
-        "docker volume list --format '{{json . }}'",
-        shell=True,
-        capture_output=True,
-    )
-    output = result.stdout.decode(errors="ignore")
+    _, output, _ = run_cmd("docker volume list --format '{{json . }}'")
     volumes = [json.loads(line) for line in output.splitlines()]
     return volumes
 
@@ -90,67 +102,39 @@ def get_networks():
     #  'Labels': 'com.docker.compose.network=default,com.docker.compose.project=apps,com.docker.compose.version=1.29.2',
     #  'Name': 'apps_default',
     #  'Scope': 'local'}
-    result = subprocess.run(
-        "docker network list --format '{{json . }}'",
-        shell=True,
-        capture_output=True,
-    )
-    output = result.stdout.decode(errors="ignore")
+    _, output, _ = run_cmd("docker network list --format '{{json . }}'")
     volumes = [json.loads(line) for line in output.splitlines()]
     return volumes
 
 
 def rm_containers():
     containers = get_all_containers()
-    if containers:
+    if containers and is_on_netfield_os:
         containers_list = " ".join(c["ID"] for c in containers)
         rm_command = f"docker container rm -f {containers_list}"
-        subprocess.run(rm_command, shell=True, capture_output=True, check=True)
+        run_cmd(rm_command, throw=True)
 
 
 class TestDockerCreate(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        logging.basicConfig()
-        logging.root.setLevel(logging.WARNING)
-
     def setUp(self) -> None:
         rm_containers()
-        logging.debug("Setup: Removing exited containers.")
-        subprocess.run(
-            "docker volume create --name=my-vol",
-            shell=True,
-            capture_output=True,
-            cwd="./apps",
-            check=True,
-        )
+        run_cmd("docker volume create --name=my-vol", cwd="./apps", throw=True)
 
     def test_pull_and_run(self):
+        logger.info("Runnig: test_pull_and_run")
         images = get_images()
         hello_world_image = [
             i for i in images if "hello-world:linux" == f"{i['Repository']}:{i['Tag']}"
         ]
         if hello_world_image:
-            logging.debug("Removing hello-world:linux")
-            subprocess.run(
-                "docker image rm -f hello-world:linux",
-                shell=True,
-                check=True,
-                capture_output=True,
-            )
+            run_cmd("docker image rm -f hello-world:linux", throw=True)
 
-        logging.debug("Pulling and running hello-world:linux")
-        result = subprocess.run(
-            "docker run --rm hello-world:linux",
-            shell=True,
-            capture_output=True,
-        )
-        # output = result.stdout.decode(errors="ignore")
-        error = result.stderr.decode(errors="ignore")
-        self.assertEqual(result.returncode, 0, error)
+        rc, _, error = run_cmd("docker run --rm hello-world:linux")
+        self.assertTrue(rc, error)
 
     def test_create(self):
+        logger.info("Runnig: test_create")
         running_containers = get_all_containers()
         created_hello_world_containers = [
             c
@@ -160,14 +144,9 @@ class TestDockerCreate(unittest.TestCase):
         if created_hello_world_containers:
             containers_list = " ".join(c["ID"] for c in created_hello_world_containers)
             rm_command = f"docker container rm {containers_list}"
-            subprocess.run(rm_command, shell=True, check=True, capture_output=True)
+            run_cmd(rm_command, throw=True)
 
-        subprocess.run(
-            "docker container create hello-world:linux",
-            shell=True,
-            check=True,
-            capture_output=True,
-        )
+        run_cmd("docker container create hello-world:linux", throw=True)
 
         running_containers = get_all_containers()
         created_hello_world_containers = [
@@ -178,26 +157,25 @@ class TestDockerCreate(unittest.TestCase):
         self.assertEqual(1, len(created_hello_world_containers))
         containers_list = " ".join(c["ID"] for c in created_hello_world_containers)
         rm_command = f"docker container rm {containers_list}"
-        subprocess.run(rm_command, shell=True, check=True, capture_output=True)
+        run_cmd(rm_command, throw=True)
 
     def test_compose(self):
-        up = subprocess.run(
+        logger.info("Runnig: test_compose")
+        up, _, _ = run_cmd(
             "docker-compose up --build ping-client ping-server",
-            shell=True,
-            capture_output=True,
             cwd="./apps",
         )
-        down = subprocess.run(
-            "docker-compose down", shell=True, capture_output=True, cwd="./apps"
+        down, _, _ = run_cmd(
+            "docker-compose down -v --rmi all --remove-orphans",
+            cwd="./apps",
         )
-        self.assertEqual(up.returncode, 0)
-        self.assertEqual(down.returncode, 0)
+        self.assertTrue(up)
+        self.assertTrue(down)
 
     def test_compose_port_forward(self):
-        subprocess.run(
+        logger.info("Runnig: test_compose_port_forward")
+        run_cmd(
             "docker-compose build ping-server",
-            shell=True,
-            capture_output=True,
             cwd="./apps",
         )
         images = get_images()
@@ -223,116 +201,62 @@ class TestDockerCreate(unittest.TestCase):
         self.assertEqual(0, server.returncode)
 
     def test_compose_volume(self):
-        subprocess.run(
-            "docker-compose build",
-            shell=True,
-            capture_output=True,
-            cwd="./apps",
-            check=True,
-        )
-        subprocess.run(
-            "docker volume rm my-vol",
-            shell=True,
-            capture_output=True,
-            cwd="./apps",
-            check=True,
-        )
+        logger.info("Runnig: test_compose_volume")
+        run_cmd("docker-compose build", cwd="./apps", throw=True)
+        run_cmd("docker volume rm my-vol", cwd="./apps", throw=True)
+        run_cmd("docker volume create --name=my-vol", cwd="./apps", throw=True)
+        run_cmd("docker-compose run volume-writer", cwd="./apps", throw=True)
+        _, output, _ = run_cmd("docker-compose run cat", cwd="./apps", throw=True)
 
-        subprocess.run(
-            "docker volume create --name=my-vol",
-            shell=True,
-            capture_output=True,
-            cwd="./apps",
-            check=True,
-        )
+        self.assertIn("I'm here.", output)
 
-        subprocess.run(
-            "docker-compose run volume-writer",
-            shell=True,
-            capture_output=True,
+        run_cmd(
+            "docker-compose down -v --rmi all --remove-orphans",
             cwd="./apps",
-            check=True,
-        )
-
-        result = subprocess.run(
-            "docker-compose run cat",
-            shell=True,
-            capture_output=True,
-            cwd="./apps",
-            check=True,
-        )
-        self.assertIn("I'm here.", result.stdout.decode(errors="ignore"))
-
-        subprocess.run(
-            "docker-compose down",
-            shell=True,
-            capture_output=True,
-            cwd="./apps",
-            check=True,
+            throw=True,
         )
 
     def test_inspect(self):
-        subprocess.run(
+        logger.info("Runnig: test_inspect")
+        run_cmd(
             "docker-compose up",
-            shell=True,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
             cwd="./apps",
-            check=True,
+            throw=True,
         )
 
         containers = get_all_containers()
-        result = subprocess.run(
-            f"docker container inspect {containers[0]['ID']}",
-            shell=True,
-            capture_output=True,
-        )
-        self.assertEqual(0, result.returncode)
-        json.loads(result.stdout.decode(errors="ignore"))
+        rc, output, _ = run_cmd(f"docker container inspect {containers[0]['ID']}")
+        self.assertTrue(rc)
+        json.loads(output)
 
         images = get_images()
-        result = subprocess.run(
-            f"docker image inspect {images[0]['ID']}",
-            shell=True,
-            capture_output=True,
-        )
-        self.assertEqual(0, result.returncode)
-        json.loads(result.stdout.decode(errors="ignore"))
+        rc, output, _ = run_cmd(f"docker image inspect {images[0]['ID']}")
+        self.assertTrue(rc)
+        json.loads(output)
 
         volumes = get_volumes()
-        result = subprocess.run(
-            f"docker volume inspect {volumes[0]['Name']}",
-            shell=True,
-            capture_output=True,
-        )
-        self.assertEqual(0, result.returncode)
-        json.loads(result.stdout.decode(errors="ignore"))
+        rc, output, _ = run_cmd(f"docker volume inspect {volumes[0]['Name']}")
+        self.assertTrue(rc)
+        json.loads(output)
 
         networks = get_networks()
-        result = subprocess.run(
-            f"docker network inspect {networks[0]['Name']}",
-            shell=True,
-            capture_output=True,
-        )
-        self.assertEqual(0, result.returncode)
-        json.loads(result.stdout.decode(errors="ignore"))
+        rc, output, _ = run_cmd(f"docker network inspect {networks[0]['Name']}")
+        self.assertTrue(rc)
+        json.loads(output)
 
-        subprocess.run(
-            "docker-compose down",
-            shell=True,
-            capture_output=True,
+        run_cmd(
+            "docker-compose down -v --rmi all --remove-orphans",
             cwd="./apps",
-            check=True,
+            throw=True,
         )
 
     def test_logs(self):
-        up = subprocess.run(
+        logger.info("Runnig: test_logs")
+        run_cmd(
             "docker-compose up --build ping-client ping-server",
-            shell=True,
-            capture_output=True,
             cwd="./apps",
+            throw=True,
         )
-        self.assertEqual(up.returncode, 0)
 
         exited_containers = [
             c
@@ -342,70 +266,36 @@ class TestDockerCreate(unittest.TestCase):
 
         self.assertTrue(len(exited_containers) > 0)
 
-        result = subprocess.run(
-            f"docker logs {exited_containers[0]['Names']}",
-            shell=True,
-            capture_output=True,
-        )
-        self.assertEqual(result.returncode, 0)
-        self.assertIn(
-            "INFO:client:Received 'pong'", result.stderr.decode(errors="ignore")
-        )
+        rt, _, err_output = run_cmd(f"docker logs {exited_containers[0]['Names']}")
+        self.assertTrue(rt)
+        self.assertIn("INFO:client:Received 'pong'", err_output)
 
-        down = subprocess.run(
-            "docker-compose down", shell=True, capture_output=True, cwd="./apps"
+        run_cmd(
+            "docker-compose down -v --rmi all --remove-orphans",
+            cwd="./apps",
+            throw=True,
         )
-        self.assertEqual(down.returncode, 0)
 
     def test_privileged(self):
-        no_privileged = subprocess.run(
-            "docker run -t --rm ubuntu mount -t tmpfs none /mnt",
-            shell=True,
-            capture_output=True,
-        )
-        self.assertNotEqual(no_privileged.returncode, 0)
-        privileged = subprocess.run(
+        logger.info("Runnig: test_privileged")
+        rt = run_cmd("docker run -t --rm ubuntu mount -t tmpfs none /mnt")
+        self.assertFalse(rt[0])
+        run_cmd(
             "docker run --privileged -t --rm ubuntu mount -t tmpfs none /mnt",
-            shell=True,
-            capture_output=True,
-            cwd="./apps",
+            throw=True,
         )
-        self.assertEqual(privileged.returncode, 0)
 
     def tearDown(self):
         rm_containers()
-        logging.debug("Tear Down: Removing exited containers.")
-        subprocess.run(
-            "docker volume rm my-vol",
-            shell=True,
-            capture_output=True,
-            cwd="./apps",
-            check=True,
-        )
+        run_cmd("docker volume rm my-vol", cwd="./apps", throw=True)
 
     @classmethod
     def tearDownClass(cls):
-        subprocess.run(
-            "docker container prune -f",
-            shell=True,
-            capture_output=True,
-            check=True,
-        )
-        subprocess.run(
-            "docker image rm ping-image ubuntu hello-world:linux",
-            shell=True,
-            capture_output=True,
-            check=True,
-        )
-        subprocess.run(
-            "docker image prune -a -f",
-            shell=True,
-            capture_output=True,
-            check=True,
-        )
-        subprocess.run(
-            "docker system prune -f",
-            shell=True,
-            capture_output=True,
-            check=True,
-        )
+
+        if is_on_netfield_os:
+            result = run_cmd("docker container prune -f")[0]
+            result &= run_cmd("docker image rm ubuntu hello-world:linux")[0]
+            result &= run_cmd("docker image prune -a -f")[0]
+            result &= run_cmd("docker system prune -f")[0]
+            if not result:
+                raise RuntimeError("Error by cleanup")
