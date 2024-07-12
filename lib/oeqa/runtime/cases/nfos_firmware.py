@@ -22,9 +22,11 @@ class BaseTest(OERuntimeTestCase):
 
         target = HilscherTarget(None, self.target_ip, None, rootfs = self.image_name)
 
-        status = target.deploy()
-
+        status = target.swu_update()
         self.assertEqual(status, 0, 'Firmware update on %s failed!\n' % self.target_ip)
+
+        status = target.swu_recovery()
+        self.assertEqual(status, 0, 'Firmware recovery on %s failed!\n' % self.target_ip)
 
         bb.verbnote("Exiting test-case: %s" % (sys._getframe().f_code.co_name))
 
