@@ -27,7 +27,7 @@ create_recovery_initrd_api() {
   local signing_key=$(setup_sign_wrapper_env "${PLATFORM_KEYNAME}")
 
   mkdir -p ${WORKDIR}/firmware_api/firmware
-  cp ${WORKDIR}/recipe-sysroot-native/usr/share/initrd-api/recovery/* ${WORKDIR}/firmware_api/
+  cp ${WORKDIR}/recipe-sysroot/usr/share/initrd-api/recovery/* ${WORKDIR}/firmware_api/
   cp ${image_wic} ${WORKDIR}/firmware_api/firmware
 
   echo ${DATE} > ${WORKDIR}/firmware_api/firmware/timestamp

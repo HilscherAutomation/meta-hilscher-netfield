@@ -2,7 +2,7 @@ DESCRIPTION = "Deploy source required for initrd-api file. Will be referenced at
 HOMEPAGE = "http://www.hilscher.com"
 LICENSE = "CLOSED"
 
-inherit native
+PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 # generic platform specific setup
 SRC_URI = "file://common \
