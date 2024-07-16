@@ -75,8 +75,8 @@ class HilscherTarget(OESSHTarget):
         os.mkdir(dev_dir)
 
         ''' Backup DUT onboarding information. '''
-        if self.copyFrom("/etc/aziot/onboard.json", dev_dir + "/onboard.json"):
-            self.copyFrom("/etc/aziot/config.toml", dev_dir + "/config.toml")
+        if self.copyFrom("/etc/aziot/onboard.json", dev_dir + "/onboard.json", warn_on_failure=True):
+            self.copyFrom("/etc/aziot/config.toml", dev_dir + "/config.toml", warn_on_failure=True)
 
         bb.verbnote("Deploying %s to %s (%s)" % (os.path.basename(src), self.target_ip, self.ip))
 
