@@ -79,7 +79,7 @@ fitimage_emit_section_kernel() {
 	kernel_csum="sha256"
 
 	cat << EOF >> ${1}
-                kernel {
+                kernel@${2} {
                         description = "Linux kernel";
                         data = /incbin/("${3}");
                         type = "kernel";
@@ -88,7 +88,7 @@ fitimage_emit_section_kernel() {
                         compression = "${4}";
                         load = <0>;
                         entry = <0>;
-                        hash-1 {
+                        hash@1 {
                                 algo = "${kernel_csum}";
                         };
                 };
@@ -100,7 +100,7 @@ fitimage_emit_section_script() {
 	kernel_csum="sha256"
 
 	cat << EOF >> ${1}
-                script-${2} {
+                script@${2} {
                         description = "Boot script";
                         data = /incbin/("${3}");
                         type = "script";
@@ -109,7 +109,7 @@ fitimage_emit_section_script() {
                         compression = "none";
                         load = <0x02000000>;
                         entry = <0x02000000>;
-                        hash-1 {
+                        hash@1 {
                                 algo = "${kernel_csum}";
                         };
                 };
@@ -133,21 +133,21 @@ fitimage_emit_section_config() {
 
 	# Test if we have any DTBs at all
 	conf_desc="Linux kernel"
-	kernel_line="kernel = \"kernel\";"
+	kernel_line="kernel = \"kernel@1\";"
 	boot_line=""
 
 	if [ -n "${2}" ]; then
 		conf_desc="${conf_desc}, script"
-		boot_line="script = \"script-${2}\";"
+		boot_line="script = \"script@${2}\";"
 	fi
 
 	cat << EOF >> ${1}
-                default = "conf-1";
-                conf-1 {
+                default = "conf@1";
+                conf@1 {
                         description = "${conf_desc}";
 			${kernel_line}
 			${boot_line}
-                        hash-1 {
+                        hash@1 {
                                 algo = "${conf_csum}";
                         };
 EOF
@@ -163,7 +163,7 @@ EOF
 		sign_line="${sign_line};"
 
 		cat << EOF >> ${1}
-                        signature-1 {
+                        signature@1 {
                                 algo = "${conf_csum},rsa4096";
                                 key-name-hint = "${conf_sign_keyname}";
 				${sign_line}
