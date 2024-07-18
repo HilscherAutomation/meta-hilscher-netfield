@@ -173,7 +173,7 @@ function postinst()
 	os.execute("sync && umount /mnt/system && rmdir /mnt/system")
 
 	swupdate.info("Rebooting system ...")
-	os.execute("(sleep 1; reboot;) &")
+	os.execute("(sleep 2; reboot;) &")
 
 	return true
 end
