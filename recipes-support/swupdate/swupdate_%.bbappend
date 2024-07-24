@@ -32,15 +32,6 @@ SRC_URI:append = " \
 	file://helper.lua \
 "
 
-do_install:prepend() {
-	if ${SWUPDATE_MONGOOSE}; then
-		if [ "${@bb.utils.contains('IMAGE_FEATURES', 'debug-tweaks', 'true', 'false',d)}" = "false" ]; then
-			# Disable mongoose webserver
-			sed -i 's,^,#,g' ${WORKDIR}/*mongoose*
-		fi
-	fi
-}
-
 do_install[vardeps] += "SWUPDATE_SIGN"
 do_install:append () {
 	board="$(echo ${MACHINE} | sed 's/-rev[0-9]*//')"
@@ -74,6 +65,13 @@ do_install:append () {
 
 	# Allow uploaded files to be up to 1GB
 	sed -i -e 's/maxFilesize:256/maxFilesize:1024/g' ${D}/www/js/dropzone.min.js
+
+	if ${SWUPDATE_MONGOOSE}; then
+		if [ "${@bb.utils.contains('IMAGE_FEATURES', 'debug-tweaks', 'true', 'false',d)}" = "false" ]; then
+			# Disable mongoose webserver
+			sed -i 's,^,#,g' ${D}${libdir}/swupdate/conf.d/*mongoose*
+		fi
+	fi
 }
 
 inherit deploy
