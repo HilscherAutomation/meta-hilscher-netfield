@@ -59,14 +59,14 @@ function mount_and_cleanup_system()
 	--   on eMMC and SD-Card (e.g. niot-e-nfl90-q2n16-n-rev1)!
 
 	-- Check if system partition is read-only (default) If this fails directly mount it rw
-	if os.execute("mount -o ro $(blkid -o device -t LABEL=system /dev/$(lsblk -no pkname $(grep -o 'bootCfg.*/boot.cfg' /proc/cmdline | cut -d= -f2 | cut -d/ -f1-3))*) /mnt/system") == true then
+	if os.execute("mount -o ro $(x=$(sed 's,.*bootCfg=\\(.*\\)/boot.cfg.*,\\1,' /proc/cmdline) && grep ^/dev <<< $x || blkid -o device -t $x) /mnt/system") == true then
 		os.execute("mount -o remount,rw,nodelalloc /mnt/system")
 	else
-		os.execute("mount -o nodelalloc $(blkid -o device -t LABEL=system /dev/$(lsblk -no pkname $(grep -o 'bootCfg.*/boot.cfg' /proc/cmdline | cut -d= -f2 | cut -d/ -f1-3))*) /mnt/system")
+		os.execute("mount -o nodelalloc $(x=$(sed 's,.*bootCfg=\\(.*\\)/boot.cfg.*,\\1,' /proc/cmdline) && grep ^/dev <<< $x || blkid -o device -t $x) /mnt/system")
 	end
 
 	-- Due to a problem during production we may need to resize system partition
-	os.execute("resize2fs $(blkid -o device -t LABEL=system /dev/$(lsblk -no pkname $(grep -o 'bootCfg.*/boot.cfg' /proc/cmdline | cut -d= -f2 | cut -d/ -f1-3))*)")
+	os.execute("resize2fs $(x=$(sed 's,.*bootCfg=\\(.*\\)/boot.cfg.*,\\1,' /proc/cmdline) && grep ^/dev <<< $x || blkid -o device -t $x)")
 
 	-- Delete the unbooted boot.cfg file to make sure we have enough diskspace. We are recovering anyway cleaning everything.
 	os.execute("grep -q bootCfg=.*/aboot.cfg /proc/cmdline && rm -rf /mnt/system/boot.cfg*")
