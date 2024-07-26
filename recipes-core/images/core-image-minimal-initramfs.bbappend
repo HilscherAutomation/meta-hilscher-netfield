@@ -38,7 +38,7 @@ delete_unwanted_cifx_files() {
     rm -rf ${IMAGE_ROOTFS}/opt/cifx/deviceconfig
     rm -rf ${IMAGE_ROOTFS}/opt/cifx/FW
     rm ${IMAGE_ROOTFS}/lib/udev/rules.d/80-hilscher*
-    rm ${IMAGE_ROOTFS}/etc/init.d/cifxeth
+    rm ${IMAGE_ROOTFS}${sbindir}/cifxeth
 }
 
 add_etc_target() {
