@@ -54,18 +54,19 @@ class BaseTest(OERuntimeTestCase):
         partition_list = machine_partition_list.get(self.td.get('MACHINE'))
         self.assertIsNotNone(partition_list, 'Invalid or missing machine specific partition_list!')
 
-        errors = 0
         for a in partition_list:
             if a[0] != "lvm":
-                cmd = 'fdisk -l $(blkid -L %s) | head -n1 | cut -d" " -f5 | grep ^%s$' % (a[0], self.convert_to_bytes(a[1]))
+                cmd = 'lsblk -no pkname $(grep -o "bootCfg.*/boot.cfg" /proc/cmdline | cut -d= -f2 | cut -d/ -f1-3)'
                 status, output = self.target.run(cmd)
-                if status != 0:
-                    errors += 1
-                    bb.error(output)
+                physical_boot_devs = ''
+                if status == 0:
+                    physical_boot_devs = '/dev/' + output + '*'
+                cmd = 'fdisk -l $(blkid -o device -t LABEL=%s %s) | head -n1 | cut -d" " -f5' % (a[0], physical_boot_devs)
+                status, output = self.target.run(cmd)
+                self.assertEqual(output, str(self.convert_to_bytes(a[1])), 'Invalid or missing %s partitions!\n' % (a[0]))
             else:
-                ''' TODO: Implementing a LVM validation (PV and LV). '''
-
-        self.assertEqual(errors, 0, 'Invalid or missing partitions!\n')
+                 ''' TODO: Implementing a LVM validation (PV and LV). '''
+                 bb.warn("%s: %s partitions are skipped!" % ((sys._getframe().f_code.co_name), (a[0])))
 
         bb.verbnote("Exiting test-case: %s" % (sys._getframe().f_code.co_name))
 

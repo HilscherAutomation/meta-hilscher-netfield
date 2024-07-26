@@ -173,11 +173,10 @@ for machine in $PLATFORMS; do
 		# Remove old entry and append the new one if required
 		sed -i "/include local.overrides.test.conf/,2d" conf/local.overrides.conf
 		[ "$test_enabled" = "1" ] && {
-			[ -z "$dut" ] && { echo "ERROR: Undefined IP-Adress of $machine (DUT)! "; exit 1; }
-			# Remove old entry and append the new one.
-			sed -i "/TEST_TARGET_IP_$machine =/d" conf/local.overrides.test.conf
-			echo "TEST_TARGET_IP_$machine = \"$dut\"" >> conf/local.overrides.test.conf
 			echo -e "include local.overrides.test.conf\n" >> conf/local.overrides.conf
+			# Remove old entry and append the new one.
+			sed -i "/TEST_TARGET_IP:$machine =/d" conf/local.overrides.test.conf
+			echo "TEST_TARGET_IP:$machine = \"$dut\"" >> conf/local.overrides.test.conf
 		}
 	fi
 

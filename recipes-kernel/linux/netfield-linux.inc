@@ -13,10 +13,6 @@ KERNEL_MODULE_AUTOLOAD_append += "${@bb.utils.contains('MACHINE_FEATURES', '3g',
 # rfkill
 SRC_URI_append += "${@bb.utils.contains_any('MACHINE_FEATURES', ['3g', 'wifi'], 'file://rfkill.cfg', '', d)}"
 
-# Backport new regulatory database keys to allow loading new wireless-regdb
-SRC_URI_append += "file://0001-wifi-cfg80211-Add-my-certificate.patch \
-                   file://0002-wifi-cfg80211-fix-certs-build-to-not-depend-on-file-.patch"
-
 # tun/tap (cifx0 ethernet i/f)
 KERNEL_MODULE_AUTOLOAD_append += "tun"
 
