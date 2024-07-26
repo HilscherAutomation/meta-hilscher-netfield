@@ -50,6 +50,9 @@ do_install:append() {
         sed -i -e 's/\[Service\]/\[Service\]\nOOMScoreAdjust=-1000/g' \
               ${D}${systemd_system_unitdir}/$service
     done
+
+    # Remove unnecessary generators that are causing system warnings.
+    rm ${D}${rootlibexecdir}/systemd/system-generators/systemd-gpt-auto-generator
 }
 
 # Don't rebuilt if os-release changes
