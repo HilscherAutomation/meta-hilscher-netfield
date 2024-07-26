@@ -349,7 +349,7 @@ function postinst()
 	end
 
 	swupdate.info("Rebooting system ...\n")
-	os.execute("(sleep 1; reboot;) &")
+	os.execute("(sleep 2; reboot;) &")
 
 	return true
 end
