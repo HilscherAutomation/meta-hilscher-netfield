@@ -4,8 +4,8 @@ export sites=" \
     github.com/acarl005/stripansi:github.com/acarl005/stripansi \
     github.com/buger/goterm:github.com/buger/goterm \
     github.com/compose-spec/compose-go/v2:github.com/compose-spec/compose-go/v2 \
-    github.com/containerd/console:github.com/containerd/console \
     github.com/containerd/containerd:github.com/containerd/containerd \
+    github.com/containerd/platforms:github.com/containerd/platforms \
     github.com/davecgh/go-spew:github.com/davecgh/go-spew \
     github.com/distribution/reference:github.com/distribution/reference \
     github.com/docker/buildx:github.com/docker/buildx \
@@ -58,7 +58,6 @@ export sites=" \
     github.com/AdaLogics/go-fuzz-headers:github.com/AdaLogics/go-fuzz-headers \
     github.com/Azure/go-ansiterm:github.com/Azure/go-ansiterm \
     github.com/Masterminds/semver/v3:github.com/Masterminds/semver/v3 \
-    github.com/Microsoft/hcsshim:github.com/Microsoft/hcsshim \
     github.com/aws/aws-sdk-go-v2:github.com/aws/aws-sdk-go-v2 \
     github.com/aws/aws-sdk-go-v2/config:github.com/aws/aws-sdk-go-v2/config/config:force \
     github.com/aws/aws-sdk-go-v2/credentials:github.com/aws/aws-sdk-go-v2/credentials/credentials:force \
@@ -75,12 +74,14 @@ export sites=" \
     github.com/beorn7/perks:github.com/beorn7/perks \
     github.com/cenkalti/backoff/v4:github.com/cenkalti/backoff/v4 \
     github.com/cespare/xxhash/v2:github.com/cespare/xxhash/v2 \
+    github.com/containerd/console:github.com/containerd/console \
+    github.com/containerd/containerd/api:github.com/containerd/containerd/api/api:force \
     github.com/containerd/continuity:github.com/containerd/continuity \
     github.com/containerd/errdefs:github.com/containerd/errdefs \
     github.com/containerd/log:github.com/containerd/log \
-    github.com/containerd/platforms:github.com/containerd/platforms \
     github.com/containerd/ttrpc:github.com/containerd/ttrpc \
     github.com/containerd/typeurl/v2:github.com/containerd/typeurl/v2 \
+    github.com/cpuguy83/go-md2man/v2:github.com/cpuguy83/go-md2man/v2 \
     github.com/docker/distribution:github.com/docker/distribution \
     github.com/docker/docker-credential-helpers:github.com/docker/docker-credential-helpers \
     github.com/docker/go:github.com/docker/go \
@@ -121,8 +122,7 @@ export sites=" \
     github.com/matttproud/golang_protobuf_extensions:github.com/matttproud/golang_protobuf_extensions \
     github.com/mgutz/ansi:github.com/mgutz/ansi \
     github.com/miekg/pkcs11:github.com/miekg/pkcs11 \
-    github.com/mitchellh/copystructure:github.com/mitchellh/copystructure \
-    github.com/mitchellh/reflectwalk:github.com/mitchellh/reflectwalk \
+    github.com/mitchellh/hashstructure/v2:github.com/mitchellh/hashstructure/v2 \
     github.com/moby/docker-image-spec:github.com/moby/docker-image-spec \
     github.com/moby/locker:github.com/moby/locker \
     github.com/moby/spdystream:github.com/moby/spdystream \
@@ -143,10 +143,12 @@ export sites=" \
     github.com/prometheus/common:github.com/prometheus/common \
     github.com/prometheus/procfs:github.com/prometheus/procfs \
     github.com/rivo/uniseg:github.com/rivo/uniseg \
+    github.com/russross/blackfriday/v2:github.com/russross/blackfriday/v2 \
     github.com/secure-systems-lab/go-securesystemslib:github.com/secure-systems-lab/go-securesystemslib \
     github.com/serialx/hashring:github.com/serialx/hashring \
     github.com/shibumi/go-pathspec:github.com/shibumi/go-pathspec \
     github.com/tonistiigi/fsutil:github.com/docker/buildx/vendor/github.com/tonistiigi/fsutil:force \
+    github.com/tonistiigi/go-csvvalue:github.com/tonistiigi/go-csvvalue \
     github.com/tonistiigi/units:github.com/tonistiigi/units \
     github.com/tonistiigi/vt100:github.com/tonistiigi/vt100 \
     github.com/xeipuuv/gojsonpointer:github.com/xeipuuv/gojsonpointer \
@@ -166,7 +168,6 @@ export sites=" \
     golang.org/x/term:golang.org/x/term \
     golang.org/x/text:golang.org/x/text \
     golang.org/x/time:golang.org/x/time \
-    google.golang.org/appengine:google.golang.org/appengine \
     google.golang.org/genproto:google.golang.org/genproto \
     google.golang.org/genproto/googleapis/api:google.golang.org/genproto/googleapis/api/googleapis/api:force \
     google.golang.org/genproto/googleapis/rpc:google.golang.org/genproto/googleapis/rpc/googleapis/rpc:force \
