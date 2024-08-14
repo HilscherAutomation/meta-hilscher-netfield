@@ -27,11 +27,25 @@ PACKAGE_INSTALL:append = " fsarchiver"
 # required for firmware update process
 PACKAGE_INSTALL:append = " rsync"
 
-# Add tpm tools to initramfs for provisioning tpm in production process
-PACKAGE_INSTALL:append = " ${@bb.utils.contains('MACHINE_FEATURES', 'tpm2', 'tpm2-tools', '', d)}"
-
+######################################################
 # tools required during production
-PACKAGE_INSTALL:append = " cifx-data-collector ethtool"
+######################################################
+
+PACKAGE_INSTALL:append = " cifx-data-collector ethtool "
+
+# tpm tools require more than the default 128kB initramfs
+INITRAMFS_MAXSIZE ?= "139264"
+
+# tpm2-tools           -> tpm2_dictionarylockout
+# libtss2-tcti-device  -> tpm2-tools 'device' access
+# tpm2-abrmd           -> libtss2-tcti-tabrmd.so
+# opensc               -> pkcs11-tool
+# tpm2-pkcs11          -> pkcs11 module (libtpm2_pkcs11.so)
+TPM_PROV_TOOLS = "jq tpm2-tools opensc tpm2-pkcs11 libtss2-tcti-device openssl-pkcs11-provider ${@bb.utils.contains('IMAGE_FEATURES', 'debug-tweaks', 'swtpm', '', d)}"
+
+PACKAGE_INSTALL:append = " ${@bb.utils.contains('MACHINE_FEATURES', 'tpm2', '${TPM_PROV_TOOLS}', '', d)} "
+
+######################################################
 
 delete_unwanted_cifx_files() {
     # Remove unneeded cifX stuff which is pulled in by libcifx.
