@@ -99,7 +99,7 @@ if [ -z "${PLATFORMS}" ]; then
 	# Default machines to build: Raspberry
 	PLATFORMS="$PLATFORMS niot-e-tpi51-en-re"
 	# Default machines to build: imx8
-	PLATFORMS="$PLATFORMS netfield-iolink-edge-gw-rev2 netfield-compact-x8m-rev1"
+	PLATFORMS="$PLATFORMS netfield-iolink-edge-gw-rev2 netfield-compact-x8m-rev1 netfield-phyboard-pollux-imx8mplus"
 fi
 
 # Make sure to share as much as possible between builds
