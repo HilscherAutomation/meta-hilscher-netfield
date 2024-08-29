@@ -178,6 +178,9 @@ class BaseTest(OERuntimeTestCase):
         'gpiochip709', 'gpiochip844', 'gpio32', 'gpio36', 'gpio42', 'gpio46',
         'gpiochip30', 'gpiochip717', 'gpiochip957',
     )
+    gpio_list_netfield_phyboard_pollux_imx8mplus = (
+        "gpiochip0", "gpiochip32",  "gpiochip64", "gpiochip96", "gpiochip128",
+    )
 
     machine_gpio_list = {
         'netfield-compact-x8m-rev1': gpio_list_netfield_compact_x8m_revX,
@@ -187,6 +190,7 @@ class BaseTest(OERuntimeTestCase):
         'niot-e-tpi51-en-re': gpio_list_niot_e_tpi51_en_re,
         'niot-e-tijcx-gb': gpio_list_niot_e_tijcx_gb,
         'netfield-unity': gpio_list_netfield_unity,
+        'netfield-phyboard-pollux-imx8mplus': gpio_list_netfield_phyboard_pollux_imx8mplus,
     }
 
     def test_sys_class_gpio_files(self):
