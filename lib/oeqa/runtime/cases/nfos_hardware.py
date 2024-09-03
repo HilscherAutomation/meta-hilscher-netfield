@@ -44,6 +44,28 @@ class BaseTest(OERuntimeTestCase):
     )
     dev_list_netfield_unity = (
     )
+    dev_list_netfield_phyboard_pollux_imx8mplus = (
+        'caam-sm@100000',
+        'gpio@30200000', 'gpio@30210000', 'gpio@30220000', 'gpio@30230000', 'gpio@30240000',
+        'tmu@30260000',
+        'watchdog@30280000',
+        'pinctrl@30330000',
+        'clock-controller@30380000',
+        'spi@30820000',
+        'serial@30860000', 'serial@30890000',
+        'crypto@30900000',
+        'can@308c0000', 'can@308d0000',
+        'i2c@30a20000', 'i2c@30a30000',
+        'mmc@30b50000', 'mmc@30b60000',
+        'dma-controller@30bd0000',
+        'ethernet@30be0000', 'ethernet@30bf0000',
+        'pcie-phy@32f00000',
+        'usb@32f10100', 'usb@32f10108',
+        'hdmi@32fd8000',
+        'dma-apbh@33000000',
+        'usb@38200000', 'usb-phy@382f0040',
+        'ddr-pmu@3d800000'
+    )
 
     machine_dev_list = {
         'netfield-compact-x8m-rev1': dev_list_netfield_compact_x8m_revX,
@@ -53,6 +75,7 @@ class BaseTest(OERuntimeTestCase):
         'niot-e-tpi51-en-re': dev_list_niot_e_tpi51_en_re,
         'niot-e-tijcx-gb': dev_list_niot_e_tijcx_gb,
         'netfield-unity': dev_list_netfield_unity,
+        'netfield-phyboard-pollux-imx8mplus': dev_list_netfield_phyboard_pollux_imx8mplus
     }
 
     def test_proc_iomem_entries(self):
@@ -97,6 +120,7 @@ class BaseTest(OERuntimeTestCase):
     led_list_netfield_unity = (
         # led_run_green is tested as GPIO
     )
+    led_list_netfield_phyboard_pollux_imx8mplus = ("led-1", "led-2", "led-3", "mmc1::", "mmc2::")
 
     machine_led_list = {
         'netfield-compact-x8m-rev1': led_list_netfield_compact_x8m_revX,
@@ -106,6 +130,7 @@ class BaseTest(OERuntimeTestCase):
         'niot-e-tpi51-en-re': led_list_niot_e_tpi51_en_re,
         'niot-e-tijcx-gb': led_list_niot_e_tijcx_gb,
         'netfield-unity': led_list_netfield_unity,
+        'netfield-phyboard-pollux-imx8mplus': led_list_netfield_phyboard_pollux_imx8mplus,
     }
 
     def test_sys_class_leds_files(self):
@@ -153,6 +178,9 @@ class BaseTest(OERuntimeTestCase):
         'gpiochip709', 'gpiochip844', 'gpio32', 'gpio36', 'gpio42', 'gpio46',
         'gpiochip30', 'gpiochip717', 'gpiochip957',
     )
+    gpio_list_netfield_phyboard_pollux_imx8mplus = (
+        "gpiochip0", "gpiochip32",  "gpiochip64", "gpiochip96", "gpiochip128",
+    )
 
     machine_gpio_list = {
         'netfield-compact-x8m-rev1': gpio_list_netfield_compact_x8m_revX,
@@ -162,6 +190,7 @@ class BaseTest(OERuntimeTestCase):
         'niot-e-tpi51-en-re': gpio_list_niot_e_tpi51_en_re,
         'niot-e-tijcx-gb': gpio_list_niot_e_tijcx_gb,
         'netfield-unity': gpio_list_netfield_unity,
+        'netfield-phyboard-pollux-imx8mplus': gpio_list_netfield_phyboard_pollux_imx8mplus,
     }
 
     def test_sys_class_gpio_files(self):

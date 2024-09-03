@@ -13,10 +13,10 @@ class BaseTest(OERuntimeTestCase):
         from oeqa.controllers.hilschertarget import HilscherTarget
 
         # Get local IP-address
-        cmd = "ip route get 1 | cut -d ' ' -f7"
+        cmd = "ip route get 1"
         status, output = self.target.run(cmd)
         self.assertEqual(status, 0, '%s failed!\n' % cmd)
-        self.target_ip = output
+        self.target_ip = output.split(' ')[6]  # same as `cut -d ' ' -f7`
 
         self.image_name = ("%s/%s" % (self.td.get('DEPLOY_DIR_IMAGE'), self.td.get('IMAGE_LINK_NAME')))
 
