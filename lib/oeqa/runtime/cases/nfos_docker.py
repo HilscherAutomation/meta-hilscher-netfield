@@ -1,6 +1,6 @@
 import bb
 from pathlib import Path
-import logging
+import sys
 import shutil
 import tempfile
 from oeqa.runtime.case import OERuntimeTestCase
@@ -14,6 +14,7 @@ class BaseTest(OERuntimeTestCase):
 
     def test_docker(self):
         # tc: OETestContext = self.tc
+        bb.verbnote("Entering test-case: %s" % (sys._getframe().f_code.co_name))
         files_folder = Path(__file__).absolute().parent.parent / "files"
         test_files = files_folder / "docker-tests-helpers"
         with tempfile.NamedTemporaryFile() as archive:
@@ -23,7 +24,7 @@ class BaseTest(OERuntimeTestCase):
                     "echo -n 'Starting docker test on device: '  ;"
                     "date                                        ;"
                     "echo  Clean and Setup Working Directory     ;"
-                    "cd /tmp                                     ;" 
+                    "cd /tmp                                     ;"
                     "rm -vrf compose-tests docker_test_result    ;"
                     "mkdir compose-tests                         ;"
                     "cd compose-tests                            ;"
@@ -45,3 +46,4 @@ class BaseTest(OERuntimeTestCase):
             rt, output = self.target.run(cmd)
             bb.verbnote(output)
             self.assertEqual(rt, 0, output)
+        bb.verbnote("Exiting test-case: %s" % (sys._getframe().f_code.co_name))
