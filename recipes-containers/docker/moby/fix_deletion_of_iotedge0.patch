@@ -1,0 +1,19 @@
+If docker is started with containers being created, it detects that a stale bridge is available when all networks
+are deleted and always deletes docker0 interface, even if a different/custom bridge is declared.
+
+This results in docker0 being unavailable if iotedge-docker is started
+diff -aurN a/daemon/daemon_unix.go b/daemon/daemon_unix.go
+--- a/daemon/daemon_unix.go	2024-07-29 11:12:24.030708782 +0200
++++ b/daemon/daemon_unix.go	2024-09-04 15:31:48.077314978 +0200
+@@ -877,7 +877,10 @@
+ 			return errors.Wrapf(err, `could not delete the default %q network`, network.NetworkBridge)
+ 		}
+ 		if len(conf.NetworkConfig.DefaultAddressPools.Value()) > 0 && !conf.LiveRestoreEnabled {
+-			removeDefaultBridgeInterface()
++			// Only remove parent bridge, if this is the default one
++			if conf.BridgeConfig.Iface == "" || conf.BridgeConfig.Iface == bridge.DefaultBridgeName {
++				removeDefaultBridgeInterface()
++			}
+ 		}
+ 	}
+ 

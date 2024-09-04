@@ -4,6 +4,7 @@ SRC_URI:append = " file://docker.rules"
 SRC_URI:append = "\
    file://0001-hack-Add-reading-of-user-credentials-from-socket.patch \
    file://0002-Allow-docker-readonly-group-to-access-docker-socket.patch \
+   file://fix_deletion_of_iotedge0.patch \
 "
 
 DOCKER_BUILDTAGS:append = " exclude_graphdriver_devicemapper exclude_graphdriver_aufs exclude_graphdriver_zfs exclude_graphdriver_overlay"
