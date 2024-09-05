@@ -152,3 +152,6 @@ do_create_audit_privileged_rules() {
 
 ROOTFS_POSTUNINSTALL_COMMAND:append = " do_create_homes ; do_force_admin_pw_change ;"
 ROOTFS_POSTUNINSTALL_COMMAND:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'audit', 'do_create_audit_privileged_rules ;', '', d)}"
+
+# Debug Tools
+IMAGE_INSTALL += "${@bb.utils.contains('IMAGE_FEATURES', 'debug-tweaks', 'packagegroup-hilscher-debug', '',d)}"
