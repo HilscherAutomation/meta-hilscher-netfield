@@ -1,5 +1,5 @@
 SRC_URI="file://cockpit-netiot-${PV}.tar.bz2"
-SRC_URI[sha256sum] = "1bad62ea8ea17af5163e44f0952170a1802957a85d0d9cbd8654361aded63c45"
+SRC_URI[sha256sum] = "f62fa7201ea5cdb104931dd20699ca026432ebc6c63d90273d7aea8c0b8c5029"
 
 S="${WORKDIR}/cockpit-netiot-${PV}"
 
