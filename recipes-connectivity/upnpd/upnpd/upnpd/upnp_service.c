@@ -198,13 +198,13 @@ DeviceStart( char *interface,
     return ret;
   }
 
+  ip_address = UpnpGetServerIpAddress();
+  port = UpnpGetServerPort();
+
   linux_print(
     "Initializing UPnP Sdk with\n"
     "\tipaddress = %s port = %u\n",
     ip_address, port );
-
-  ip_address = UpnpGetServerIpAddress();
-  port = UpnpGetServerPort();
 
   if (ext_web_server == NULL) {
     linux_print("External Webserver is required!!!!\n");

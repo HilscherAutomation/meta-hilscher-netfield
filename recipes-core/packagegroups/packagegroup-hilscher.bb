@@ -9,10 +9,15 @@ PROVIDES = "${PACKAGES}"
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 PACKAGES = " \
 	packagegroup-hilscher-base \
+	packagegroup-hilscher-debug \
 "
 
 RDEPENDS:packagegroup-hilscher-base = " \
 	tzdata tzdata-europe \
 	lvm2 \
 	swupdate swupdate-www swupdate-tools \
+"
+
+RDEPENDS:packagegroup-hilscher-debug = " \
+	canutils \
 "

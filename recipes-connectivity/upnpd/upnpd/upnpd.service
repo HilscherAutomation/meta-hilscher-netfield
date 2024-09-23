@@ -1,5 +1,6 @@
 [Unit]
 Description=upnp daemon
+After=nginx.service
 
 [Service]
 Type=simple
@@ -9,6 +10,3 @@ ExecStopPost=/bin/rm -f /opt/upnpd/desc/netiotdevicedesc_%i.xml
 User=root
 Restart=on-failure
 RestartSec=5s
-
-[Install]
-WantedBy=multi-user.target
