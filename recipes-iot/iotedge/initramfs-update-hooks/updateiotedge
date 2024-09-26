@@ -21,7 +21,7 @@ updateiotedge_postoverlay() {
 			rm ${ROOTFS_DIR}/etc/systemd/system/multi-user.target.wants/iotedge.service \
 			   ${ROOTFS_DIR}/etc/systemd/system/sockets.target.wants/iotedge.socket \
 			   ${ROOTFS_DIR}/etc/systemd/system/sockets.target.wants/iotedge.mgmt.socket
-			chroot "${ROOTFS_DIR}" iotedge config import
+			chroot "${ROOTFS_DIR}" iotedge config import --force
 			chroot "${ROOTFS_DIR}" iotedge config apply
 			chroot "${ROOTFS_DIR}" systemctl enable aziot-edged
 		fi
