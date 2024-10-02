@@ -20,4 +20,6 @@ RDEPENDS:packagegroup-hilscher-base = " \
 
 RDEPENDS:packagegroup-hilscher-debug = " \
 	canutils \
+	stress-ng \
+	${@bb.utils.contains('MACHINE_FEATURES', 'preempt-rt', 'rt-tests', '', d)} \
 "
