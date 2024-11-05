@@ -1,0 +1,12 @@
+diff -aurN a/packaging/systemd/cri-docker.service b/packaging/systemd/cri-docker.service
+--- a/packaging/systemd/cri-docker.service	2024-11-05 11:48:11.449486684 +0100
++++ b/packaging/systemd/cri-docker.service	2024-11-05 11:56:21.282852060 +0100
+@@ -7,7 +7,7 @@
+ 
+ [Service]
+ Type=notify
+-ExecStart=/usr/bin/cri-dockerd --container-runtime-endpoint fd://
++ExecStart=/usr/bin/cri-dockerd --container-runtime-endpoint fd:// --docker-endpoint unix:///run/iotedge-docker.sock
+ ExecReload=/bin/kill -s HUP $MAINPID
+ TimeoutSec=0
+ RestartSec=2
