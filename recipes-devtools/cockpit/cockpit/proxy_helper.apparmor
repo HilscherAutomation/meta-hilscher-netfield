@@ -47,5 +47,5 @@ include <tunables/global>
   /etc/profile.d/                                rwk,
 
   /etc/aziot/config.toml                         rwk,
-  /usr/bin/python3.[0-9]                         rix,
+  /usr/bin/python3{,.[0-9]*}                     rix,
 }
