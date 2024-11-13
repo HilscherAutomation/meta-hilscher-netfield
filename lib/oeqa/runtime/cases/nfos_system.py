@@ -225,3 +225,14 @@ class BaseTest(OERuntimeTestCase):
         set_and_check_hostname(old_hostname);
 
         bb.verbnote("Exiting test-case: %s" % (sys._getframe().f_code.co_name))
+
+
+    def test_cockpit_helpers(self):
+        bb.verbnote("Entering test-case: %s" % (sys._getframe().f_code.co_name))
+
+        for cmd in ['proxy_helper -s "{}"', 'wifi_helper DE' ]:
+            status, output = self.target.run(f'/usr/libexec/cockpit/{cmd}')
+            self.assertEqual(status, 0, f'Error executing {cmd} ({output})')
+
+
+        bb.verbnote("Exiting test-case: %s" % (sys._getframe().f_code.co_name))
