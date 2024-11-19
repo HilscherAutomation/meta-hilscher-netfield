@@ -3,27 +3,36 @@
 # Macros ...
 ############
 
+# logs to kernel ring buffer is implemented as in 'msg', 'info' and 'fatal'
+# commands in 'poky/meta/recipes-core/initrdscripts/initramfs-framework/init'
+
 __msg() {
-	msg "### ${module}: $@"
+  msg "### ${module}: $@"
+  echo "<14>### ${module}: $@" > /dev/kmsg
 }
 
 __info() {
-	info "### ${module}: $@"
+  info "### ${module}: $@"
+  [ -n "$bootparam_verbose" ] && echo "<14>### ${module}: $@" > /dev/kmsg
 }
 
 __debug() {
-	[ $bootparam_mydebug ] && echo "### ${module}: $@" >/dev/console
+  [ $bootparam_mydebug ] && echo "### ${module}: $@" >/dev/console
+  [ $bootparam_mydebug ] && echo "<15>### ${module}: $@" > /dev/kmsg
 }
 
 __fatal() {
-	fatal "### ${module}: $@"
+  echo "<9>### ${module}: $@" > /dev/kmsg # 'fatal' command goes in endless loop
+  fatal "### ${module}: $@"
 }
 
 __skip() {
-	[ -n "$bootparam_mydebug" ] && {
-		echo "### Skipping $1 ..." >/dev/console
-		echo "################################################################################" >/dev/console
-	}
+  [ -n "$bootparam_mydebug" ] && {
+    echo "### Skipping $1 ..." >/dev/console
+    echo "################################################################################" >/dev/console
+    echo "<15>### Skipping $1 ..." >/dev/kmsg
+    echo "<15>################################################################################" >/dev/kmsg
+  }
 }
 
 ADDITIONAL_MOUNTPOINTS=""
@@ -35,13 +44,17 @@ add_mp() {
 ####################
 
 premod() {
-	echo "################################################################################" >/dev/console
-	echo "### Starting $1 ..." >/dev/console
+  echo "################################################################################" >/dev/console
+  echo "### Starting $1 ..." >/dev/console
+  echo "<15>################################################################################" >/dev/kmsg
+  echo "<15>### Starting $1 ..." >/dev/kmsg
 }
 
 postmod() {
-	echo "### Exiting $1 ..." >/dev/console
-	echo "################################################################################" >/dev/console
+  echo "### Exiting $1 ..." >/dev/console
+  echo "################################################################################" >/dev/console
+  echo "<15>### Exiting $1 ..." >/dev/kmsg
+  echo "<15>################################################################################" >/dev/kmsg
 }
 
 get_physical_boot_device() {
