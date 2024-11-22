@@ -8,21 +8,21 @@
 
 __msg() {
   msg "### ${module}: $@"
-  echo "<14>### ${module}: $@" > /dev/kmsg
+  echo "<14>initrd: ### ${module}: $@" > /dev/kmsg
 }
 
 __info() {
   info "### ${module}: $@"
-  [ -n "$bootparam_verbose" ] && echo "<14>### ${module}: $@" > /dev/kmsg
+  [ -n "$bootparam_verbose" ] && echo "<14>initrd: ### ${module}: $@" > /dev/kmsg
 }
 
 __debug() {
   [ $bootparam_mydebug ] && echo "### ${module}: $@" >/dev/console
-  [ $bootparam_mydebug ] && echo "<15>### ${module}: $@" > /dev/kmsg
+  [ $bootparam_mydebug ] && echo "<15>initrd: ### ${module}: $@" > /dev/kmsg
 }
 
 __fatal() {
-  echo "<9>### ${module}: $@" > /dev/kmsg # 'fatal' command goes in endless loop
+  echo "<9>initrd: ### ${module}: $@" > /dev/kmsg # 'fatal' command goes in endless loop
   fatal "### ${module}: $@"
 }
 
@@ -30,8 +30,8 @@ __skip() {
   [ -n "$bootparam_mydebug" ] && {
     echo "### Skipping $1 ..." >/dev/console
     echo "################################################################################" >/dev/console
-    echo "<15>### Skipping $1 ..." >/dev/kmsg
-    echo "<15>################################################################################" >/dev/kmsg
+    echo "<15>initrd: ### Skipping $1 ..." >/dev/kmsg
+    echo "<15>initrd: ################################################################################" >/dev/kmsg
   }
 }
 
@@ -46,15 +46,15 @@ add_mp() {
 premod() {
   echo "################################################################################" >/dev/console
   echo "### Starting $1 ..." >/dev/console
-  echo "<15>################################################################################" >/dev/kmsg
-  echo "<15>### Starting $1 ..." >/dev/kmsg
+  echo "<15>initrd: ################################################################################" >/dev/kmsg
+  echo "<15>initrd: ### Starting $1 ..." >/dev/kmsg
 }
 
 postmod() {
   echo "### Exiting $1 ..." >/dev/console
   echo "################################################################################" >/dev/console
-  echo "<15>### Exiting $1 ..." >/dev/kmsg
-  echo "<15>################################################################################" >/dev/kmsg
+  echo "<15>initrd: ### Exiting $1 ..." >/dev/kmsg
+  echo "<15>initrd: ################################################################################" >/dev/kmsg
 }
 
 get_physical_boot_device() {
