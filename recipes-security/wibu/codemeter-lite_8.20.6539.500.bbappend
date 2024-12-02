@@ -2,6 +2,9 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/${BPN}:"
 
 SRC_URI:append = " file://codemeter_use_persistent_dir.patch"
 
+# Disable server per default, so user must enable it
+SYSTEMD_AUTO_ENABLE = "disable"
+
 do_install:append() {
     # Symlink data directory to nvd directory
     for dir in Backup CmAct CmCloud NamedUser; do
