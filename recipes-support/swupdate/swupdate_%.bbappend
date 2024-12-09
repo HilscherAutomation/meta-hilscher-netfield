@@ -32,7 +32,7 @@ SRC_URI:append = " \
 	file://helper.lua \
 "
 
-do_install[vardeps] += "SWUPDATE_SIGN"
+do_install[vardeps] += "SWUPDATE_SIGN IMAGE_FEATURES"
 do_install:append () {
 	board="$(echo ${MACHINE} | sed 's/-rev[0-9]*//')"
 	rev="$(echo ${MACHINE} | grep -oe "-rev[0-9]*" | sed 's/-rev//')"
@@ -69,7 +69,9 @@ do_install:append () {
 	if ${SWUPDATE_MONGOOSE}; then
 		if [ "${@bb.utils.contains('IMAGE_FEATURES', 'debug-tweaks', 'true', 'false',d)}" = "false" ]; then
 			# Disable mongoose webserver
-			sed -i 's,^,#,g' ${D}${libdir}/swupdate/conf.d/*mongoose*
+			rm ${D}${libdir}/swupdate/conf.d/*mongoose*
+		else
+			bbwarn "Keeping mongoose webserver enabled as debug image is requested"
 		fi
 	fi
 }

@@ -158,3 +158,18 @@ ROOTFS_POSTUNINSTALL_COMMAND:append = " ${@bb.utils.contains('DISTRO_FEATURES', 
 
 # Debug Tools
 IMAGE_INSTALL += "${@bb.utils.contains('IMAGE_FEATURES', 'debug-tweaks', 'packagegroup-hilscher-debug', '',d)}"
+
+# QA section
+IMAGE_QA_COMMANDS += " \
+    image_check_swupdate_mongoose \
+"
+
+image_check_swupdate_mongoose() {
+    # Only check if release is being selected
+    if ${@bb.utils.contains("IMAGE_FEATURES", 'debug-tweaks', 'false', 'true', d)}; then
+        if [ -e "${IMAGE_ROOTFS}${libdir}/swupdate/conf.d/10-mongoose-args" ]; then
+            bbfatal "SWUpdate's mongoose webserver is enabled on a release image"
+        fi
+    fi
+}
+
