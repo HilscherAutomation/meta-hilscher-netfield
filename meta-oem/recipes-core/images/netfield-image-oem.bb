@@ -18,6 +18,7 @@ hd_path = "${HDEPLOY_PATH_EXTRAS}/base_image"
 do_hilscher_deploy() {
 	for file in $(find ${IMGDEPLOYDIR} -type l -name "*.squashfs"); do
 		cp -a $(readlink -f $file) ${hd_path}
+		[ -e "${file}.sig" ] && cp -a $(readlink -f ${file}.sig) ${hd_path}/
 	done
 }
 do_hilscher_deploy[cleandirs] = "${hd_path}/"
