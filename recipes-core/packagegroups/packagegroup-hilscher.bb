@@ -6,7 +6,7 @@ inherit packagegroup
 
 PROVIDES = "${PACKAGES}"
 
-PACKAGE_ARCH = "${MACHINE_ARCH}"
+# PACKAGE_ARCH = "${MACHINE_ARCH}"
 PACKAGES = " \
 	packagegroup-hilscher-base \
 	packagegroup-hilscher-debug \
@@ -21,5 +21,7 @@ RDEPENDS:packagegroup-hilscher-base = " \
 RDEPENDS:packagegroup-hilscher-debug = " \
 	canutils \
 	stress-ng \
+	i2c-tools \
+	libgpiod-tools \
 	${@bb.utils.contains('MACHINE_FEATURES', 'preempt-rt', 'rt-tests', '', d)} \
 "
