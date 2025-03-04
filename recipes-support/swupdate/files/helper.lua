@@ -62,14 +62,14 @@ function mount_system()
 	--   on eMMC and SD-Card (e.g. niot-e-nfl90-q2n16-n-rev1)!
 
 	-- Check if system partition is read-only (default) If this fails directly mount it rw
-	if os.execute("mount -o ro $(x=$(sed 's,.*bootCfg=\\(.*\\)/boot.cfg.*,\\1,' /proc/cmdline) && grep ^/dev <<< $x || blkid -o device -t $x) /mnt/system") == true then
+	if os.execute("mount -o ro $(x=$(sed 's,.*bootCfg=\\(.*\\)/.*boot.cfg.*,\\1,' /proc/cmdline) && grep ^/dev <<< $x || blkid -o device -t $x) /mnt/system") == true then
 		os.execute("mount -o remount,rw,nodelalloc /mnt/system")
 	else
-		os.execute("mount -o nodelalloc $(x=$(sed 's,.*bootCfg=\\(.*\\)/boot.cfg.*,\\1,' /proc/cmdline) && grep ^/dev <<< $x || blkid -o device -t $x) /mnt/system")
+		os.execute("mount -o nodelalloc $(x=$(sed 's,.*bootCfg=\\(.*\\)/.*boot.cfg.*,\\1,' /proc/cmdline) && grep ^/dev <<< $x || blkid -o device -t $x) /mnt/system")
 	end
 
 	-- Due to a problem during production we may need to resize system partition
-	os.execute("resize2fs $(x=$(sed 's,.*bootCfg=\\(.*\\)/boot.cfg.*,\\1,' /proc/cmdline) && grep ^/dev <<< $x || blkid -o device -t $x)")
+	os.execute("resize2fs $(x=$(sed 's,.*bootCfg=\\(.*\\)/.*boot.cfg.*,\\1,' /proc/cmdline) && grep ^/dev <<< $x || blkid -o device -t $x)")
 
 	return true
 end
