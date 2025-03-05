@@ -51,7 +51,8 @@ class BaseTest(OERuntimeTestCase):
             'niot-e-tpi51-en-re': boot_rescue_system_lvm,
             'niot-e-tijcx-gb': boot_rescue_system_lvm,
             'netfield-unity': boot_rescue_system_lvm,
-            'netfield-phyboard-pollux-imx8mplus': boot_rescue_system_lvm
+            'netfield-phyboard-pollux-imx8mplus': boot_rescue_system_lvm,
+            'netfield-quantum-rev1': boot_rescue_system_lvm,
         }
         partition_list = machine_partition_list.get(self.td.get('MACHINE'))
         self.assertIsNotNone(partition_list, 'Invalid or missing machine specific partition_list!')
