@@ -7,6 +7,7 @@ RUN apt-get update && \
     apt-get install -y ca-certificates && \
     apt-get install -y efitools uuid-runtime && \
     apt-get install -y liblz4-tool zstd && \
+    apt-get install -y git-lfs && \
     apt-get clean
 
 # To allow the testability, add a jenkins user for our build server.

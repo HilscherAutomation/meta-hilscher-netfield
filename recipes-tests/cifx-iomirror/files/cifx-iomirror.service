@@ -1,0 +1,10 @@
+[Unit]
+Description=cifX I/O mirroring service (e.g. for EMC testing)
+
+[Service]
+ExecStartPre=-/sbin/modprobe uio_netx
+ExecStart=/opt/cifx/examples/cifx-iomirror
+ExecStopPost=-/sbin/modprobe -r uio_netx
+
+[Install]
+WantedBy=multi-user.target

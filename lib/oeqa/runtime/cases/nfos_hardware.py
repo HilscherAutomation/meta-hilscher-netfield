@@ -7,6 +7,9 @@ import sys, bb, re
 class BaseTest(OERuntimeTestCase):
 
     ''' ======================================== '''
+    dev_list_tbd = {
+        # empty or not currently defined
+    }
     dev_list_netfield_compact_x8m_revX = (
         'gpio@30200000', 'gpio@30210000', 'gpio@30220000', 'gpio@30230000', 'gpio@30240000',
         'serial@30860000', 'serial@30880000',
@@ -40,10 +43,6 @@ class BaseTest(OERuntimeTestCase):
         '3f204000.spi', '3f215000.aux',
         '3f804000.i2c',
     )
-    dev_list_niot_e_tijcx_gb = (
-    )
-    dev_list_netfield_unity = (
-    )
     dev_list_netfield_phyboard_pollux_imx8mplus = (
         'caam-sm@100000',
         'gpio@30200000', 'gpio@30210000', 'gpio@30220000', 'gpio@30230000', 'gpio@30240000',
@@ -66,6 +65,16 @@ class BaseTest(OERuntimeTestCase):
         'usb@38200000', 'usb-phy@382f0040',
         'ddr-pmu@3d800000'
     )
+    dev_list_netfield_quantum_revX = (
+        'gpio@30200000', 'gpio@30210000', 'gpio@30220000', 'gpio@30230000', 'gpio@30240000',
+        'pinctrl@30330000',
+        'spi@30830000',
+        'serial@30860000', 'serial@30890000',
+        'i2c@30a20000', 'i2c@30a30000',
+        'mmc@30b50000', 'mmc@30b60000',
+        'ethernet@30be0000', 'ethernet@30bf0000',
+        'usb@38100000', 'usb@38200000',
+    )
 
     machine_dev_list = {
         'netfield-compact-x8m-rev1': dev_list_netfield_compact_x8m_revX,
@@ -73,9 +82,10 @@ class BaseTest(OERuntimeTestCase):
         'netfield-iolink-edge-gw-rev1': dev_list_netfield_iolink_edge_gw_revX,
         'netfield-iolink-edge-gw-rev2': dev_list_netfield_iolink_edge_gw_revX,
         'niot-e-tpi51-en-re': dev_list_niot_e_tpi51_en_re,
-        'niot-e-tijcx-gb': dev_list_niot_e_tijcx_gb,
-        'netfield-unity': dev_list_netfield_unity,
-        'netfield-phyboard-pollux-imx8mplus': dev_list_netfield_phyboard_pollux_imx8mplus
+        'niot-e-tijcx-gb': dev_list_tbd,
+        'netfield-unity': dev_list_tbd,
+        'netfield-phyboard-pollux-imx8mplus': dev_list_netfield_phyboard_pollux_imx8mplus,
+        'netfield-quantum-rev1': dev_list_netfield_quantum_revX,
     }
 
     def test_proc_iomem_entries(self):
@@ -97,6 +107,9 @@ class BaseTest(OERuntimeTestCase):
         bb.verbnote("Exiting test-case: %s" % (sys._getframe().f_code.co_name))
 
     ''' ======================================== '''
+    led_list_tbd = {
+        # empty or not currently defined
+    }
     led_list_netfield_compact_x8m_revX = (
         'edge_green', 'edge_yellow',
     )
@@ -120,7 +133,13 @@ class BaseTest(OERuntimeTestCase):
     led_list_netfield_unity = (
         # led_run_green is tested as GPIO
     )
-    led_list_netfield_phyboard_pollux_imx8mplus = ("led-1", "led-2", "led-3", "mmc1::", "mmc2::")
+    led_list_netfield_phyboard_pollux_imx8mplus = (
+        'led-1', 'led-2', 'led-3', 'mmc1::', 'mmc2::',
+    )
+    led_list_netfield_quantum_revX = (
+        'cloud_green', 'cloud_red', 'edge_green', 'edge_yellow', 'heartbeat', 'mmc0::', 'mmc1::',
+        'usr1_green', 'usr1_yellow', 'usr2_green', 'usr2_yellow', 
+    )
 
     machine_led_list = {
         'netfield-compact-x8m-rev1': led_list_netfield_compact_x8m_revX,
@@ -131,6 +150,7 @@ class BaseTest(OERuntimeTestCase):
         'niot-e-tijcx-gb': led_list_niot_e_tijcx_gb,
         'netfield-unity': led_list_netfield_unity,
         'netfield-phyboard-pollux-imx8mplus': led_list_netfield_phyboard_pollux_imx8mplus,
+        'netfield-quantum-rev1': led_list_netfield_quantum_revX,
     }
 
     def test_sys_class_leds_files(self):
@@ -152,6 +172,9 @@ class BaseTest(OERuntimeTestCase):
         bb.verbnote("Exiting test-case: %s" % (sys._getframe().f_code.co_name))
 
     ''' ======================================== '''
+    gpio_list_tbd = (
+        # empty or not currently defined
+    )
     gpio_list_netfield_compact_x8m_revX = (
         'gpiochip0', 'gpiochip32', 'gpiochip64', 'gpiochip96', 'gpiochip128',
     )
@@ -181,6 +204,12 @@ class BaseTest(OERuntimeTestCase):
     gpio_list_netfield_phyboard_pollux_imx8mplus = (
         "gpiochip0", "gpiochip32",  "gpiochip64", "gpiochip96", "gpiochip128",
     )
+    gpio_list_netfield_quantum_revX = (
+        'gpio10', 'gpio11', 'gpio117', 'gpio120', 'gpio122', 'gpio123', 'gpio125', 'gpio126',
+        'gpio13', 'gpio131', 'gpio132', 'gpio134', 'gpio135', 'gpio136', 'gpio137', 'gpio154',
+        'gpio155', 'gpio156', 'gpio157', 'gpio40', 'gpio41', 'gpio7',
+        'gpiochip0', 'gpiochip128', 'gpiochip32', 'gpiochip64', 'gpiochip96',
+    )
 
     machine_gpio_list = {
         'netfield-compact-x8m-rev1': gpio_list_netfield_compact_x8m_revX,
@@ -191,6 +220,7 @@ class BaseTest(OERuntimeTestCase):
         'niot-e-tijcx-gb': gpio_list_niot_e_tijcx_gb,
         'netfield-unity': gpio_list_netfield_unity,
         'netfield-phyboard-pollux-imx8mplus': gpio_list_netfield_phyboard_pollux_imx8mplus,
+        'netfield-quantum-rev1': gpio_list_netfield_quantum_revX,
     }
 
     def test_sys_class_gpio_files(self):

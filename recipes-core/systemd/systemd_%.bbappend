@@ -14,7 +14,7 @@ PACKAGECONFIG:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'apparmor', 'ap
 PACKAGECONFIG[apparmor] = "-Dapparmor=true,-Dapparmor=false,apparmor"
 PACKAGECONFIG:append = " seccomp audit"
 PACKAGECONFIG:append = " journal-upload"
-PACKAGECONFIG:remove = "networkd wheel-group"
+PACKAGECONFIG:remove = "networkd"
 
 # Use cgroups v2 per default
 PACKAGECONFIG:append = " cgroupv2"
