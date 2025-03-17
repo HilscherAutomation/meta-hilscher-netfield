@@ -113,9 +113,6 @@ do_firmware_recovery() {
   fi
 
   log "Firmware recovery successfully done!"
-  log ""
-
-  cp $logfile $(dirname $apifile)
 
   return 0
 }
@@ -126,11 +123,20 @@ do_firmware_recovery() {
 
 source ./common
 
-rm -f ${logfile}
-
 do_firmware_recovery && {
-	[ "$removable" = "0" ] && do_reboot
-	do_shutdown
+  log "Rebooting system ..."
+
+  cp $logfile $(dirname $apifile)
+  sync
+
+  [ "$removable" = "0" ] && do_reboot
+
+  # Copy logfile to system partition on persistent storage.
+  mp=$(mktemp -d) && mkdir -p $mp && mount -o ro $(blkid -L system) $mp && mount -o remount,rw $(blkid -L system) $mp
+  cp $logfile $mp
+  sync && umount $mp && rmdir $mp
+
+  do_shutdown
 }
 
 # This should never be reached

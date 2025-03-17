@@ -1,5 +1,10 @@
 #!/bin/sh
 
+logfile="/tmp/initrd-api.log"
+log() {
+	echo "$0: $@" | tee -a $logfile
+}
+
 initrd_api_enabled() {
 	remove_old_logfiles=1
 	return 0
@@ -27,21 +32,22 @@ initrd_api_run() {
 
 		[ -e $f ] && {
 			# Verify initrd-api file
-			__debug "Verifying $f ..."
+			log "Verifying $f ..."
 			offset=$(verify_file $f) || {
-				__debug "... failed!"
+				log "... failed!"
 				rm -f $f
 				continue
 			}
-			__debug "... success => Using $f as initrd-api file."
+			log "... success => Using $f as initrd-api file."
 
 			# Extract contents of initrd-api file
 			mkdir -p /tmp/$(basename $f) && cd /tmp/$(basename $f)
 			contents=$(tail -c+${offset} $f | tar xzv)
- 			__debug "$f: Provided contents: $(tr '\n' ' ' <<< $contents)"
+			log "$f: Provided contents: $(tr '\n' ' ' <<< $contents)"
 
 			# Start the provided runscript
 			[ -x runscript.sh ] && ./runscript.sh apifile=$f || {
+				log "Executing $f failed ($?)!"
 				__fatal "Executing $f failed ($?)!"
 			}
 
