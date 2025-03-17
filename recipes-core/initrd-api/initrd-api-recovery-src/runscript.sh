@@ -34,11 +34,14 @@ do_firmware_recovery() {
 
   [ -e /etc/mtab ] || ln -s /proc/mounts /etc/mtab # required for mkfs.ext4
 
-  # Unmount all mounted partitions from target device
-  dev_mounts=$(cat /proc/mounts | grep "^$dev" | cut -d " " -f2 | tr '\n' ' ')
-  for tmp_mnt in $dev_mounts; do
-    umount $tmp_mnt
-  done
+  # Unmount all partitions from the target device ...
+  devmounts=$(mktemp)
+  grep ^$dev /proc/mounts > $devmounts
+  while read line; do
+    devmp=$(cut -d' ' -f2 <<< $line)
+    log "Unmounting $devmp ... "
+    umount $devmp;
+  done < $devmounts
 
   # Get update version information
   update_version_str=$(cat firmware.version)
@@ -96,8 +99,23 @@ do_firmware_recovery() {
     echo 1 > /var/platform/update_led
   fi
 
+  # Remount all previously unmounted partitions of the device to be modified.
+  if [ -r $devmounts ]; then
+    while read line; do
+      # NOTE:
+      # The device mount takes place in two steps, first as read-only and then as read/write.
+      # This is to avoid mount errors for devices already mounted read-only.
+      log "Remounting $devmp ... "
+      mount $(cut -d' ' -f1 <<< $line) $(cut -d' ' -f2 <<< $line) -t $(cut -d' ' -f3 <<< $line) -o ro
+      mount $(cut -d' ' -f1 <<< $line) $(cut -d' ' -f2 <<< $line) -t $(cut -d' ' -f3 <<< $line) -o remount,$(cut -d' ' -f4 <<< $line)
+    done < $devmounts
+    rm $devmounts
+  fi
+
   log "Firmware recovery successfully done!"
   log ""
+
+  cp $logfile $(dirname $apifile)
 
   return 0
 }

@@ -318,14 +318,10 @@ do_cleanup() {
 		done < $devmounts
 		rm $devmounts
 	fi
-
-	# Copy logfile to persistent storage location.
-	cp $logfile $apifile.log
 }
 
 log() {
-	echo "$(basename $apifile): $@"
-	echo "$@" >> $logfile
+	echo "$(basename $apifile): $@" | tee -a $logfile
 }
 
 get_key_val() {
@@ -337,7 +333,7 @@ get_key_val() {
 APP_NAME="Initial-Device-Partition-Manager"
 
 apifile=$(get_key_val apifile $*)
-logfile=/tmp/$(basename $apifile).log
+logfile=/tmp/initrd-api.log
 
 log "Starting $APP_NAME ..."
 
@@ -352,11 +348,19 @@ case $exit_code in
 		rm $(dirname $apifile)/initrd-api-part-cfg
 		rm $(dirname $apifile)/part-cfg-initrd-api
 		log "Exiting $APP_NAME successfully!"
+
+		# Copy logfile to persistent storage location.
+		cp $logfile $(dirname $apifile)
+
 		exit 0
 		;;
 	*)
 		do_cleanup
 		log "Exiting $APP_NAME erroneous ($exit_code)!"
+
+		# Copy logfile to persistent storage location.
+		cp $logfile $(dirname $apifile)
+
 		exit $exit_code
 		;;
 esac

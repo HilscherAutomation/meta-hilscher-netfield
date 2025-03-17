@@ -89,8 +89,7 @@ do_check_version() {
 }
 
 log() {
-	echo "$(basename $apifile): $@"
-	echo "$@" >> $logfile
+	echo "$(basename $apifile): $@" | tee -a $logfile
 }
 
 get_key_val() {
@@ -98,7 +97,7 @@ get_key_val() {
 }
 
 apifile=$(get_key_val apifile $*)
-logfile=$apifile.log
+logfile=/tmp/initrd-api.log
 
 dev=$(grep $(dirname $apifile) /proc/mounts | cut -d' ' -f1)
 part=$(basename $dev)
