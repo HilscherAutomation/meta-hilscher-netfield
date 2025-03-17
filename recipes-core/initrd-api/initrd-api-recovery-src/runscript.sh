@@ -44,7 +44,7 @@ do_firmware_recovery() {
   done < $devmounts
 
   # Get update version information
-  update_version_str=$(cat firmware.version)
+  update_version_str=$(cat firmware/firmware.version)
 
   # Check installed firmware (if any) and verify if recovery shall be possible
   for system_dev in $(blkid | grep -i 'LABEL="system"' | cut -d ':' -f1); do
