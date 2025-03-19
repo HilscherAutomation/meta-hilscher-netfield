@@ -67,7 +67,7 @@ __generate_swu() {
   echo "		files: ("
   echo "			{"
   echo "				filename = \"${INITRD_API_RECOVERY}\";"
-  echo "				path = \"/mnt/system/${INITRD_API_RECOVERY}\";"
+  echo "				path = \"/mnt/system/initrd-api\";"
   echo "				sha256 = \"$hashImage\";"
   echo "			}"
   echo "		);"

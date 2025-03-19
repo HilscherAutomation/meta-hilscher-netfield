@@ -123,6 +123,12 @@ do_firmware_recovery() {
 
 source ./common
 
+# Since older netfield-os versions prior to v2.4 uses an initrd-api filename such as "initrd-api"
+# the log function is overloaded to create more meaningful log file content.
+log() {
+  echo "initrd-api-recovery: $@" | tee -a $logfile
+}
+
 do_firmware_recovery && {
   log "Rebooting system ..."
 
