@@ -26,6 +26,13 @@ finish_run() {
 			__debug "Moving additional mountpoint: mount --move $mp ${ROOTFS_DIR}$mp"
 		done
 
+		# Copying initrd-api logfiles to rootfs
+		for f in $(ls $boot_mp/initrd-api*.log); do
+			[ -e $ROOTFS_DIR/var/log/$(basename $f) ] && diff $f $ROOTFS_DIR/var/log && continue
+			__debug "Copying $f to rootfs (/var/log) ..."
+			cp $f $ROOTFS_DIR/var/log
+		done
+
 		cd $ROOTFS_DIR
 		exec switch_root $ROOTFS_DIR ${bootparam_init:-/sbin/init}
 	else

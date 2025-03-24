@@ -3,20 +3,20 @@ inherit sign-wrapper hilscher-image-check
 NETFIELD_IMAGES ??= "recovery.zip recovery.swu"
 USB_BOOT_FILES ??= "boot-script-fit/fitImage-boot-recovery.scr;boot-fit.scr fitImage-${INITRAMFS_IMAGE_NAME}-${KERNEL_FIT_LINK_NAME};Image"
 
-RECOVERY_INITRD_API ??= "initrd-api-firmware"
+INITRD_API_RECOVERY ??= "initrd-api-recovery"
 
 DEPENDS:append = " zip-native unzip-native openssl-native squashfs-tools-native coreutils-native"
 DEPENDS:append = " ${@bb.utils.contains_any('NETFIELD_IMAGES', 'recovery.swu', 'cpio-native', '', d)}"
 
 # NOTE: as long as recovery images are netfield specific we provide image creation and deploy in one step (post-image_complete)
-do_image_complete[prefuncs] += "${@bb.utils.contains_any('NETFIELD_IMAGES', 'recovery.swu recovery.zip', 'create_recovery_initrd_api', '', d)}"
+do_image_complete[prefuncs] += "${@bb.utils.contains_any('NETFIELD_IMAGES', 'recovery.swu recovery.zip', 'create_initrd_api_recovery', '', d)}"
 do_image_complete[prefuncs] += "${@bb.utils.contains_any('NETFIELD_IMAGES', 'recovery.swu', 'netfield_create_recovery_swu', '', d)}"
 do_image_complete[prefuncs] += "${@bb.utils.contains_any('NETFIELD_IMAGES', 'recovery.zip', 'netfield_create_recovery_zip', '', d)}"
 
 # Make sure recovery.zip is deployed to dist directory
 DEPLOY_EXT_LIST:append = " ${@bb.utils.filter('NETFIELD_IMAGES', 'recovery.zip', d)}"
 
-create_recovery_initrd_api() {
+create_initrd_api_recovery() {
   image_wic="${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.wic.bz2"
 
   if [ ! -e "${image_wic}" ]; then
@@ -26,24 +26,24 @@ create_recovery_initrd_api() {
   setup_sign_wrapper_env "${PLATFORM_KEYNAME}"
   local signing_key=$(setup_sign_wrapper_env "${PLATFORM_KEYNAME}")
 
-  mkdir -p ${WORKDIR}/firmware_api/firmware
-  cp ${WORKDIR}/recipe-sysroot/usr/share/initrd-api/recovery/* ${WORKDIR}/firmware_api/
-  cp ${image_wic} ${WORKDIR}/firmware_api/firmware
+  mkdir -p ${WORKDIR}/initrd_api_recovery/firmware
+  cp ${WORKDIR}/recipe-sysroot/usr/share/initrd-api/recovery/* ${WORKDIR}/initrd_api_recovery/
+  cp ${image_wic} ${WORKDIR}/initrd_api_recovery/firmware
 
-  echo ${DATE} > ${WORKDIR}/firmware_api/firmware/timestamp
-  echo ${FULL_FW_VERSION} > ${WORKDIR}/firmware_api/firmware.version
+  echo ${DATE} > ${WORKDIR}/initrd_api_recovery/firmware/timestamp
+  echo ${FULL_FW_VERSION} > ${WORKDIR}/initrd_api_recovery/firmware/firmware.version
 
-  tar -czf "${WORKDIR}/${RECOVERY_INITRD_API}" -C ${WORKDIR}/firmware_api/ .
-  openssl_sign_wrapper "${PLATFORM_KEYNAME}" "sha512" "${WORKDIR}/${RECOVERY_INITRD_API}" "merge"
+  tar -czf "${WORKDIR}/${INITRD_API_RECOVERY}" -C ${WORKDIR}/initrd_api_recovery/ .
+  openssl_sign_wrapper "${PLATFORM_KEYNAME}" "sha512" "${WORKDIR}/${INITRD_API_RECOVERY}" "merge"
 
-  cp "${WORKDIR}/${RECOVERY_INITRD_API}.signed" "${DEPLOY_DIR_IMAGE}/recovery-initrd-api.signed"
+  cp "${WORKDIR}/${INITRD_API_RECOVERY}.signed" "${DEPLOY_DIR_IMAGE}/${INITRD_API_RECOVERY}.signed"
 
-  rm -r ${WORKDIR}/firmware_api/
+  rm -r ${WORKDIR}/initrd_api_recovery/
 }
 
 __generate_swu() {
   # Create hashes
-  hashFirmwareImage=$(sha256sum ${tmpdir}/initrd-api-firmware | cut -d' ' -f1)
+  hashImage=$(sha256sum ${tmpdir}/${INITRD_API_RECOVERY} | cut -d' ' -f1)
   hashHelper=$(sha256sum ${tmpdir}/helper.lua | cut -d' ' -f1)
 
   if [ -z "${SWU_BOARD_SPEC}" ]; then
@@ -66,9 +66,9 @@ __generate_swu() {
   echo ""
   echo "		files: ("
   echo "			{"
-  echo "				filename = \"initrd-api-firmware\";"
+  echo "				filename = \"${INITRD_API_RECOVERY}\";"
   echo "				path = \"/mnt/system/initrd-api\";"
-  echo "				sha256 = \"$hashFirmwareImage\";"
+  echo "				sha256 = \"$hashImage\";"
   echo "			}"
   echo "		);"
   echo ""
@@ -88,7 +88,7 @@ netfield_create_recovery_swu() {
 
   tmpdir=$(mktemp -d)
 
-  cp ${DEPLOY_DIR_IMAGE}/recovery-initrd-api.signed ${tmpdir}/${RECOVERY_INITRD_API}
+  cp ${DEPLOY_DIR_IMAGE}/${INITRD_API_RECOVERY}.signed ${tmpdir}/${INITRD_API_RECOVERY}
 
   # Patch scripts
   sed -e "s/@FW_VERSION@/${FULL_FW_VERSION}/g" ${NETFIELD_BASE}/scripts/swupdate/helper.lua > ${tmpdir}/helper.lua
@@ -118,7 +118,7 @@ netfield_create_recovery_zip() {
   rm -f ${IMGDEPLOYDIR}/*.recovery.zip
 
   mkdir -p ${WORKDIR}/usb_zip
-  cp ${DEPLOY_DIR_IMAGE}/recovery-initrd-api.signed ${WORKDIR}/usb_zip/${RECOVERY_INITRD_API}
+  cp ${DEPLOY_DIR_IMAGE}/${INITRD_API_RECOVERY}.signed ${WORKDIR}/usb_zip/${INITRD_API_RECOVERY}
 
   local files_to_copy="${ADDITIONAL_USB_FILES} ${USB_BOOT_FILES}"
   for add_usb_file in $files_to_copy; do

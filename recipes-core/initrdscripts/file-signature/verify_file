@@ -31,10 +31,10 @@ do_verify_file_sig() {
 			ofs_data_start=$((${ofs_data_start} + 17 + 1))
 			signature_bytes=$((${ofs_sign_end} - ${ofs_sign_start} - 1))
 
-			dd if=$file of=$(basename $file).sig bs=1 skip=${ofs_sign_start} count=${signature_bytes} >/dev/null 2>&1
-			tail -c+${ofs_data_start} ${file} > $(basename $file)
+			dd if=$file of=$workdir/$(basename $file).sig bs=1 skip=${ofs_sign_start} count=${signature_bytes} >/dev/null 2>&1
+			tail -c+${ofs_data_start} ${file} > $workdir/$(basename $file)
 
-			file="$(basename $file)"
+			file="$workdir/$(basename $file)"
 		fi
 	else
 		# External signature, thus data starts at offset 0
@@ -58,7 +58,11 @@ do_verify_file_sig() {
 	return 0
 }
 
+workdir=$(mktemp -d) && mkdir -p $workdir
+
 do_verify_file_sig $*
+
+rm -rf $workdir
 
 exit $?
 

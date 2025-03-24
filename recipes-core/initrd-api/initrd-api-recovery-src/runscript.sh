@@ -34,14 +34,17 @@ do_firmware_recovery() {
 
   [ -e /etc/mtab ] || ln -s /proc/mounts /etc/mtab # required for mkfs.ext4
 
-  # Unmount all mounted partitions from target device
-  dev_mounts=$(cat /proc/mounts | grep "^$dev" | cut -d " " -f2 | tr '\n' ' ')
-  for tmp_mnt in $dev_mounts; do
-    umount $tmp_mnt
-  done
+  # Unmount all partitions from the target device ...
+  devmounts=$(mktemp)
+  grep ^$dev /proc/mounts > $devmounts
+  while read line; do
+    devmp=$(cut -d' ' -f2 <<< $line)
+    log "Unmounting $devmp ... "
+    umount $devmp;
+  done < $devmounts
 
   # Get update version information
-  update_version_str=$(cat firmware.version)
+  update_version_str=$(cat firmware/firmware.version)
 
   # Check installed firmware (if any) and verify if recovery shall be possible
   for system_dev in $(blkid | grep -i 'LABEL="system"' | cut -d ':' -f1); do
@@ -96,8 +99,20 @@ do_firmware_recovery() {
     echo 1 > /var/platform/update_led
   fi
 
+  # Remount all previously unmounted partitions of the device to be modified.
+  if [ -r $devmounts ]; then
+    while read line; do
+      # NOTE:
+      # The device mount takes place in two steps, first as read-only and then as read/write.
+      # This is to avoid mount errors for devices already mounted read-only.
+      log "Remounting $devmp ... "
+      mount $(cut -d' ' -f1 <<< $line) $(cut -d' ' -f2 <<< $line) -t $(cut -d' ' -f3 <<< $line) -o ro
+      mount $(cut -d' ' -f1 <<< $line) $(cut -d' ' -f2 <<< $line) -t $(cut -d' ' -f3 <<< $line) -o remount,$(cut -d' ' -f4 <<< $line)
+    done < $devmounts
+    rm $devmounts
+  fi
+
   log "Firmware recovery successfully done!"
-  log ""
 
   return 0
 }
@@ -108,11 +123,26 @@ do_firmware_recovery() {
 
 source ./common
 
-rm -f ${logfile}
+# Since older netfield-os versions prior to v2.4 uses an initrd-api filename such as "initrd-api"
+# the log function is overloaded to create more meaningful log file content.
+log() {
+  echo "initrd-api-recovery: $@" | tee -a $logfile
+}
 
 do_firmware_recovery && {
-	[ "$removable" = "0" ] && do_reboot
-	do_shutdown
+  log "Rebooting system ..."
+
+  cp $logfile $(dirname $apifile)
+  sync
+
+  [ "$removable" = "0" ] && do_reboot
+
+  # Copy logfile to system partition on persistent storage.
+  mp=$(mktemp -d) && mkdir -p $mp && mount -o ro $(blkid -L system) $mp && mount -o remount,rw $(blkid -L system) $mp
+  cp $logfile $mp
+  sync && umount $mp && rmdir $mp
+
+  do_shutdown
 }
 
 # This should never be reached

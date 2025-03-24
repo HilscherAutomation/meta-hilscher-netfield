@@ -1,6 +1,12 @@
 #!/bin/sh
 
+logfile="/tmp/initrd-api.log"
+log() {
+	echo "$0: $@" | tee -a $logfile
+}
+
 initrd_api_enabled() {
+	remove_old_logfiles=1
 	return 0
 }
 
@@ -12,21 +18,36 @@ initrd_api_run() {
 
 	for f in $(find $mp -name initrd-api*); do
 		grep -q .log$ <<< $f && continue
+
+		# Remove old logfiles if this initrd-api script is called during within normal boot process
+		# and a new initrd API file should be executed!
+		[ "$remove_old_logfiles" = "1" ] && {
+			__debug "Removing old logfiles ..."
+			find $mp -name initrd-api*.log -type f -exec rm {} \;
+			remove_old_logfiles=0
+		}
+
+		# Set initial working directory used as the starting point for each initrd-api file.
+		cd /tmp
+
 		[ -e $f ] && {
-			# Verifying oem rootfs overlay image (squashfs image)
-			__debug "Verifying $f ..."
+			# Verify initrd-api file
+			log "Verifying $f ..."
 			offset=$(verify_file $f) || {
-				__debug "... failed!"
+				log "... failed!"
 				rm -f $f
 				continue
 			}
-			__debug "... success => Using $f as initrd-api file."
+			log "... success => Using $f as initrd-api file."
 
+			# Extract contents of initrd-api file
 			mkdir -p /tmp/$(basename $f) && cd /tmp/$(basename $f)
-
 			contents=$(tail -c+${offset} $f | tar xzv)
- 			__debug "$f: Provided contents: $(tr '\n' ' ' <<< $contents)"
+			log "$f: Provided contents: $(tr '\n' ' ' <<< $contents)"
+
+			# Start the provided runscript
 			[ -x runscript.sh ] && ./runscript.sh apifile=$f || {
+				log "Executing $f failed ($?)!"
 				__fatal "Executing $f failed ($?)!"
 			}
 
