@@ -137,7 +137,7 @@ class BaseTest(OERuntimeTestCase):
         'led-1', 'led-2', 'led-3', 'mmc1::', 'mmc2::',
     )
     led_list_netfield_quantum_revX = (
-        'cloud_green', 'cloud_red', 'edge_green', 'edge_yellow', 'heartbeat', 'mmc0::', 'mmc1::',
+        'act_yellow', 'cloud_green', 'cloud_red', 'edge_green', 'edge_yellow', 'mmc0::', 'mmc1::',
         'usr1_green', 'usr1_yellow', 'usr2_green', 'usr2_yellow', 
     )
 
