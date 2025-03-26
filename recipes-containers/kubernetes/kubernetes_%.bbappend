@@ -25,8 +25,10 @@ do_install:append() {
 pkg_postinst:kubelet () {
     # linux-loader is expected in /lib64 but yocto provides it in /lib per default (newer/mainline kubelets)
     if [ "${TARGET_ARCH}" = "x86_64" ]; then
-        install -d $D/lib64
-        ln -s "${@get_glibc_loader(d)}" $D/lib64/ld-linux-x86-64.so.2
+        if [ ! -e $D/lib64/ld-linux-x86-64.so.2 ]; then
+            install -d $D/lib64
+            ln -sf "${@get_glibc_loader(d)}" $D/lib64/ld-linux-x86-64.so.2
+        fi
     fi
 }
 
