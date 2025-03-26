@@ -1,0 +1,72 @@
+{"SYSLOG_IDENTIFIER":"ModemManager","MESSAGE":"[ttyUSB0/probe] failed to parse QCDM version info command result: -7"}
+{"SYSLOG_IDENTIFIER":"aziot-edged","MESSAGE":"2025-03-25T14:57:00Z [WARN] - Auto renewal of the Edge CA is not configured. Edge CA will not be automatically renewed"}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -F DOCKER' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -F DOCKER-ISOLATION' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -F DOCKER-ISOLATION-STAGE-1' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -F DOCKER-ISOLATION-STAGE-2' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -X DOCKER' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -X DOCKER-ISOLATION' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -X DOCKER-ISOLATION-STAGE-1' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -X DOCKER-ISOLATION-STAGE-2' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t nat -D OUTPUT -m addrtype --dst-type LOCAL ! --dst ::1/128 -j DOCKER' failed: ip6tables v1.8.7 (legacy): Couldn't load target `DOCKER':No such file or directory\n\nTry `ip6tables -h' or 'ip6tables --help' for more information."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t nat -D OUTPUT -m addrtype --dst-type LOCAL ! --dst ::1/128 -j DOCKER' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t nat -D OUTPUT -m addrtype --dst-type LOCAL -j DOCKER' failed: ip6tables v1.8.7 (legacy): Couldn't load target `DOCKER':No such file or directory\n\nTry `ip6tables -h' or 'ip6tables --help' for more information."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t nat -D OUTPUT -m addrtype --dst-type LOCAL -j DOCKER' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t nat -D OUTPUT' failed: ip6tables: Bad rule (does a matching rule exist in that chain?)."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t nat -D PREROUTING -m addrtype --dst-type LOCAL -j DOCKER' failed: ip6tables v1.8.7 (legacy): Couldn't load target `DOCKER':No such file or directory\n\nTry `ip6tables -h' or 'ip6tables --help' for more information."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t nat -D PREROUTING -m addrtype --dst-type LOCAL -j DOCKER' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t nat -D PREROUTING' failed: ip6tables: Bad rule (does a matching rule exist in that chain?)."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t nat -F DOCKER' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t nat -X DOCKER' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t filter -F DOCKER' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t filter -F DOCKER-ISOLATION' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t filter -F DOCKER-ISOLATION-STAGE-1' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t filter -F DOCKER-ISOLATION-STAGE-2' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t filter -X DOCKER' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t filter -X DOCKER' failed: iptables: Too many links."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t filter -X DOCKER-ISOLATION' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t filter -X DOCKER-ISOLATION-STAGE-1' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t filter -X DOCKER-ISOLATION-STAGE-1' failed: iptables: Too many links."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t filter -X DOCKER-ISOLATION-STAGE-2' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t nat -D OUTPUT -m addrtype --dst-type LOCAL ! --dst 127.0.0.0/8 -j DOCKER' failed: iptables v1.8.7 (legacy): Couldn't load target `DOCKER':No such file or directory\n\nTry `iptables -h' or 'iptables --help' for more information."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t nat -D OUTPUT -m addrtype --dst-type LOCAL -j DOCKER' failed: iptables v1.8.7 (legacy): Couldn't load target `DOCKER':No such file or directory\n\nTry `iptables -h' or 'iptables --help' for more information."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t nat -D OUTPUT -m addrtype --dst-type LOCAL -j DOCKER' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t nat -D OUTPUT' failed: iptables: Bad rule (does a matching rule exist in that chain?)."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t nat -D PREROUTING -m addrtype --dst-type LOCAL -j DOCKER' failed: iptables v1.8.7 (legacy): Couldn't load target `DOCKER':No such file or directory\n\nTry `iptables -h' or 'iptables --help' for more information."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t nat -D PREROUTING' failed: iptables: Bad rule (does a matching rule exist in that chain?)."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t nat -F DOCKER' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t nat -X DOCKER' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: ebtables not usable, disabling ethernet bridge firewall."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: ebtables-restore is missing, using individual calls for bridge firewall."}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"ITS: No ITS available, not enabling LPIs"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"KASLR disabled due to lack of seed"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"OF: overlay: WARNING: memory leak will occur if overlay removed, property: /__symbols__/can1"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"OF: overlay: WARNING: memory leak will occur if overlay removed, property: /regulator-uart1-mode/enable-active-high"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"OF: overlay: WARNING: memory leak will occur if overlay removed, property: /regulator-uart1-mode/status"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"OF: overlay: WARNING: memory leak will occur if overlay removed, property: /soc@0/bus@30800000/spba-bus@30800000/serial@30860000/linux,rs485-enabled-at-boot-time"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"OF: overlay: WARNING: memory leak will occur if overlay removed, property: /soc@0/bus@30800000/spba-bus@30800000/serial@30860000/pinctrl-0"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"OF: overlay: WARNING: memory leak will occur if overlay removed, property: /soc@0/bus@30800000/spba-bus@30800000/serial@30860000/pinctrl-names"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"OF: overlay: WARNING: memory leak will occur if overlay removed, property: /soc@0/bus@30800000/spba-bus@30800000/serial@30860000/rs485-rts-active-high"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"OF: overlay: WARNING: memory leak will occur if overlay removed, property: /soc@0/bus@30800000/spba-bus@30800000/serial@30860000/rts-gpios"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"OF: overlay: WARNING: memory leak will occur if overlay removed, property: /soc@0/bus@30800000/spba-bus@30800000/serial@30860000/status"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"OF: overlay: WARNING: memory leak will occur if overlay removed, property: /soc@0/bus@30800000/spba-bus@30800000/serial@30890000/pinctrl-0"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"OF: overlay: WARNING: memory leak will occur if overlay removed, property: /soc@0/bus@30800000/spba-bus@30800000/serial@30890000/pinctrl-names"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"OF: overlay: WARNING: memory leak will occur if overlay removed, property: /soc@0/bus@30800000/spba-bus@30800000/serial@30890000/status"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"OF: overlay: WARNING: memory leak will occur if overlay removed, property: /soc@0/bus@30800000/spba-bus@30800000/spi@30840000/cs-gpios"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"OF: overlay: WARNING: memory leak will occur if overlay removed, property: /soc@0/bus@30800000/spba-bus@30800000/spi@30840000/fsl,spi-num-chipselects"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"OF: overlay: WARNING: memory leak will occur if overlay removed, property: /soc@0/bus@30800000/spba-bus@30800000/spi@30840000/pinctrl-0"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"OF: overlay: WARNING: memory leak will occur if overlay removed, property: /soc@0/bus@30800000/spba-bus@30800000/spi@30840000/pinctrl-names"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"OF: overlay: WARNING: memory leak will occur if overlay removed, property: /soc@0/bus@30800000/spba-bus@30800000/spi@30840000/status"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"at24 0-0054: supply vcc not found, using dummy regulator"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"at24 1-0050: supply vcc not found, using dummy regulator"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"imx-drm 32c00000.bus:display-subsystem: no available port"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"imx6q-pcie 33800000.pcie: supply epdev_on not found, using dummy regulator"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"imx6q-pcie: probe of 33800000.pcie failed with error -110"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"of_reserved_mem_lookup() returned NULL"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"pca953x 3-0022: supply vcc not found, using dummy regulator"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"pub_key_loader: loading out-of-tree module taints kernel."}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"rtc-abx80x 1-0069: CCCCreate sysfs group: 0"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"usb_phy_generic usbphynop1: supply vcc not found, using dummy regulator"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"usb_phy_generic usbphynop2: supply vcc not found, using dummy regulator"}
+{"SYSLOG_IDENTIFIER":"systemd","MESSAGE":"ConfigurationDirectory 'bluetooth' already exists but the mode is different. (File system: 755 ConfigurationDirectoryMode: 555)"}
+{"SYSLOG_IDENTIFIER":"systemd-udevd","MESSAGE":"wwan0: Could not set Alias=, MACAddress=/MACAddressPolicy=, TransmitQueues=, ReceiveQueues=, TransmitQueueLength=, MTUBytes=, GenericSegmentOffloadMaxBytes= or GenericSegmentOffloadMaxSegments=, ignoring: Cannot assign requested address"}
