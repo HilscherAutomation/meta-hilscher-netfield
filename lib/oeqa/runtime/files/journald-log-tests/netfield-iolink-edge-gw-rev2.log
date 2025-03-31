@@ -1,4 +1,4 @@
-{"SYSLOG_IDENTIFIER":"aziot-edged","MESSAGE":"2025-03-25T15:00:54Z [WARN] - Auto renewal of the Edge CA is not configured. Edge CA will not be automatically renewed"}
+{"regex":{"SYSLOG_IDENTIFIER":"aziot-edged","MESSAGE":"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z \\[WARN\\] - Auto renewal of the Edge CA is not configured. Edge CA will not be automatically renewed"}}
 {"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -F DOCKER' failed: ip6tables: No chain/target/match by that name."}
 {"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -F DOCKER-ISOLATION' failed: ip6tables: No chain/target/match by that name."}
 {"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -F DOCKER-ISOLATION-STAGE-1' failed: ip6tables: No chain/target/match by that name."}

@@ -1,5 +1,10 @@
+{"SYSLOG_IDENTIFIER":"ModemManager","MESSAGE":"[modem0] couldn't load supported IP families: Unknown error"}
+{"SYSLOG_IDENTIFIER":"ModemManager","MESSAGE":"[modem0] couldn't load supported charsets: Unknown error"}
+{"SYSLOG_IDENTIFIER":"ModemManager","MESSAGE":"[modem0] couldn't load supported modes: Couldn't retrieve supported modes"}
+{"SYSLOG_IDENTIFIER":"ModemManager","MESSAGE":"[modem0] modem couldn't be initialized: Couldn't check unlock status: SIM not inserted"}
+{"SYSLOG_IDENTIFIER":"ModemManager","MESSAGE":"[plugin/simtech] could not grab port cdc-wdm0: Cannot add port 'usbmisc/cdc-wdm0', unhandled port type"}
 {"SYSLOG_IDENTIFIER":"ModemManager","MESSAGE":"[ttyUSB0/probe] failed to parse QCDM version info command result: -7"}
-{"SYSLOG_IDENTIFIER":"aziot-edged","MESSAGE":"2025-03-25T14:57:00Z [WARN] - Auto renewal of the Edge CA is not configured. Edge CA will not be automatically renewed"}
+{"regex":{"SYSLOG_IDENTIFIER":"aziot-edged","MESSAGE":"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z \\[WARN\\] - Auto renewal of the Edge CA is not configured. Edge CA will not be automatically renewed"}}
 {"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -F DOCKER' failed: ip6tables: No chain/target/match by that name."}
 {"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -F DOCKER-ISOLATION' failed: ip6tables: No chain/target/match by that name."}
 {"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -F DOCKER-ISOLATION-STAGE-1' failed: ip6tables: No chain/target/match by that name."}
@@ -69,4 +74,3 @@
 {"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"usb_phy_generic usbphynop1: supply vcc not found, using dummy regulator"}
 {"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"usb_phy_generic usbphynop2: supply vcc not found, using dummy regulator"}
 {"SYSLOG_IDENTIFIER":"systemd","MESSAGE":"ConfigurationDirectory 'bluetooth' already exists but the mode is different. (File system: 755 ConfigurationDirectoryMode: 555)"}
-{"SYSLOG_IDENTIFIER":"systemd-udevd","MESSAGE":"wwan0: Could not set Alias=, MACAddress=/MACAddressPolicy=, TransmitQueues=, ReceiveQueues=, TransmitQueueLength=, MTUBytes=, GenericSegmentOffloadMaxBytes= or GenericSegmentOffloadMaxSegments=, ignoring: Cannot assign requested address"}
