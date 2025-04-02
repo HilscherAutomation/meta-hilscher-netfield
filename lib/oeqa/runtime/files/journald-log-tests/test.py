@@ -12,17 +12,33 @@ def check_log_entries(logfile=None, whitelist_logfile=None):
   for log_entry in log_entries:
     log_regex = False
     log_obj = json.loads(log_entry)
+    if 'CONTAINER_ID' in log_obj:
+      # NOTE: We're not interested in docker container logs, so let's skip them ...
+      continue
+    if 'optional' in log_obj:
+      # NOTE: It is possible to define optional log entries in the whitelist logfile
+      #       that are only used when comparing the runtime log entries against the whitelist log entries.
+      print("INFO: Skipped log entry (%s)" % log_obj)
+      continue
     if 'regex' in log_obj:
       log_regex = True
       log_obj = log_obj['regex']
     log_syslog_identifier = log_obj['SYSLOG_IDENTIFIER']
     log_message = log_obj['MESSAGE']
 
+    if log_syslog_identifier == "journald-log-test":
+      # NOTE: We're not interested in our own logs, so let's skip them ...
+      continue
+
     is_expected_log_entry = 0
 
     for whitelist_log_entry in whitelist_log_entries:
+      whitelist_log_optional = False
       whitelist_log_regex = False
       whitelist_log_obj = json.loads(whitelist_log_entry)
+      if 'optional' in whitelist_log_obj:
+        whitelist_log_optional = True
+        whitelist_log_obj = whitelist_log_obj['optional']
       if 'regex' in whitelist_log_obj:
         whitelist_log_regex = True
         whitelist_log_obj = whitelist_log_obj['regex']
@@ -61,8 +77,8 @@ if len(sys.argv) < 2:
 dut_log_file = 'dut.log'
 whitelist_log_file = sys.argv[1]
 
-os.system("journalctl -p warning -b --output json | jq '. | {'SYSLOG_IDENTIFIER': .SYSLOG_IDENTIFIER, 'MESSAGE': .MESSAGE}' -c | sort | uniq > %s" % dut_log_file)
-os.system("echo '=== MARKER-1: DUT logfile created ===' | systemd-cat -t journald-log-test -p warning")
+os.system("journalctl -p warning -b --output json | jq '. | {'SYSLOG_IDENTIFIER': .SYSLOG_IDENTIFIER, 'MESSAGE': .MESSAGE, 'CONTAINER_ID': .CONTAINER_ID}' -c | sort | uniq > %s" % dut_log_file)
+os.system("echo === DUT logfile created \(uptime: $(cat /proc/uptime | cut -d. -f1)\) === | systemd-cat -t journald-log-test -p warning")
 
 print("Verify logfile %s against %s and check for new unexpected entries ..." % (dut_log_file, whitelist_log_file))
 rc1 = check_log_entries(dut_log_file, whitelist_log_file)
@@ -77,5 +93,9 @@ if rc2:
   print("... failed")
 else:
   print("... done")
+
+if (rc1 + rc2) != 0:
+  os.system("cp %s ~/%s" % (dut_log_file, dut_log_file))
+  os.system("cp %s ~/%s" % (whitelist_log_file, whitelist_log_file))
 
 exit(rc1 + rc2)

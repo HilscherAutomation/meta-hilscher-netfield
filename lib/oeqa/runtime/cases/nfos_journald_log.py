@@ -22,6 +22,7 @@ class BaseTest(OERuntimeTestCase):
 
             cmd =  ("echo                                                   ;"
                     "echo Starting journald-log tests on device: $(date)    ;"
+                    "echo === journald-log-test started \(uptime: $(cat /proc/uptime | cut -d. -f1)s\) === | systemd-cat -t journald-log-test -p warning  ;"
 
                     "echo Create a new test directory ...                   ;"
                     "rm -vrf /tmp/journald-log-tests/*                      ;"
