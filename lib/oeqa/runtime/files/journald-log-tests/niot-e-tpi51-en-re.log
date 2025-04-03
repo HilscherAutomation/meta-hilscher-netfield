@@ -1,0 +1,61 @@
+{"regex":{"SYSLOG_IDENTIFIER":"aziot-edged","MESSAGE":"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z \\[WARN\\] - Auto renewal of the Edge CA is not configured. Edge CA will not be automatically renewed"}}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -F DOCKER' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -F DOCKER-ISOLATION' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -F DOCKER-ISOLATION-STAGE-1' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -F DOCKER-ISOLATION-STAGE-2' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -X DOCKER' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -X DOCKER-ISOLATION' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -X DOCKER-ISOLATION-STAGE-1' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -X DOCKER-ISOLATION-STAGE-2' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t nat -D OUTPUT -m addrtype --dst-type LOCAL ! --dst ::1/128 -j DOCKER' failed: ip6tables v1.8.7 (legacy): Couldn't load target `DOCKER':No such file or directory\n\nTry `ip6tables -h' or 'ip6tables --help' for more information."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t nat -D OUTPUT -m addrtype --dst-type LOCAL ! --dst ::1/128 -j DOCKER' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t nat -D OUTPUT -m addrtype --dst-type LOCAL -j DOCKER' failed: ip6tables v1.8.7 (legacy): Couldn't load target `DOCKER':No such file or directory\n\nTry `ip6tables -h' or 'ip6tables --help' for more information."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t nat -D OUTPUT -m addrtype --dst-type LOCAL -j DOCKER' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t nat -D OUTPUT' failed: ip6tables: Bad rule (does a matching rule exist in that chain?)."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t nat -D PREROUTING -m addrtype --dst-type LOCAL -j DOCKER' failed: ip6tables v1.8.7 (legacy): Couldn't load target `DOCKER':No such file or directory\n\nTry `ip6tables -h' or 'ip6tables --help' for more information."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t nat -D PREROUTING -m addrtype --dst-type LOCAL -j DOCKER' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t nat -D PREROUTING' failed: ip6tables: Bad rule (does a matching rule exist in that chain?)."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t nat -F DOCKER' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t nat -X DOCKER' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t filter -F DOCKER' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t filter -F DOCKER-ISOLATION' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t filter -F DOCKER-ISOLATION-STAGE-1' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t filter -F DOCKER-ISOLATION-STAGE-2' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t filter -X DOCKER' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t filter -X DOCKER' failed: iptables: Too many links."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t filter -X DOCKER-ISOLATION' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t filter -X DOCKER-ISOLATION-STAGE-1' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t filter -X DOCKER-ISOLATION-STAGE-1' failed: iptables: Too many links."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t filter -X DOCKER-ISOLATION-STAGE-2' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t nat -D OUTPUT -m addrtype --dst-type LOCAL ! --dst 127.0.0.0/8 -j DOCKER' failed: iptables v1.8.7 (legacy): Couldn't load target `DOCKER':No such file or directory\n\nTry `iptables -h' or 'iptables --help' for more information."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t nat -D OUTPUT -m addrtype --dst-type LOCAL -j DOCKER' failed: iptables v1.8.7 (legacy): Couldn't load target `DOCKER':No such file or directory\n\nTry `iptables -h' or 'iptables --help' for more information."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t nat -D OUTPUT -m addrtype --dst-type LOCAL -j DOCKER' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t nat -D OUTPUT' failed: iptables: Bad rule (does a matching rule exist in that chain?)."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t nat -D PREROUTING -m addrtype --dst-type LOCAL -j DOCKER' failed: iptables v1.8.7 (legacy): Couldn't load target `DOCKER':No such file or directory\n\nTry `iptables -h' or 'iptables --help' for more information."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t nat -D PREROUTING' failed: iptables: Bad rule (does a matching rule exist in that chain?)."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t nat -F DOCKER' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t nat -X DOCKER' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: ebtables-restore is missing, using individual calls for bridge firewall."}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"Core Release: 2.80a"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"Dedicated Tx FIFOs mode"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"Finished setting default values for core params"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"Indeed it is in host mode hprt0 = 00001101"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"Indeed it is in host mode hprt0 = 00021501"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"Init: Port Power? op_state=1"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"Init: Power Port (0)"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"Multiprocessor Interrupt Enhancement - disabled"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"OTG VER PARAM: 0, OTG VER FLAG: 0"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"Periodic Transfer Interrupt Enhancement - disabled"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"Setting default values for core params"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"Using Buffer DMA mode"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"at24 1-0054: supply vcc not found, using dummy regulator"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"bcm2835-codec bcm2835-codec: Invalid control"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"bcm2835_codec: module is from the staging directory, the quality is unknown, you have been warned."}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"bcm2835_isp: module is from the staging directory, the quality is unknown, you have been warned."}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"bcm2835_mmal_vchiq: module is from the staging directory, the quality is unknown, you have been warned."}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"bcm2835_v4l2: module is from the staging directory, the quality is unknown, you have been warned."}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"mmc0: host does not support reading read-only switch, assuming write-enable"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"pub_key_loader: loading out-of-tree module taints kernel."}
+{"regex":{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"rtc rtc0: invalid alarm value: \\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"}}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"usb_phy_generic phy: supply vcc not found, using dummy regulator"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"vc_sm_cma: module is from the staging directory, the quality is unknown, you have been warned."}

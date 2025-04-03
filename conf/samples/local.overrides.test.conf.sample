@@ -15,6 +15,7 @@ TEST_SUITES += " \
 	nfos_system \
 	nfos_user_group_permissions \
 	nfos_docker \
+	nfos_journald_log \
 "
 
 TEST_SERVER_IP ?= "tbd"

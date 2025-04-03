@@ -1,0 +1,49 @@
+{"SYSLOG_IDENTIFIER":"ModemManager","MESSAGE":"[modem0] couldn't load supported IP families: Unknown error"}
+{"SYSLOG_IDENTIFIER":"ModemManager","MESSAGE":"[modem0] couldn't load supported charsets: Unknown error"}
+{"SYSLOG_IDENTIFIER":"ModemManager","MESSAGE":"[modem0] couldn't load supported modes: Couldn't retrieve supported modes"}
+{"SYSLOG_IDENTIFIER":"ModemManager","MESSAGE":"[modem0] modem couldn't be initialized: Couldn't check unlock status: SIM not inserted"}
+{"SYSLOG_IDENTIFIER":"ModemManager","MESSAGE":"[ttyUSB0/probe] failed to parse QCDM version info command result: -7"}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -F DOCKER' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -F DOCKER-ISOLATION' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -F DOCKER-ISOLATION-STAGE-1' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -F DOCKER-ISOLATION-STAGE-2' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -X DOCKER' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -X DOCKER-ISOLATION' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -X DOCKER-ISOLATION-STAGE-1' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -X DOCKER-ISOLATION-STAGE-2' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t nat -D OUTPUT -m addrtype --dst-type LOCAL ! --dst ::1/128 -j DOCKER' failed: ip6tables v1.8.7 (legacy): Couldn't load target `DOCKER':No such file or directory\n\nTry `ip6tables -h' or 'ip6tables --help' for more information."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t nat -D OUTPUT -m addrtype --dst-type LOCAL -j DOCKER' failed: ip6tables v1.8.7 (legacy): Couldn't load target `DOCKER':No such file or directory\n\nTry `ip6tables -h' or 'ip6tables --help' for more information."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t nat -D OUTPUT' failed: ip6tables: Bad rule (does a matching rule exist in that chain?)."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t nat -D PREROUTING -m addrtype --dst-type LOCAL -j DOCKER' failed: ip6tables v1.8.7 (legacy): Couldn't load target `DOCKER':No such file or directory\n\nTry `ip6tables -h' or 'ip6tables --help' for more information."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t nat -D PREROUTING' failed: ip6tables: Bad rule (does a matching rule exist in that chain?)."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t nat -F DOCKER' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t nat -X DOCKER' failed: ip6tables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t filter -F DOCKER' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t filter -F DOCKER-ISOLATION' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t filter -F DOCKER-ISOLATION-STAGE-1' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t filter -F DOCKER-ISOLATION-STAGE-2' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t filter -X DOCKER' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t filter -X DOCKER-ISOLATION' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t filter -X DOCKER-ISOLATION-STAGE-1' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t filter -X DOCKER-ISOLATION-STAGE-2' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t nat -D OUTPUT -m addrtype --dst-type LOCAL ! --dst 127.0.0.0/8 -j DOCKER' failed: iptables v1.8.7 (legacy): Couldn't load target `DOCKER':No such file or directory\n\nTry `iptables -h' or 'iptables --help' for more information."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t nat -D OUTPUT -m addrtype --dst-type LOCAL -j DOCKER' failed: iptables v1.8.7 (legacy): Couldn't load target `DOCKER':No such file or directory\n\nTry `iptables -h' or 'iptables --help' for more information."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t nat -D OUTPUT' failed: iptables: Bad rule (does a matching rule exist in that chain?)."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t nat -D PREROUTING -m addrtype --dst-type LOCAL -j DOCKER' failed: iptables v1.8.7 (legacy): Couldn't load target `DOCKER':No such file or directory\n\nTry `iptables -h' or 'iptables --help' for more information."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t nat -D PREROUTING' failed: iptables: Bad rule (does a matching rule exist in that chain?)."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t nat -F DOCKER' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/iptables -w10 -t nat -X DOCKER' failed: iptables: No chain/target/match by that name."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: ebtables not usable, disabling ethernet bridge firewall."}
+{"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: ebtables-restore is missing, using individual calls for bridge firewall."}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"ITS: No ITS available, not enabling LPIs"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"KASLR disabled due to lack of seed"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"caam_jr 30903000.jr: failed to flush job ring 1"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"caam_jr: probe of 30903000.jr failed with error -5"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"fsl-aud2htx 30cb0000.aud2htx: failed to pcm register"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"imx-drm display-subsystem: no available port"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"imx-hdmi sound-hdmi: snd_soc_register_card failed (-517)"}
+{"regex":{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"module built by  at \\S{3} \\S{3} \\d{2} \\d{2}:\\d{2}:\\d{2} UTC \\d{4}"}}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"pci 0000:02:00.0: MSI quirk detected; MSI disabled"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"pub_key_loader: loading out-of-tree module taints kernel."}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"tpm tpm0: A TPM error (256) occurred attempting the self test"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"tpm tpm0: [Firmware Bug]: TPM interrupt not working, polling instead"}
