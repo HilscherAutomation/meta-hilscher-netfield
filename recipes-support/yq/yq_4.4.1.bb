@@ -4,8 +4,11 @@ LICENSE="MIT"
 
 LIC_FILES_CHKSUM="file://src/${GO_IMPORT}/LICENSE;md5=090d381b4b3eb93194e8cbff4aaae2de"
 
-SRC_URI = "git://${GO_IMPORT}.git;protocol=https;nobranch=1"
+SRC_URI = "git://${GO_IMPORT}.git;protocol=https;nobranch=1 \
+           file://modules.txt"
 SRCREV = "917fd0eb6a857fca69a582a0efb3e20708c5876f"
+
+include src_uri.inc
 
 GO_IMPORT = "github.com/mikefarah/yq"
 
@@ -13,6 +16,21 @@ export GOPROXY="https://proxy.golang.org,direct"
 
 require recipes-devtools/go/fix-go-1.21.inc
 inherit go-mod
+
+DEPENDS="rsync-native"
+include relocations.inc
+
+do_compile() {
+    cd ${S}/src/${GO_IMPORT}
+
+    export GOFLAGS="-mod=vendor"
+
+    rm -rf vendor
+    ln -sf ${S}/src/import/vendor.copy vendor
+    cp ${WORKDIR}/modules.txt vendor/
+
+    go_do_compile
+}
 
 # Remove binaries from git, which result in sysroot errors on non intel platforms:
 #  | sysroot-destdir/usr/lib/go/src/github.com/mikefarah/yq/yqt: file format not recognized
