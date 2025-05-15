@@ -9,8 +9,11 @@ GO_INSTALL = "${GO_IMPORT}"
 
 SRC_URI = "git://${GO_IMPORT};protocol=https;nobranch=1 \
            file://${BPN}.service \
-           file://authz.rego"
+           file://authz.rego \
+	   file://modules.txt"
 SRCREV="f609c4313f9a9c101e1f90434b0641ab66999fcb"
+
+include src_uri.inc
 
 require recipes-devtools/go/fix-go-1.21.inc
 inherit go-mod systemd
@@ -20,6 +23,21 @@ SYSTEMD_SERVICE:${PN} = "${BPN}.service"
 
 inherit apparmor
 APPARMOR_PROFILES="${BPN}.apparmor:usr.bin.${BPN}"
+
+DEPENDS="rsync-native"
+include relocations.inc
+
+do_compile() {
+    cd ${S}/src/${GO_IMPORT}
+
+    export GOFLAGS="-mod=vendor"
+
+    rm -rf vendor
+    ln -sf ${S}/src/import/vendor.copy vendor
+    cp ${WORKDIR}/modules.txt vendor/
+
+    go_do_compile
+}
 
 do_install:append() {
     # Remove libdir, as it is not required for anything
