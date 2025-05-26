@@ -101,7 +101,7 @@ class HilscherTarget(OESSHTarget):
              bb.fatal("Command '%s' returned non-zero exit status %d: %s" % (cmd, status, output))
 
         ''' Wait until the target device has rebooted after power cycle (timeout=301s). '''
-        self.wait_until_booted(301)
+        self.wait_until_booted(361)
 
         ''' Recover DUT onboarding information and start/enable the edge daemon. '''
         if os.path.isfile(dev_dir + "/onboard.json"):
