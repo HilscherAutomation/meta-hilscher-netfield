@@ -40,9 +40,7 @@
 {"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"caam_jr 30903000.jr: failed to flush job ring 1"}
 {"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"caam_jr: probe of 30903000.jr failed with error -5"}
 {"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"fsl-aud2htx 30cb0000.aud2htx: failed to pcm register"}
-{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"imx-drm display-subsystem: no available port"}
 {"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"imx-hdmi sound-hdmi: snd_soc_register_card failed (-517)"}
-{"regex":{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"module built by  at \\S{3} \\S{3} \\d{2} \\d{2}:\\d{2}:\\d{2} UTC \\d{4}"}}
 {"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"pci 0000:02:00.0: MSI quirk detected; MSI disabled"}
 {"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"pub_key_loader: loading out-of-tree module taints kernel."}
 {"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"tpm tpm0: A TPM error (256) occurred attempting the self test"}
