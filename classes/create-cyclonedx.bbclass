@@ -14,15 +14,22 @@ CVE_PRODUCT ??= "${BPN}"
 CVE_VERSION ??= "${PV}"
 
 python do_create_component_sbom() {
+    import bb
     import json
+    import uuid
     import oe.cve_check
+    from datetime import datetime, timezone
     from pathlib import Path
+
+    # Skip for image recipes
+    if bb.data.inherits_class('image', d):
+        return
 
     # Create the component SBOM
     name = d.getVar("CVE_PRODUCT")
     version = d.getVar("CVE_VERSION")
 
-    component = []
+    component = {}
     patches = []
 
     # Extract all downloaded sources
@@ -139,40 +146,48 @@ python do_create_component_sbom() {
         return ret
 
     # update it with the new package info
-    names = name.split()
-    for index, cpe in enumerate(oe.cve_check.get_cpe_ids(name, version)):
-        # Create basic entry
-        bb.debug(2, f"Creating component entry for {name}@{version} ({cpe})")
-        entry = {
-            "name": names[index],
-            "version": version,
-            "cpe": cpe,
-            "type" : 'library' if d.getVar('SECTION') == 'libs' else 'application',
-            "licenses" : [{
-                "expression" : d.getVar('LICENSE').replace(' & ', ' AND ').replace(' | ', ' OR '),
-            }],
-            "externalReferences": [
-                {
-                    "url": d.getVar('HOMEPAGE'),
-                    "type": "website"
-                },
-            ],
-        }
+    component['name'] = name.split()[0] if name != "" else d.getVar('PN')
+    component['version'] = version
+    component['type'] = 'library' if d.getVar('SECTION') == 'libs' else 'application'
+    component['licenses'] = [{
+        'expression' : d.getVar('LICENSE').replace(' & ', ' AND ').replace(' | ', ' OR '),
+    }]
+    component['externalReferences'] = [
+        {
+            'url': d.getVar('HOMEPAGE'),
+            'type': 'website'
+        },
+    ]
 
-        add_vcs_uris(d, entry)
+    cpe = oe.cve_check.get_cpe_ids(name, version)
+    if len(cpe) > 0:
+        component['cpe'] = cpe[0]
 
-        # Add list of backported vulnerability fixes
-        patches = get_cve_patches(d)
-        if len(patches) > 0:
-            entry['pedigree'] = {}
-            entry['pedigree']['patches'] = []
+    add_vcs_uris(d, component)
 
-        for patch in patches:
-            entry['pedigree']['patches'].append(patch)
+    # Add list of backported vulnerability fixes
+    patches = get_cve_patches(d)
+    if len(patches) > 0:
+        component['pedigree'] = {}
+        component['pedigree']['patches'] = []
 
-        component.append(entry);
+    for patch in patches:
+        component['pedigree']['patches'].append(patch)
 
     bb.debug(2, f"Component ${component}")
+
+    comp_sbom = {
+        "bomFormat": "CycloneDX",
+        "specVersion": "1.6",
+        "serialNumber": "urn:uuid:" + str(uuid.uuid4()),
+        "version": 1,
+        "metadata": {
+            "timestamp": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "component": component
+        },
+    }
+
+    #TODO: Shall we add RDEPENDS as components???
 
     dest = Path(os.path.join(d.getVar('CYCLONEDX_SSTATEDIR'), d.getVar('PN')))
     if d.getVar('PACKAGE_ARCH') == d.getVar('MACHINE_ARCH'):
@@ -180,7 +195,7 @@ python do_create_component_sbom() {
     dest = dest / (d.getVar('PN') + '.sbom.json')
     dest.parent.mkdir(exist_ok=True, parents=True)
     with dest.open("w") as f:
-        f.write(json.dumps(component, indent=4))
+        f.write(json.dumps(comp_sbom, indent=4))
 }
 
 SSTATETASKS += "do_create_component_sbom"
@@ -203,7 +218,7 @@ python do_create_image_sbom() {
     import oe.packagedata
     import os
     import uuid
-    from datetime import datetime
+    from datetime import datetime, timezone
     from pathlib import Path
     from oe.rootfs import image_list_installed_packages
 
@@ -214,11 +229,11 @@ python do_create_image_sbom() {
 
     sbom = {
         "bomFormat": "CycloneDX",
-        "specVersion": "1.4",
+        "specVersion": "1.6",
         "serialNumber": "urn:uuid:" + str(uuid.uuid4()),
         "version": 1,
         "metadata": {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "component": {
                 "type": "operating-system",
                 "name": d.getVar('CYCLONEDX_BOM_COMPONENT_NAME'),
@@ -260,8 +275,7 @@ python do_create_image_sbom() {
             comp = json.loads(f.read())
             # component SBOM contains array of possible component names,
             # so covert it for final SBOM
-            for tmp in comp:
-                sbom['components'].append(tmp)
+            sbom['components'].append(comp['metadata']['component'])
 
     # Write final SBOM
     image_sbom = Path(os.path.join(imgdeploydir,
