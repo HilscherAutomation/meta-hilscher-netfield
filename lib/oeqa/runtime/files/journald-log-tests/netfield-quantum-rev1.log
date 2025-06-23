@@ -1,7 +1,3 @@
-{"SYSLOG_IDENTIFIER":"ModemManager","MESSAGE":"[modem0] couldn't load supported IP families: Unknown error"}
-{"SYSLOG_IDENTIFIER":"ModemManager","MESSAGE":"[modem0] couldn't load supported charsets: Unknown error"}
-{"SYSLOG_IDENTIFIER":"ModemManager","MESSAGE":"[modem0] couldn't load supported modes: Couldn't retrieve supported modes"}
-{"SYSLOG_IDENTIFIER":"ModemManager","MESSAGE":"[modem0] modem couldn't be initialized: Couldn't check unlock status: SIM not inserted"}
 {"SYSLOG_IDENTIFIER":"ModemManager","MESSAGE":"[ttyUSB0/probe] failed to parse QCDM version info command result: -7"}
 {"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -F DOCKER' failed: ip6tables: No chain/target/match by that name."}
 {"SYSLOG_IDENTIFIER":"firewalld","MESSAGE":"WARNING: COMMAND_FAILED: '/usr/sbin/ip6tables -w10 -t filter -F DOCKER-ISOLATION' failed: ip6tables: No chain/target/match by that name."}
