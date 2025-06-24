@@ -73,6 +73,7 @@
           "dns": [
             "1.1.1.1"
           ],
+          "dns-priority": 90,
           "gateway": "120.0.0.255",
           "metric": 100,
           "routes": [

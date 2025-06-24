@@ -394,6 +394,9 @@
                       "$ref": "#/definitions/ipv4"
                     }
                   },
+                  "dns-priority": {
+                    "type": "integer"
+                  },
                   "gateway": {
                     "$ref": "#/definitions/ipv4"
                   },

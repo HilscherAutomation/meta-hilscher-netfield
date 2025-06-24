@@ -130,6 +130,11 @@ check_interfaces() {
         done
       fi
 
+      dns_prio=$(get_value "$interface/dns-priority")
+      if [ -n "$dns_prio" ]; then
+           nmcli connection modify "$name" "ipv4.dns-priority" "$dns_prio"
+      fi
+
       if [ -d "$interface/routes" ]; then
         for new_route in $interface/routes/*; do
           address=$(get_value $new_route/address)
