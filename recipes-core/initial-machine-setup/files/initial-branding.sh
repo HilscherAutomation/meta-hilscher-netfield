@@ -115,7 +115,7 @@ check_interfaces() {
       fi
 
       default_metric=$(get_value "$interface/metric")
-      if [ -n "$gateway" ]; then
+      if [ -n "$default_metric" ]; then
            nmcli connection modify "$name" "ipv4.route-metric" "$default_metric"
       fi
 
