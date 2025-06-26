@@ -57,6 +57,113 @@ def read_cves_from_file(filename):
 
     return cves
 
+def get_html_summary(sev_to_count_dict, header='<h2>Total issue summary</h2>'):
+    total = 0
+    html_summary = f'''
+{header}
+<table style="width:30%">
+<tr>
+<th style="width:10%">Summary</th>
+<th>Issue count</th>
+</tr>
+'''
+    for sev in sev_to_count_dict:
+        num = sev_to_count_dict[sev]
+        total += num
+        html_summary += f'''
+<tr>
+<td>{sev}</td>
+<td>{num}</td>
+</tr>
+'''
+
+    html_summary += f'''
+<tr>
+<td><b>Total</b></th>
+<td>{total}</th>
+</tr>
+</table>
+'''
+    return html_summary
+
+
+def output_html(cves, machine):
+    import html
+    output_data = ""
+    issue_count = {}
+
+    for comp in cves:
+        issues = cves[comp]
+        output_data += f'<h2>Component {comp}</h2>\n'
+        sum_dict = {}
+
+        for issue in issues:
+            cve_severity = get_severity_from_issue(issue)
+            if cve_severity not in sum_dict:
+                sum_dict[cve_severity] = 1
+            else:
+                sum_dict[cve_severity] += 1
+
+        output_data += get_html_summary(sum_dict, '<h3>Component summary</h3>')
+
+        output_data += '<br><h3>Issue list</h3>'
+
+        output_data += '''<table style="width:100%">
+<tr>
+<th style="width:10%">CVE</th>
+<th style="width:70%">Summary</th>
+<th style="width:10%">Score</th>
+<th>Severity</th>
+</tr>
+'''
+
+        for issue in issues:
+            cve_id = issue['id']
+            cve_link = issue['link']
+            cve_summary = html.escape(issue['summary'])
+            cve_score = issue['scorev2']
+            cve_severity = get_severity_from_issue(issue)
+
+            for tmp in ['scorev3', 'scorev4']:
+                if issue[tmp] != 0.0:
+                    cve_score += ' / ' + issue[tmp]
+                else:
+                    cve_score += ' / -'
+
+            output_data += '<tr>\n'
+            output_data += f'<td><a href={cve_link}>{cve_id}</a></td>\n'
+            output_data += f'<td><div style="white-space:pre-wrap">{cve_summary}</div></td>\n'
+            output_data += f'<td>{cve_score}</td>\n'
+            output_data += f'<td>{cve_severity}</td>\n'
+            output_data += '</tr>\n'
+
+            if cve_severity not in issue_count:
+                issue_count[cve_severity] = 1
+            else:
+                issue_count[cve_severity] += 1
+
+        output_data += '</table>\n'
+
+    summary = get_html_summary(issue_count)
+
+    print('''
+<html>
+<style>
+table, th, td {
+  border: 1px solid black;
+}
+</style>
+<body>
+''')
+    print(f'<h1>CVE report for {machine}</h1>')
+    print(summary)
+    print('<hr>')
+    print(output_data)
+
+    print('''</body>
+</html>
+''')
+
 if __name__ == '__main__':
     import argparse, re
 
@@ -64,7 +171,7 @@ if __name__ == '__main__':
     parser.add_argument('CVELOG', metavar='logfile', type=str, help='Log file to parse (e.g. build/tmp/work/nginx/<version>/temp/cve.log)')
     parser.add_argument('--filter', type=str, default='status=Unpatched', help='Filter cves. (default "status=Unpatched")')
     parser.add_argument('--summary', action='store_true', help='Print summary')
-    parser.add_argument('--format', type=str, choices=['raw', 'warnings-ng'], default='raw', help='Select output format (default=raw python object)')
+    parser.add_argument('--format', type=str, choices=['raw', 'warnings-ng','html'], default='raw', help='Select output format (default=raw python object)')
     parser.add_argument('--machine', type=str, help='Set machine name used in output formats, supporting it')
 
     args = parser.parse_args()
@@ -155,6 +262,8 @@ if __name__ == '__main__':
 
         _output['size'] = _total
         print(json.dumps(_output, indent=4))
+    elif args.format == 'html':
+        output_html(cves, args.machine)
 
     if args.summary:
         _total_cnt=0

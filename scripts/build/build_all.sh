@@ -298,6 +298,11 @@ EOF
 		$SCRIPTDIR/processcves $cve_file --machine "$machine" --format warnings-ng > \
 				       $DEPLOY_DIR/$machine/$FW_VERSION/$json_output
 		ln -sf $json_output $DEPLOY_DIR/$machine/$FW_VERSION/$image-$machine.cve.json
+
+		html_output="$(basename $cve_file).cve.html"
+		$SCRIPTDIR/processcves $cve_file --machine "$machine" --format html > \
+				       $DEPLOY_DIR/$machine/$FW_VERSION/$html_output
+		ln -sf $html_output $DEPLOY_DIR/$machine/$FW_VERSION/$image-$machine.cve.html
 	fi
 
 	cd ..
