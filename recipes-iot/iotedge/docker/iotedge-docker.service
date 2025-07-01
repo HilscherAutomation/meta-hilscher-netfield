@@ -4,10 +4,11 @@ Documentation=https://docs.docker.com
 Before=docker.service
 After=network-online.target iotedge-docker.socket firewalld.service iotedge.slice
 Wants=network-online.target
-Requires=iotedge-docker.socket iotedge.slice
+Requires=iotedge-docker.socket iotedge.slice containerd-iotedge.service
 
 [Service]
 Type=notify
+SyslogIdentifier=dockerd-iotedge
 # the default is not to use systemd for cgroups because the delegate issues still
 # exists and systemd currently does not support the cgroup feature set required
 # for containers run by docker
