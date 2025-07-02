@@ -74,8 +74,8 @@ updateiotedge_postoverlay() {
 
 	# Add separate containerd instance to iotedge docker
 	if ! grep -q '"containerd":' ${ROOTFS_DIR}/etc/docker/iotedge.json; then
-		tmp = $(cat ${ROOTFS_DIR}/etc/docker/iotedge.json)
-		tmp = $(echo "$tmp" | jq ".containerd=/run/containerd-iotedge/containerd-iotedge.sock")
+		tmp=$(cat ${ROOTFS_DIR}/etc/docker/iotedge.json)
+		tmp=$(echo "$tmp" | jq '.containerd="/run/containerd-iotedge/containerd-iotedge.sock"')
 		echo "$tmp" > ${ROOTFS_DIR}/etc/docker/iotedge.json
 	fi
 }
