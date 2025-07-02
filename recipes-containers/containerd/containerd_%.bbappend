@@ -1,3 +1,5 @@
+PROVIDES += "${PN}-iotedge"
+
 PACKAGES =+ "${PN}-iotedge"
 
 SYSTEMD_PACKAGES:append = " ${PN}-iotedge"
@@ -8,7 +10,7 @@ do_install:append() {
     # Make sure to start our own containerd instance
     cp ${D}${systemd_system_unitdir}/containerd.service ${D}${systemd_system_unitdir}/containerd-iotedge.service
 
-    sed -e 's@\(ExecStart=${bindir}/docker-containerd\)@\1 --state /run/containerd-iotedge --root /var/lib/containerd-iotedge/ -a /run/containerd-iotedge/containerd-iotedge.sock -c /etc/containerd/iotedge.toml@g' \
+    sed -e 's@\(ExecStart=${bindir}/docker-containerd\)@\1 --state /run/containerd-iotedge --root /var/lib/containerd-iotedge/ --address /run/containerd-iotedge/containerd-iotedge.sock@g' \
         -i ${D}${systemd_system_unitdir}/containerd-iotedge.service
 }
 
