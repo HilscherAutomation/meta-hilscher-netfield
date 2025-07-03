@@ -115,7 +115,7 @@ check_interfaces() {
       fi
 
       default_metric=$(get_value "$interface/metric")
-      if [ -n "$gateway" ]; then
+      if [ -n "$default_metric" ]; then
            nmcli connection modify "$name" "ipv4.route-metric" "$default_metric"
       fi
 
@@ -128,6 +128,11 @@ check_interfaces() {
             nmcli connection modify "$name" "+ipv4.dns" "$ip"
           fi
         done
+      fi
+
+      dns_prio=$(get_value "$interface/dns-priority")
+      if [ -n "$dns_prio" ]; then
+           nmcli connection modify "$name" "ipv4.dns-priority" "$dns_prio"
       fi
 
       if [ -d "$interface/routes" ]; then

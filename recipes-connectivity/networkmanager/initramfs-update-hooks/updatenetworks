@@ -4,14 +4,20 @@ updatenetworks_preoverlay() {
 	:
 }
 
-NEW_METRICS="eth0:90 eth1:110"
+ROUTE_METRIC_ETH0="90"
+DNS_PRIORITY_ETH0="90"
+ROUTE_METRIC_ETH1="110"
+DNS_PRIORITY_ETH1="110"
+
+NEW_NET_SETUP="eth0:${ROUTE_METRIC_ETH0}:${DNS_PRIORITY_ETH0} eth1:${ROUTE_METRIC_ETH1}:${DNS_PRIORITY_ETH1}"
 
 updatenetworks_postoverlay() {
 	echo "Updating network connections ..."
 
-	for tmp_metric in $NEW_METRICS; do
-		new_if=$(echo $tmp_metric | cut -d':' -f1)
-		new_metric=$(echo $tmp_metric | cut -d':' -f2)
+	for tmp_conf in $NEW_NET_SETUP; do
+		new_if=$(echo $tmp_conf | cut -d':' -f1)
+		new_metric=$(echo $tmp_conf | cut -d':' -f2)
+		new_dns_prio=$(echo $tmp_conf | cut -d':' -f3)
 		conn_file="${ROOTFS_DIR}/etc/NetworkManager/system-connections/$new_if"
 
 		if [ ! -e "$conn_file" ]; then
@@ -23,6 +29,14 @@ updatenetworks_postoverlay() {
 		if [ "$act_metric" = "-1" ] || [ -z "$act_metric" ]; then
 			echo "Updating metric of $new_if from $act_metric -> $new_metric"
 			sed -e "/\[ipv4\]/a route-metric=$new_metric" \
+                            -i "$conn_file"
+		fi
+
+		act_dns_prio=$(awk -v RS= -v ORS='\n\n' '/\[ipv4\]/' "$conn_file" | grep "dns-priority")
+		# default prio is 0 (according to https://networkmanager.dev/docs/api/latest/settings-ipv4.html)
+		if [ "$act_dns_prio" = "0" ] || [ -z "$act_dns_prio" ]; then
+			echo "Updating DNS priority of $new_if from $act_dns_prio -> $new_dns_prio"
+			sed -e "/\[ipv4\]/a dns-priority=$new_dns_prio" \
                             -i "$conn_file"
 		fi
 	done
