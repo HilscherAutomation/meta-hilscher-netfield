@@ -26,6 +26,8 @@ RDEPENDS:${PN}:append = " acl"
 RDEPENDS:${PN}:append = " bash"
 # toml-cli is required for aziot-genca script
 RDEPENDS:${PN}:append = " toml-cli"
+# containerd-iotedge is required for second containerd service
+RDEPENDS:${PN}:append = " containerd-iotedge"
 
 SYSTEMD_SERVICE:${PN}:append = " iotedge-docker.service iotedge-docker.socket iotedge.slice"
 

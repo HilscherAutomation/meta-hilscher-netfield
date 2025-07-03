@@ -1,5 +1,6 @@
 {
   "log-driver": "journald",
+  "containerd": "/run/containerd-iotedge/containerd-iotedge.sock",
   "bridge"    : "iotedge0",
   "data-root" : "/run/overlay/iotedge-docker",
   "pidfile"   : "/var/run/iotedge-docker.pid",
