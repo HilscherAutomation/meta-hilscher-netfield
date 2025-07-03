@@ -45,6 +45,6 @@
 {"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"imx-drm 32c00000.bus:display-subsystem: no available port"}
 {"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"of_reserved_mem_lookup() returned NULL"}
 {"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"pub_key_loader: loading out-of-tree module taints kernel."}
-{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"rtc-abx80x 1-0069: CCCCreate sysfs group: 0"}
+{"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"rtc-abx80x 1-0069: Create sysfs group: 0"}
 {"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"usb_phy_generic usbphynop1: supply vcc not found, using dummy regulator"}
 {"SYSLOG_IDENTIFIER":"kernel","MESSAGE":"usb_phy_generic usbphynop2: supply vcc not found, using dummy regulator"}
