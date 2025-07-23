@@ -1,3 +1,6 @@
+# dbus support is required to interact with NetworkManager
+PACKAGECONFIG:append = " dbus"
+
 do_install:append() {
     # Add --bind-dynamic to service to allow handling hot-pluggable devices, like WiFi, BT, USB adaptors
     sed -i -e 's/--local-service/--local-service --bind-dynamic/g' \
