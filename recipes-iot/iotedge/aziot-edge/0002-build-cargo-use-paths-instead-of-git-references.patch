@@ -1,0 +1,223 @@
+From 9e28b1346bbee01917cf72a0970d08f730d00e25 Mon Sep 17 00:00:00 2001
+From: Christoph Rahn <christoph.rahn@emlix.com>
+Date: Fri, 25 Jul 2025 13:34:47 +0200
+Subject: [PATCH] build(cargo): use paths instead of git references for
+ packages
+
+---
+ aziot-edged/Cargo.toml           | 10 ++++-----
+ edgelet-core/Cargo.toml          |  2 +-
+ edgelet-docker/Cargo.toml        |  2 +-
+ edgelet-http-mgmt/Cargo.toml     | 10 ++++-----
+ edgelet-http-workload/Cargo.toml | 28 ++++++++++++------------
+ edgelet-http/Cargo.toml          |  2 +-
+ edgelet-image-cleanup/Cargo.toml |  2 +-
+ edgelet-settings/Cargo.toml      |  8 +++----
+ edgelet-test-utils/Cargo.toml    |  4 ++--
+ iotedge/Cargo.toml               | 24 ++++++++++----------
+ 10 files changed, 46 insertions(+), 46 deletions(-)
+
+diff --git a/aziot-edged/Cargo.toml b/aziot-edged/Cargo.toml
+index 297e3d415..6fb0866f3 100644
+--- a/aziot-edged/Cargo.toml
++++ b/aziot-edged/Cargo.toml
+@@ -28,9 +28,9 @@ edgelet-http-workload = { path = "../edgelet-http-workload" }
+ edgelet-image-cleanup = { path = "../edgelet-image-cleanup" }
+ edgelet-settings = { path = "../edgelet-settings", features = ["settings-docker"] }
+ 
+-aziot-identity-client-async = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
+-aziot-identity-common = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
+-aziot-identity-common-http = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
++aziot-identity-client-async = { path = "../../../iot-identity-service/identity/aziot-identity-client-async" }
++aziot-identity-common = { path = "../../../iot-identity-service/identity/aziot-identity-common" }
++aziot-identity-common-http = { path = "../../../iot-identity-service/identity/aziot-identity-common-http" }
+ 
+-http-common = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
+-logger = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
++http-common = { path = "../../../iot-identity-service/http-common" }
++logger = { path = "../../../iot-identity-service/logger" }
+diff --git a/edgelet-core/Cargo.toml b/edgelet-core/Cargo.toml
+index 2bf07cc1e..af3a6e149 100644
+--- a/edgelet-core/Cargo.toml
++++ b/edgelet-core/Cargo.toml
+@@ -21,5 +21,5 @@ thiserror = "1"
+ tokio = { version = "1", features = ["parking_lot", "sync"] }
+ url = "2"
+ 
+-aziotctl-common = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
++aziotctl-common = { path = "../../../iot-identity-service/aziotctl/aziotctl-common" }
+ edgelet-settings = { path = "../edgelet-settings" }
+diff --git a/edgelet-docker/Cargo.toml b/edgelet-docker/Cargo.toml
+index f0b24d781..e5c021d1d 100644
+--- a/edgelet-docker/Cargo.toml
++++ b/edgelet-docker/Cargo.toml
+@@ -27,4 +27,4 @@ docker = { path = "../docker-rs" }
+ edgelet-core = { path = "../edgelet-core" }
+ edgelet-settings = { path = "../edgelet-settings", features = ["settings-docker"] }
+ edgelet-utils = { path = "../edgelet-utils" }
+-http-common = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
++http-common = { path = "../../../iot-identity-service/http-common" }
+diff --git a/edgelet-http-mgmt/Cargo.toml b/edgelet-http-mgmt/Cargo.toml
+index 099585367..084b971fd 100644
+--- a/edgelet-http-mgmt/Cargo.toml
++++ b/edgelet-http-mgmt/Cargo.toml
+@@ -24,14 +24,14 @@ edgelet-http = { path = "../edgelet-http" }
+ edgelet-settings = { path = "../edgelet-settings" }
+ support-bundle = { path = "../support-bundle" }
+ 
+-aziot-identity-client-async = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
+-aziot-identity-common = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
+-aziot-identity-common-http = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
++aziot-identity-client-async = { path = "../../../iot-identity-service/identity/aziot-identity-client-async" }
++aziot-identity-common = { path = "../../../iot-identity-service/identity/aziot-identity-common" }
++aziot-identity-common-http = { path = "../../../iot-identity-service/identity/aziot-identity-common-http" }
+ 
+-http-common = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
++http-common = { path = "../../../iot-identity-service/http-common" }
+ 
+ [dev-dependencies]
+ nix = "0.26"
+ 
+ edgelet-test-utils = { path = "../edgelet-test-utils" }
+-test-common = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
++test-common = { path = "../../../iot-identity-service/test-common" }
+diff --git a/edgelet-http-workload/Cargo.toml b/edgelet-http-workload/Cargo.toml
+index 97f24466f..250394943 100644
+--- a/edgelet-http-workload/Cargo.toml
++++ b/edgelet-http-workload/Cargo.toml
+@@ -26,25 +26,25 @@ edgelet-core = { path = "../edgelet-core" }
+ edgelet-http = { path = "../edgelet-http" }
+ edgelet-settings = { path = "../edgelet-settings" }
+ 
+-aziot-key-client = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
+-aziot-key-client-async = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
+-aziot-key-common = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
+-aziot-key-common-http = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
+-aziot-key-openssl-engine = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
++aziot-key-client = { path = "../../../iot-identity-service/key/aziot-key-client" }
++aziot-key-client-async = { path = "../../../iot-identity-service/key/aziot-key-client-async" }
++aziot-key-common = { path = "../../../iot-identity-service/key/aziot-key-common" }
++aziot-key-common-http = { path = "../../../iot-identity-service/key/aziot-key-common-http" }
++aziot-key-openssl-engine = { path = "../../../iot-identity-service/key/aziot-key-openssl-engine" }
+ 
+-aziot-cert-client-async = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
+-aziot-cert-common-http = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
+-aziot-certd-config = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
++aziot-cert-client-async = { path = "../../../iot-identity-service/cert/aziot-cert-client-async" }
++aziot-cert-common-http = { path = "../../../iot-identity-service/cert/aziot-cert-common-http" }
++aziot-certd-config = { path = "../../../iot-identity-service/cert/aziot-certd-config" }
+ 
+-aziot-identity-client-async = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
+-aziot-identity-common = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
+-aziot-identity-common-http = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
++aziot-identity-client-async = { path = "../../../iot-identity-service/identity/aziot-identity-client-async" }
++aziot-identity-common = { path = "../../../iot-identity-service/identity/aziot-identity-common" }
++aziot-identity-common-http = { path = "../../../iot-identity-service/identity/aziot-identity-common-http" }
+ 
+-cert-renewal = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
+-http-common = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
++cert-renewal = { path = "../../../iot-identity-service/cert/cert-renewal" }
++http-common = { path = "../../../iot-identity-service/http-common" }
+ 
+ [dev-dependencies]
+ nix = "0.26"
+ 
+ edgelet-test-utils = { path = "../edgelet-test-utils" }
+-test-common = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
++test-common = { path = "../../../iot-identity-service/test-common" }
+diff --git a/edgelet-http/Cargo.toml b/edgelet-http/Cargo.toml
+index 9124af8c2..26d5d13e1 100644
+--- a/edgelet-http/Cargo.toml
++++ b/edgelet-http/Cargo.toml
+@@ -19,7 +19,7 @@ tokio = { version = "1", features = ["parking_lot", "sync"] }
+ edgelet-core = { path = "../edgelet-core" }
+ edgelet-settings = { path = "../edgelet-settings" }
+ 
+-http-common = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
++http-common = { path = "../../../iot-identity-service/http-common" }
+ 
+ [dev-dependencies]
+ tokio = { version = "1", features = ["macros", "rt"] }
+diff --git a/edgelet-image-cleanup/Cargo.toml b/edgelet-image-cleanup/Cargo.toml
+index 602fc3905..ed7a494ac 100644
+--- a/edgelet-image-cleanup/Cargo.toml
++++ b/edgelet-image-cleanup/Cargo.toml
+@@ -16,4 +16,4 @@ edgelet-docker = { path = "../edgelet-docker" }
+ edgelet-core = { path = "../edgelet-core" }
+ edgelet-settings = { path = "../edgelet-settings" }
+ 
+-http-common = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
++http-common = { path = "../../../iot-identity-service/http-common" }
+diff --git a/edgelet-settings/Cargo.toml b/edgelet-settings/Cargo.toml
+index 6621b1491..2ae9c6cbf 100644
+--- a/edgelet-settings/Cargo.toml
++++ b/edgelet-settings/Cargo.toml
+@@ -11,11 +11,11 @@ serde = { version = "1", features = ["derive"] }
+ humantime-serde = "1.0"
+ url = { version = "2", features = ["serde"] }
+ 
+-aziot-certd-config = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
+-cert-renewal = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
+-config-common = { git = "https://github.com/Azure/iot-identity-service", branch = "main", optional = true }
++aziot-certd-config = { path = "../../../iot-identity-service/cert/aziot-certd-config" }
++cert-renewal = { path = "../../../iot-identity-service/cert/cert-renewal" }
++config-common = { path = "../../../iot-identity-service/config-common", optional = true }
+ docker = { path = "../docker-rs", optional = true }
+-http-common = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
++http-common = { path = "../../../iot-identity-service/http-common" }
+ 
+ [dev-dependencies]
+ lazy_static = "1"
+diff --git a/edgelet-test-utils/Cargo.toml b/edgelet-test-utils/Cargo.toml
+index 045004eff..6174934d1 100644
+--- a/edgelet-test-utils/Cargo.toml
++++ b/edgelet-test-utils/Cargo.toml
+@@ -17,6 +17,6 @@ tokio = "1"
+ edgelet-core = { path = "../edgelet-core" }
+ edgelet-settings = { path = "../edgelet-settings" }
+ 
+-aziot-certd-config = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
++aziot-certd-config = { path = "../../../iot-identity-service/cert/aziot-certd-config" }
+ 
+-cert-renewal = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
++cert-renewal = { path = "../../../iot-identity-service/cert/cert-renewal" }
+diff --git a/iotedge/Cargo.toml b/iotedge/Cargo.toml
+index e70c50722..40698bd89 100644
+--- a/iotedge/Cargo.toml
++++ b/iotedge/Cargo.toml
+@@ -37,23 +37,23 @@ tokio = { version = "1", features = ["macros", "parking_lot", "process", "rt", "
+ toml = "0.7"
+ url = "2"
+ 
+-aziot-certd-config = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
+-aziot-identity-client-async = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
+-aziot-identity-common = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
+-aziot-identity-common-http = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
+-aziot-identityd-config = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
+-aziot-keyd-config = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
+-aziot-keys-common = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
+-aziot-tpmd-config = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
+-aziotctl-common = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
+-cert-renewal = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
+-config-common = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
++aziot-certd-config = { path = "../../../iot-identity-service/cert/aziot-certd-config" }
++aziot-identity-client-async = { path = "../../../iot-identity-service/identity/aziot-identity-client-async" }
++aziot-identity-common = { path = "../../../iot-identity-service/identity/aziot-identity-common" }
++aziot-identity-common-http = { path = "../../../iot-identity-service/identity/aziot-identity-common-http" }
++aziot-identityd-config = { path = "../../../iot-identity-service/identity/aziot-identityd-config" }
++aziot-keyd-config = { path = "../../../iot-identity-service/key/aziot-keyd-config" }
++aziot-keys-common = { path = "../../../iot-identity-service/key/aziot-keys-common" }
++aziot-tpmd-config = { path = "../../../iot-identity-service/tpm/aziot-tpmd-config" }
++aziotctl-common = { path = "../../../iot-identity-service/aziotctl/aziotctl-common" }
++cert-renewal = { path = "../../../iot-identity-service/cert/cert-renewal" }
++config-common = { path = "../../../iot-identity-service/config-common" }
+ docker = { path = "../docker-rs" }
+ edgelet-core = { path = "../edgelet-core" }
+ edgelet-http = { path = "../edgelet-http" }
+ edgelet-settings = { path = "../edgelet-settings", features = ["settings-docker"] }
+ edgelet-utils = { path = "../edgelet-utils" }
+-http-common = { git = "https://github.com/Azure/iot-identity-service", branch = "main" }
++http-common = { path = "../../../iot-identity-service/http-common" }
+ support-bundle = { path = "../support-bundle" }
+ 
+ [features]
