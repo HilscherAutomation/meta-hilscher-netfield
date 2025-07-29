@@ -17,7 +17,7 @@ PACKAGES=+"${PN}-apps ${PN}-ovirt ${PN}-packagekit ${PN}-selinux ${PN}-sosreport
 
 DEPENDS="json-glib krb5 polkit systemd"
 DEPENDS+="intltool-native glib-2.0-native coreutils-native nodejs-native \
-          libxslt-native xmlto-native"
+          libxslt-native xmlto-native python3-native"
 
 RDEPENDS:${PN} = "glib-networking openssh-misc bash libpwquality libpam"
 RDEPENDS:${PN}-storaged = ""
