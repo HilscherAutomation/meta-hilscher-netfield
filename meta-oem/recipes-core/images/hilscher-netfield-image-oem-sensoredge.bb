@@ -30,7 +30,6 @@ VENDOR_VARIANT_ID="sensoredge"
 
 # Additional packages
 OEM_IMAGE_INSTALL += " \
-	cockpit-branding-netfield-sensoredge \
 	cockpit-oem-ovl-remove-docker \
 	cockpit-oem-ovl-remove-general-settings \
 	cockpit-oem-ovl-remove-iotedge-docker \
