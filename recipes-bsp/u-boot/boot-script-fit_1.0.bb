@@ -75,7 +75,8 @@ inherit hilscher-deploy
 hd_path = "${HDEPLOY_PATH_EXTRAS}/boot-scripts"
 
 do_hilscher_deploy() {
-	cp -r ${DEPLOYDIR}/${PN}/* "${hd_path}/"
+	install -d "${hd_path}"
+	install ${DEPLOYDIR}/${PN}/* "${hd_path}/"
 }
 do_hilscher_deploy[cleandirs] = "${hd_path}/"
 addtask hilscher_deploy before do_build after do_deploy

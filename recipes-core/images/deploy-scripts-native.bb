@@ -14,6 +14,7 @@ SRC_URI = "file://deploy-fastboot \
 hd_path = "${HDEPLOY_PATH_EXTRAS}/"
 
 do_hilscher_deploy() {
+	install -d "${hd_path}"
 	install -m 755 ${WORKDIR}/deploy-fastboot "${hd_path}/"
 	install -m 755 ${WORKDIR}/deploy-wic-bz2 "${hd_path}/"
 }
