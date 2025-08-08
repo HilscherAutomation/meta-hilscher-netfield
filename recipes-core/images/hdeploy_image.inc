@@ -11,9 +11,10 @@ do_hilscher_deploy() {
 		install -d "${HDEPLOY_PATH_IMAGE}"
 		# Deploy images
 		for file in $(find ${IMGDEPLOYDIR} -type l -name "*.$ext"); do
-			cp -a $(readlink -f $file) "${HDEPLOY_PATH_IMAGE}"/
+			hd_filename="${DISTRO_NAME_SLUG}_${FULL_FW_VERSION}_${MACHINE}_$(basename $file)"
+			cp -a $(readlink -f $file) "${HDEPLOY_PATH_IMAGE}/${hd_filename}"
 			if [ ${ext} == "squashfs" ] && [ -e "${file}.sig" ]; then
-				cp -a $(readlink -f "${file}.sig") "${HDEPLOY_PATH_IMAGE}"/
+				cp -a $(readlink -f "${file}.sig") "${HDEPLOY_PATH_IMAGE}/${hd_filename}.sig"
 			fi
 		done
 		if [ ! -h "${HDEPLOY_PATH_IMAGE}/deploy-wic-bz2" ] && [ "${ext}" = "wic.bz2" ]; then
