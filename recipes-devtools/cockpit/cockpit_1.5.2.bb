@@ -14,7 +14,7 @@ EXTRA_OECONF:append = " ${@bb.utils.contains("IMAGE_FEATURES", "debug-tweaks", "
 do_configure:prepend() {
   echo "${PV}" > ${S}/.tarball
 
-  sh autogen.sh ${CONFIGUREOPTS} ${EXTRA_OECONF} $@
+  PYTHON=${WORKDIR}/recipe-sysroot-native/usr/bin/python3-native/python3 sh autogen.sh ${CONFIGUREOPTS} ${EXTRA_OECONF} $@
 }
 
 require cockpit.inc

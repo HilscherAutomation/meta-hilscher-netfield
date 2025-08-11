@@ -1,0 +1,59 @@
+# github.com/elliotchance/orderedmap v1.3.0
+## explicit
+github.com/elliotchance/orderedmap
+# github.com/fatih/color v1.10.0
+## explicit
+github.com/fatih/color
+# github.com/goccy/go-yaml v1.8.4
+## explicit
+github.com/goccy/go-yaml/ast
+github.com/goccy/go-yaml/lexer
+github.com/goccy/go-yaml/printer
+github.com/goccy/go-yaml/scanner
+github.com/goccy/go-yaml/token
+# github.com/inconshreveable/mousetrap v1.0.0
+github.com/inconshreveable/mousetrap
+# github.com/jinzhu/copier v0.1.0
+## explicit
+github.com/jinzhu/copier
+# github.com/mattn/go-colorable v0.1.8
+github.com/mattn/go-colorable
+# github.com/mattn/go-isatty v0.0.12
+github.com/mattn/go-isatty
+# github.com/spf13/cobra v1.1.1
+## explicit
+github.com/spf13/cobra
+# github.com/spf13/pflag v1.0.5
+github.com/spf13/pflag
+# github.com/timtadh/data-structures v0.5.3
+## explicit
+github.com/timtadh/data-structures/errors
+github.com/timtadh/data-structures/hashtable
+github.com/timtadh/data-structures/linked
+github.com/timtadh/data-structures/list
+github.com/timtadh/data-structures/rand
+github.com/timtadh/data-structures/set
+github.com/timtadh/data-structures/tree
+github.com/timtadh/data-structures/tree/avl
+github.com/timtadh/data-structures/types
+# github.com/timtadh/lexmachine v0.2.2
+## explicit
+github.com/timtadh/lexmachine
+github.com/timtadh/lexmachine/dfa
+github.com/timtadh/lexmachine/frontend
+github.com/timtadh/lexmachine/inst
+github.com/timtadh/lexmachine/machines
+github.com/timtadh/lexmachine/queue
+# golang.org/x/sys v0.0.0-20210105210732-16f7687f5001
+## explicit
+golang.org/x/sys/internal/unsafeheader
+golang.org/x/sys/unix
+# golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
+golang.org/x/xerrors
+golang.org/x/xerrors/internal
+# gopkg.in/op/go-logging.v1 v1.0.0-20160211212156-b2cb9fa56473
+## explicit
+gopkg.in/op/go-logging.v1
+# gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
+## explicit
+gopkg.in/yaml.v3
