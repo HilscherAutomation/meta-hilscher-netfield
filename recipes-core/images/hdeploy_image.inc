@@ -17,12 +17,6 @@ do_hilscher_deploy() {
 				cp -a $(readlink -f "${file}.sig") "${HDEPLOY_PATH_IMAGE}/${hd_filename}.sig"
 			fi
 		done
-		if [ ! -h "${HDEPLOY_PATH_IMAGE}/deploy-wic-bz2" ] && [ "${ext}" = "wic.bz2" ]; then
-			ln -s ../extras/deploy-wic-bz2 "${HDEPLOY_PATH_IMAGE}"/deploy-wic-bz2
-		fi
-		if [ ! -h "${HDEPLOY_PATH_IMAGE}/deploy-fastboot" ] && [ "${ext}" = "fastboot" ]; then
-			ln -s ../extras/deploy-fastboot "${HDEPLOY_PATH_IMAGE}"/deploy-fastboot
-		fi
 	done
 }
 do_hilscher_deploy[cleandirs] = "${HDEPLOY_PATH_IMAGE}/"
