@@ -89,7 +89,7 @@ IMAGE_INSTALL += "opa-docker-authz"
 IMAGE_INSTALL += "rng-tools"
 
 # Administration tools
-IMAGE_INSTALL += "cockpit cockpit-ws"
+IMAGE_INSTALL += "cockpit cockpit-ws netfield-cockpit-extension"
 IMAGE_INSTALL += "sudo"
 
 # Tools / Addons
