@@ -40,7 +40,7 @@ RDEPENDS:${PN} += "glib-networking"
 
 REQUIRED_DISTRO_FEATURES = "systemd pam"
 
-COCKPIT_USER_GROUP ?= "root"
+COCKPIT_USER_GROUP ?= "cockpit-ws"
 
 EXTRA_AUTORECONF = "-I tools"
 EXTRA_OECONF = " \
@@ -52,7 +52,6 @@ EXTRA_OECONF = " \
     --prefix=/usr \
 "
 
-PACKAGECONFIG[pcp] = ",,pcp"
 PACKAGECONFIG[dashboard] = ",,libssh"
 #PACKAGECONFIG[storaged] = ",,udisks2"
 

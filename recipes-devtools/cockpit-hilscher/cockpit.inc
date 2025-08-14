@@ -25,9 +25,9 @@ export SSH_ADD="/usr/bin/ssh-add"
 export SSH_AGENT="/usr/bin/ssh-agent"
 export PKEXEC="/usr/bin/pkexec"
 
-PACKAGECONFIG ??= "ssh"
-PACKAGECONFIG[ssh]=",--disable-ssh,libssh"
 PACKAGECONFIG[asan]="--enable-asan=yes,--enable-asan=no,asan"
+
+RDEPENDS:${PN} = "glib-networking libpwquality libpam"
 
 # Split up branding themes into separate packages
 PACKAGES_DYNAMIC += "^${PN}-branding-.*"
