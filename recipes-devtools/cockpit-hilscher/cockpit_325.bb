@@ -52,14 +52,9 @@ EXTRA_OECONF = " \
     --prefix=/usr \
 "
 
-PACKAGECONFIG ??= " \
-    ${@bb.utils.filter('DISTRO_FEATURES', 'polkit', d)} \
-"
-
 PACKAGECONFIG[pcp] = ",,pcp"
 PACKAGECONFIG[dashboard] = ",,libssh"
 #PACKAGECONFIG[storaged] = ",,udisks2"
-PACKAGECONFIG[polkit] = ",,polkit"
 
 PACKAGES =+ " \
     ${PN}-pcp \
@@ -180,7 +175,6 @@ SYSTEMD_SERVICE:${PN}-ws = "cockpit.socket"
 FILES:${PN} += " \
     ${datadir}/cockpit/base1 \
     ${sysconfdir}/cockpit/machines.d \
-    ${datadir}/polkit-1/actions/org.cockpit-project.cockpit-bridge.policy \
     ${datadir}/cockpit/ssh \
     ${libexecdir}/cockpit-ssh \
     ${datadir}/cockpit \
