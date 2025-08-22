@@ -7,9 +7,12 @@ SRC_URI +="file://cockpit.service \
            file://cockpit.pam \
            file://cockpit.conf \
            file://99-cockpit.conf \
+           file://cockpit-session-socket-user.service \
+           file://cockpit-session.socket \
+           file://0001-change-user-group-to-cockpit-ws.patch \
 "
 
-inherit autotools-brokensep gettext useradd
+inherit autotools-brokensep gettext useradd systemd
 
 USERADD_PACKAGES = "${PN}"
 USERADD_PARAM:${PN} = "--system --no-create-home --home-dir /var/lib/cockpit --shell /sbin/nologin --user-group cockpit-ws"
@@ -27,7 +30,7 @@ export PKEXEC="/usr/bin/pkexec"
 
 PACKAGECONFIG[asan]="--enable-asan=yes,--enable-asan=no,asan"
 
-RDEPENDS:${PN} = "glib-networking libpwquality libpam"
+RDEPENDS:${PN} = "glib-networking openssh-misc libpwquality libpam"
 
 # Split up branding themes into separate packages
 PACKAGES_DYNAMIC += "^${PN}-branding-.*"
@@ -51,6 +54,9 @@ do_install:append() {
 
   install -m 0644 ${WORKDIR}/${PN}.service ${D}${systemd_unitdir}/system
   install -m 0644 ${WORKDIR}/${PN}.socket ${D}${systemd_unitdir}/system
+
+  install -m 0644 ${WORKDIR}/cockpit-session-socket-user.service ${D}${systemd_unitdir}/system
+  install -m 0644 ${WORKDIR}/cockpit-session.socket ${D}${systemd_unitdir}/system
 
   install -d ${D}${sysconfdir}/nginx/services/https
   install ${WORKDIR}/99-cockpit.conf ${D}${sysconfdir}/nginx/services/https/
