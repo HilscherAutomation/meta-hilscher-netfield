@@ -26,7 +26,7 @@ do_archive_extras() {
 	archive_location="${HILSCHER_DEPLOY_ROOT_DIR}/${ORGANIZATION}/${DISTRO_NAME_SLUG}/${FULL_FW_VERSION}/${MACHINE}"
 
 	if [ -d "${archive_location}/extras" ]; then
-		tar zcf "${archive_location}/${DISTRO_NAME_SLUG}-${FULL_FW_VERSION}_${MACHINE}_extras.tar.gz" "${archive_location}/extras"
+		tar zcf "${archive_location}/${DISTRO_NAME_SLUG}_${FULL_FW_VERSION}_${MACHINE}_extras.tar.gz" "${archive_location}/extras"
 		rm -rf "${archive_location}/extras"
 	fi
 }
