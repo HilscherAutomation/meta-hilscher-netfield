@@ -4,15 +4,16 @@ HOMEPAGE = "git://github.com/kubernetes/kubernetes;branch=master;protocol=https"
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM="file://src/github.com/kubernetes/kubernetes/LICENSE;md5=3b83ef96387f14655fc854ddc3c6bd57"
 
-PV = "1.32.3"
-CVE_VERSION = "1.32.3"
+PV = "1.33.3"
+CVE_VERSION = "1.33.3"
 
 GO_IMPORT="github.com/kubernetes/kubernetes"
 
-SRCREV_kubernetes = "32cc146f75aad04beaaa245a7157eb35063a9f99"
+SRCREV_kubernetes = "80779bd6ff08b451e1c165a338a7b69351e9b0b8"
 SRCREV_release = "c9d35e44243dce12e40ee2b60faddb3fea2f76f6"
-SRC_URI = "git://github.com/kubernetes/kubernetes;branch=release-1.32;name=kubernetes;protocol=https \
-           git://github.com/kubernetes/release;branch=master;name=release;destsuffix=git/release;protocol=https"
+SRC_URI = "git://github.com/kubernetes/kubernetes;branch=release-1.33;name=kubernetes;protocol=https \
+           git://github.com/kubernetes/release;branch=master;name=release;destsuffix=git/release;protocol=https \
+           "
 
 SRC_URI:append = " \
 	file://0001-build-golang.sh-convert-remaining-go-calls-to-use.patch;patchdir=src/${GO_IMPORT} \
