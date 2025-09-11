@@ -89,8 +89,21 @@ IMAGE_INSTALL += "kubelet cri-dockerd"
 # rng-tools uses HW random generator whenever possible
 IMAGE_INSTALL += "rng-tools"
 
+COCKPIT_PACKAGES = " \
+    cockpit \
+    cockpit-branding-default \
+    cockpit-branding-netfield \
+    cockpit-dashboard \
+    cockpit-kdump \
+    cockpit-networkmanager \
+    cockpit-shell \
+    cockpit-systemd \
+    cockpit-users \
+    cockpit-ws \
+"
+
 # Administration tools
-IMAGE_INSTALL += "cockpit cockpit-ws netfield-cockpit-extension"
+IMAGE_INSTALL += "${COCKPIT_PACKAGES} netfield-cockpit-extension"
 IMAGE_INSTALL += "sudo"
 
 # Tools / Addons
