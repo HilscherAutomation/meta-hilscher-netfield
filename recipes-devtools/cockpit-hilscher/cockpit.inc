@@ -15,7 +15,7 @@ SRC_URI +="file://cockpit.service \
 inherit autotools-brokensep gettext useradd systemd
 
 USERADD_PACKAGES = "${PN}"
-USERADD_PARAM:${PN} = "--system --no-create-home --home-dir /var/lib/cockpit --shell /sbin/nologin --user-group cockpit-ws"
+USERADD_PARAM:${PN} = "--system --no-create-home --home-dir /var/lib/cockpit --shell /sbin/nologin --user-group ${COCKPIT_USER_GROUP}"
 
 SYSTEMD_PACKAGES="${PN}"
 SYSTEMD_SERVICE:${PN}="${PN}.service"
@@ -74,7 +74,7 @@ do_install:append() {
 
   # Create home directories for users
   install -d ${D}${libdir}/tmpfiles.d
-  echo 'd /var/lib/cockpit 0775 root cockpit-ws -' > ${D}${libdir}/tmpfiles.d/cockpit.conf
+  echo 'd /var/lib/cockpit 0775 ${COCKPIT_USER_GROUP} ${COCKPIT_USER_GROUP} -' > ${D}${libdir}/tmpfiles.d/cockpit.conf
 }
 
 SECURITY_CFLAGS = "${SECURITY_NO_PIE_CFLAGS}"
