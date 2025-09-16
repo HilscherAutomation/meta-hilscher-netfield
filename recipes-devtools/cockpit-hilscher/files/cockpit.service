@@ -15,10 +15,6 @@ ExecStart=/usr/libexec/cockpit-ws --for-tls-proxy
 PermissionsStartOnly=true
 User=cockpit-ws
 Group=cockpit-ws
-ProtectSystem=strict
-PrivateDevices=yes
-ProtectKernelTunables=yes
-MemoryDenyWriteExecute=yes
 
 [Install]
 WantedBy=multi-user.target
