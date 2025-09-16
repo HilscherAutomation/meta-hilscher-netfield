@@ -5,8 +5,8 @@ Wants=cockpit-issue.service
 
 [Socket]
 ListenStream=127.0.0.1:25000
-ExecStartPost=-/bin/ln -sf /usr/share/cockpit/issue/active.issue /run/cockpit/issue
-ExecStopPost=-/bin/ln -sf /usr/share/cockpit/issue/inactive.issue /run/cockpit/issue
+ExecStartPost=-/bin/ln -sf active.issue /run/cockpit/issue
+ExecStopPost=-/bin/ln -sf inactive.issue /run/cockpit/issue
 
 [Install]
 WantedBy=sockets.target
