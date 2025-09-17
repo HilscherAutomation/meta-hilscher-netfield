@@ -1,3 +1,0 @@
-#!/bin/sh
-
-curl --unix-socket /var/run/iotedge/mgmt.sock http://dummy/modules?api-version=2018-06-28
