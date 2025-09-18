@@ -48,7 +48,8 @@ EXTRA_OECONF = " \
     --disable-doc \
     --with-systemdunitdir=${systemd_system_unitdir} \
     --with-pamdir=${base_libdir}/security \
-    --enable-debug \
+    --enable-debug=no \
+    --enable-strict \
     --prefix=/usr \
 "
 
