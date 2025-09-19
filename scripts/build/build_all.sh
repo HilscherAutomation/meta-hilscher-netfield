@@ -272,19 +272,6 @@ EOF
 		rm -rf "${src_release_dir}"
 	fi
 
-	if [ "$create_sbom" = "1" ]; then
-		# Copy SBOM
-		if echo "$target" | grep "-oem-all$"; then
-			# OEM image, so we need the netfield-image-oem base image's manifest
-			# strip -all first as license is netfield-image-oem-${machine}-...
-			fulltarget=$(echo "$target" | sed 's@-all$@@')
-			sbom_file=$(readlink -f tmp/deploy/images/$machine/${fulltarget}-${machine}.sbom.json)
-		else
-			sbom_file=$(readlink -f tmp/deploy/images/$machine/${target}-${machine}.sbom.json)
-		fi
-		cp -L $sbom_file $DEPLOY_DIR/$machine/$FW_VERSION/
-	fi
-
 	# Run CVE check
 	if [ "$cve_check_enabled" = "1" ]; then
 		# convert -oem-all to -oem
