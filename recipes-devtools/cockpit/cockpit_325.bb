@@ -9,7 +9,7 @@ inherit gettext pkgconfig autotools systemd features_check
 inherit ${@bb.utils.contains('PACKAGECONFIG', 'old-bridge', '', 'python3targetconfig', d)}
 
 SRC_URI += " \
-    git://github.com/HilscherAutomation/cockpit;protocol=https;branch=hilscher-features-325-netfieldOS-2.6.0.0-rc1-fixes;name=cockpit \
+    git://github.com/HilscherAutomation/cockpit;protocol=https;branch=hilscher-features-325;name=cockpit \
     git://github.com/allisonkarlitskaya/systemd_ctypes.git;protocol=https;branch=main;destsuffix=git/vendor/systemd_ctypes;name=ctypes \
     git://github.com/cockpit-project/node-cache.git;protocol=https;nobranch=1;destsuffix=git/node_modules;name=node-cache \
     git://github.com/cockpit-project/pixel-test-reference;protocol=https;nobranch=1;destsuffix=git/test/reference;name=pixel-test-reference \
@@ -20,7 +20,7 @@ SRC_URI += " \
     file://0001-add-default-origin-with-port.patch \
     "
 
-SRCREV_cockpit = "3ff02e637a80ce495554633de150b10aa073508e"
+SRCREV_cockpit = "de0bd40e82d092df882fcd7c44f75c5eaaa43d30"
 SRCREV_ctypes = "c7df9c0114641e2063dc56608c4671fe73a984fb"
 # Found via tags in node-cache repository
 SRCREV_node-cache = "9110090aa24d4bfd435a0c7e283bafe1790481a0"

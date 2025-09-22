@@ -5,7 +5,7 @@ LICENSE = "CLOSED"
 SRC_URI = " \
     file://${BPN}_${PV}.tar.gz \
 "
-SRC_URI[sha256sum] = "64a437c8e1c4ed32d36426f90c4752d36ee2ab5286b19c8f4b01f0c7c880b21e"
+SRC_URI[sha256sum] = "d387c0f6527eab6ad89ea3fa61e8fa71473a791dba326c1d5e40572ade64bbae"
 
 S = "${WORKDIR}"
 
