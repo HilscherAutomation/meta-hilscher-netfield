@@ -18,6 +18,12 @@ do_hilscher_deploy() {
 			fi
 		done
 	done
+	# collect sbom if it exists
+	sbom=$(find ${IMGDEPLOYDIR} -type l -name "*.sbom.json")
+	if [ -n "${sbom}" ]; then
+		hd_sbom_filename="${DISTRO_NAME_SLUG}_${FULL_FW_VERSION}_${MACHINE}_$(basename $sbom)"
+		cp -a $(readlink -f ${sbom}) "${HDEPLOY_PATH_IMAGE}/${hd_sbom_filename}"
+	fi
 }
 do_hilscher_deploy[cleandirs] = "${HDEPLOY_PATH_IMAGE}/"
 addtask hilscher_deploy before do_build after do_image_complete
