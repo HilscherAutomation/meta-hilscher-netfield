@@ -1,0 +1,108 @@
+From 8587c4c75ef0fc44d64ac8e8011ac9c1ea794543 Mon Sep 17 00:00:00 2001
+From: Christoph Rahn <christoph.rahn@emlix.com>
+Date: Mon, 18 Aug 2025 13:23:46 +0200
+Subject: [PATCH] change user, group to cockpit-ws
+
+---
+ src/systemd/cockpit-session.socket                  | 2 +-
+ src/systemd/cockpit-wsinstance-http.service.in      | 2 +-
+ src/systemd/cockpit-wsinstance-http.socket          | 2 +-
+ src/systemd/cockpit-wsinstance-https-factory.socket | 2 +-
+ src/systemd/cockpit-wsinstance-https@.service.in    | 2 +-
+ src/systemd/cockpit-wsinstance-https@.socket        | 2 +-
+ src/systemd/cockpit-wsinstance-socket-user.service  | 4 ++--
+ 7 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/src/systemd/cockpit-session.socket b/src/systemd/cockpit-session.socket
+index 57df4386a..47faa0a40 100644
+--- a/src/systemd/cockpit-session.socket
++++ b/src/systemd/cockpit-session.socket
+@@ -7,7 +7,7 @@ After=cockpit-session-socket-user.service
+ [Socket]
+ ListenStream=/run/cockpit/session
+ SocketUser=root
+-SocketGroup=cockpit-session-socket
++SocketGroup=cockpit-ws
+ SocketMode=0660
+ RemoveOnStop=yes
+ Accept=yes
+diff --git a/src/systemd/cockpit-wsinstance-http.service.in b/src/systemd/cockpit-wsinstance-http.service.in
+index 539b90345..ba55d2899 100644
+--- a/src/systemd/cockpit-wsinstance-http.service.in
++++ b/src/systemd/cockpit-wsinstance-http.service.in
+@@ -8,7 +8,7 @@ After=cockpit-session.socket
+ [Service]
+ ExecStart=@libexecdir@/cockpit-ws --no-tls --port=0
+ DynamicUser=yes
+-Group=cockpit-session-socket
++Group=cockpit-ws
+ 
+ PrivateDevices=yes
+ ProtectKernelTunables=yes
+diff --git a/src/systemd/cockpit-wsinstance-http.socket b/src/systemd/cockpit-wsinstance-http.socket
+index d98fa5ff1..24efe3566 100644
+--- a/src/systemd/cockpit-wsinstance-http.socket
++++ b/src/systemd/cockpit-wsinstance-http.socket
+@@ -9,6 +9,6 @@ After=cockpit-wsinstance-socket-user.service
+ [Socket]
+ ListenStream=/run/cockpit/wsinstance/http.sock
+ SocketUser=root
+-SocketGroup=cockpit-wsinstance-socket
++SocketGroup=cockpit-ws
+ SocketMode=0660
+ RemoveOnStop=yes
+diff --git a/src/systemd/cockpit-wsinstance-https-factory.socket b/src/systemd/cockpit-wsinstance-https-factory.socket
+index 1e552ce31..72cbf63f9 100644
+--- a/src/systemd/cockpit-wsinstance-https-factory.socket
++++ b/src/systemd/cockpit-wsinstance-https-factory.socket
+@@ -10,6 +10,6 @@ After=cockpit-wsinstance-socket-user.service
+ ListenStream=/run/cockpit/wsinstance/https-factory.sock
+ Accept=yes
+ SocketUser=root
+-SocketGroup=cockpit-wsinstance-socket
++SocketGroup=cockpit-ws
+ SocketMode=0660
+ RemoveOnStop=yes
+diff --git a/src/systemd/cockpit-wsinstance-https@.service.in b/src/systemd/cockpit-wsinstance-https@.service.in
+index f66c9f874..e55574367 100644
+--- a/src/systemd/cockpit-wsinstance-https@.service.in
++++ b/src/systemd/cockpit-wsinstance-https@.service.in
+@@ -9,7 +9,7 @@ After=cockpit-session.socket
+ Slice=system-cockpithttps.slice
+ ExecStart=@libexecdir@/cockpit-ws --for-tls-proxy --port=0
+ DynamicUser=yes
+-Group=cockpit-session-socket
++Group=cockpit-ws
+ 
+ PrivateDevices=yes
+ ProtectKernelTunables=yes
+diff --git a/src/systemd/cockpit-wsinstance-https@.socket b/src/systemd/cockpit-wsinstance-https@.socket
+index 7277338e9..de50d42e7 100644
+--- a/src/systemd/cockpit-wsinstance-https@.socket
++++ b/src/systemd/cockpit-wsinstance-https@.socket
+@@ -13,6 +13,6 @@ After=cockpit-wsinstance-socket-user.service
+ [Socket]
+ ListenStream=/run/cockpit/wsinstance/https@%i.sock
+ SocketUser=root
+-SocketGroup=cockpit-wsinstance-socket
++SocketGroup=cockpit-ws
+ SocketMode=0660
+ RemoveOnStop=yes
+diff --git a/src/systemd/cockpit-wsinstance-socket-user.service b/src/systemd/cockpit-wsinstance-socket-user.service
+index cded24a5f..7e9ed6e64 100644
+--- a/src/systemd/cockpit-wsinstance-socket-user.service
++++ b/src/systemd/cockpit-wsinstance-socket-user.service
+@@ -4,8 +4,8 @@ BindsTo=cockpit.service
+ 
+ [Service]
+ DynamicUser=yes
+-User=cockpit-wsinstance-socket
+-Group=cockpit-wsinstance-socket
++User=cockpit-ws
++Group=cockpit-ws
+ Type=oneshot
+ ExecStart=/bin/true
+ RemainAfterExit=yes
+-- 
+2.43.0
+

@@ -1,0 +1,46 @@
+From 2b18195972d382ceaad1749ba9334df8ee6da237 Mon Sep 17 00:00:00 2001
+From: Christoph Rahn <christoph.rahn@emlix.com>
+Date: Wed, 13 Aug 2025 17:44:38 +0200
+Subject: [PATCH] add default origin with port
+
+---
+ src/ws/cockpitwebservice.c | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
+
+diff --git a/src/ws/cockpitwebservice.c b/src/ws/cockpitwebservice.c
+index caefa1799..cca02bffd 100644
+--- a/src/ws/cockpitwebservice.c
++++ b/src/ws/cockpitwebservice.c
+@@ -1306,7 +1306,7 @@ cockpit_web_service_create_socket (const gchar **protocols,
+   const gchar * const *origins;
+   gchar *allocated = NULL;
+   gchar *origin = NULL;
+-  gchar *defaults[2];
++  gchar *defaults[3];
+   gboolean is_https;
+   gchar *url;
+ 
+@@ -1323,9 +1323,20 @@ cockpit_web_service_create_socket (const gchar **protocols,
+   origins = cockpit_conf_strv ("WebService", "Origins", ' ');
+   if (origins == NULL)
+     {
++      const gchar *server_port = NULL;
++      GHashTable *headers = cockpit_web_request_get_headers (request);
++      
+       origin = g_strdup_printf ("%s://%s", protocol, host);
+       defaults[0] = origin;
+       defaults[1] = NULL;
++      defaults[2] = NULL;
++
++      if (headers)
++        {
++          server_port = g_hash_table_lookup (headers, "X-Forwarded-Port");
++          if (server_port)
++            defaults[1] = g_strdup_printf ("%s://%s:%s", is_https ? "https" : "http", host, server_port);
++        }
+       origins = (const gchar **)defaults;
+     }
+ 
+-- 
+2.43.0
+

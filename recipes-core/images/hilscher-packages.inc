@@ -80,6 +80,7 @@ IMAGE_INSTALL += "firewalld"
 # netFIELD Specific stuff
 IMAGE_INSTALL += "docker iotedge docker-compose"
 IMAGE_INSTALL += "opa-docker-authz"
+IMAGE_INSTALL += "kubelet cri-dockerd"
 
 # Package management to /opt/apps
 #IMAGE_INSTALL += "opkg"
@@ -88,8 +89,21 @@ IMAGE_INSTALL += "opa-docker-authz"
 # rng-tools uses HW random generator whenever possible
 IMAGE_INSTALL += "rng-tools"
 
+COCKPIT_PACKAGES = " \
+    cockpit \
+    cockpit-branding-default \
+    cockpit-branding-netfield \
+    cockpit-dashboard \
+    cockpit-kdump \
+    cockpit-networkmanager \
+    cockpit-shell \
+    cockpit-systemd \
+    cockpit-users \
+    cockpit-ws \
+"
+
 # Administration tools
-IMAGE_INSTALL += "cockpit cockpit-onboarding cockpit-docker cockpit-iotedge-docker cockpit-general-settings cockpit-terminal cockpit-branding-default"
+IMAGE_INSTALL += "${COCKPIT_PACKAGES} netfield-cockpit-extension"
 IMAGE_INSTALL += "sudo"
 
 # Tools / Addons

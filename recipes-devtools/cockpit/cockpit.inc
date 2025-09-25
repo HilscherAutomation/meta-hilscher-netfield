@@ -7,34 +7,15 @@ SRC_URI +="file://cockpit.service \
            file://cockpit.pam \
            file://cockpit.conf \
            file://99-cockpit.conf \
-           file://add_default_origin_with_port.patch \
-           file://disable_flow_plugin.patch \
-"
-PACKAGES=+"${PN}-apps ${PN}-ovirt ${PN}-packagekit ${PN}-selinux ${PN}-sosreport \
-          ${PN}-subscriptions ${PN}-playground ${PN}-kubernetes ${PN}-storaged \
-          ${PN}-docker ${PN}-iotedge-docker ${PN}-general-settings \
-          ${PN}-onboarding ${PN}-terminal ${PN}-vmachines"
-
-DEPENDS="json-glib krb5 polkit systemd"
-DEPENDS+="intltool-native glib-2.0-native coreutils-native nodejs-native \
-          libxslt-native xmlto-native python3-native"
-
-RDEPENDS:${PN} = "glib-networking openssh-misc bash libpwquality libpam"
-RDEPENDS:${PN}-storaged = ""
-# TODO: storaged requires udisks2, but this requires GPLv3 components
-#RDEPENDS:${PN}-storaged = "udisks2 e2fsprogs dosfstools lvm2"
-RDEPENDS:${PN}-docker = "docker"
-
-EXTRA_OECONF = "--with-pamdir=/lib/security \
-                --with-networkmanager-needs-root=yes \
-                --with-cockpit-user=cockpit-ws \
-                --with-cockpit-group=cockpit-ws \
+           file://cockpit-session-socket-user.service \
+           file://cockpit-session.socket \
+           file://0001-change-user-group-to-cockpit-ws.patch \
 "
 
-inherit autotools-brokensep pkgconfig systemd gettext useradd
+inherit autotools-brokensep gettext useradd systemd
 
 USERADD_PACKAGES = "${PN}"
-USERADD_PARAM:${PN} = "--system --no-create-home --home-dir /var/lib/cockpit --shell /sbin/nologin --user-group cockpit-ws"
+USERADD_PARAM:${PN} = "--system --no-create-home --home-dir /var/lib/cockpit --shell /sbin/nologin --user-group ${COCKPIT_USER_GROUP}"
 
 SYSTEMD_PACKAGES="${PN}"
 SYSTEMD_SERVICE:${PN}="${PN}.service"
@@ -47,10 +28,9 @@ export SSH_ADD="/usr/bin/ssh-add"
 export SSH_AGENT="/usr/bin/ssh-agent"
 export PKEXEC="/usr/bin/pkexec"
 
-PACKAGECONFIG ??= "ssh"
-PACKAGECONFIG[ssh]=",--disable-ssh,libssh"
-PACKAGECONFIG[pcp]=",--disable-pcp,pcp"
 PACKAGECONFIG[asan]="--enable-asan=yes,--enable-asan=no,asan"
+
+RDEPENDS:${PN} = "glib-networking openssh-misc libpwquality libpam"
 
 # Split up branding themes into separate packages
 PACKAGES_DYNAMIC += "^${PN}-branding-.*"
@@ -75,6 +55,9 @@ do_install:append() {
   install -m 0644 ${WORKDIR}/${PN}.service ${D}${systemd_unitdir}/system
   install -m 0644 ${WORKDIR}/${PN}.socket ${D}${systemd_unitdir}/system
 
+  install -m 0644 ${WORKDIR}/cockpit-session-socket-user.service ${D}${systemd_unitdir}/system
+  install -m 0644 ${WORKDIR}/cockpit-session.socket ${D}${systemd_unitdir}/system
+
   install -d ${D}${sysconfdir}/nginx/services/https
   install ${WORKDIR}/99-cockpit.conf ${D}${sysconfdir}/nginx/services/https/
 
@@ -91,29 +74,10 @@ do_install:append() {
 
   # Create home directories for users
   install -d ${D}${libdir}/tmpfiles.d
-  echo 'd /var/lib/cockpit 0775 root cockpit-ws -' > ${D}${libdir}/tmpfiles.d/cockpit.conf
+  echo 'd /var/lib/cockpit 0775 ${COCKPIT_USER_GROUP} ${COCKPIT_USER_GROUP} -' > ${D}${libdir}/tmpfiles.d/cockpit.conf
 }
 
 SECURITY_CFLAGS = "${SECURITY_NO_PIE_CFLAGS}"
-
-FILES:${PN}-apps = "${datadir}/cockpit/apps"
-FILES:${PN}-ovirt = "${datadir}/cockpit/ovirt"
-FILES:${PN}-packagekit = "${datadir}/cockpit/packagekit"
-FILES:${PN}-selinux = "${datadir}/cockpit/selinux"
-FILES:${PN}-sosreport = "${datadir}/cockpit/sosreport"
-FILES:${PN}-subscriptions = "${datadir}/cockpit/subscriptions"
-FILES:${PN}-playground = "${datadir}/cockpit/playground"
-FILES:${PN}-onboarding = "${datadir}/cockpit/onboard"
-FILES:${PN}-docker = "${datadir}/cockpit/docker"
-FILES:${PN}-iotedge-docker = "${datadir}/cockpit/iotedge-docker"
-FILES:${PN}-general-settings = "${datadir}/cockpit/generalSettings"
-# NOTE: shell/images and index.css is referenced by other packages and must always be provided
-FILES:${PN}-terminal = "${datadir}/cockpit/terminal"
-FILES:${PN}-vmachines = "${datadir}/cockpit/machines"
-FILES:${PN}-kubernetes = "${datadir}/cockpit/kubernetes \
-                          ${libexecdir}/cockpit-kube-auth \
-                          ${libexecdir}/cockpit-kube-launch"
-FILES:${PN}-storaged   = "${datadir}/cockpit/storaged/*"
 
 FILES:${PN} += "${systemd_unitdir} \
                 ${datadir}/locale \

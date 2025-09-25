@@ -1,14 +1,16 @@
 [Unit]
 Description=Cockpit Web Service
 Documentation=man:cockpit-ws(8)
-Requires=cockpit.socket
+Requires=cockpit.socket cockpit-session.socket
+Requires=cockpit-wsinstance-http.socket cockpit-wsinstance-https-factory.socket
+# we need to start after the sockets so that we can instantly forward incoming requests
+After=cockpit-wsinstance-http.socket cockpit-wsinstance-https-factory.socket
 
 [Service]
 OOMScoreAdjust=-1000
 ExecStartPre=+/bin/mkdir -p /etc/systemd/system.conf.d
 ExecStartPre=+/bin/rm -rf /var/lib/swupdate
 ExecStartPre=+/bin/mkdir -p /var/lib/swupdate
-ExecStartPre=-/usr/sbin/remotectl certificate --ensure --user=root --group=root
 ExecStart=/usr/libexec/cockpit-ws --for-tls-proxy
 PermissionsStartOnly=true
 User=cockpit-ws

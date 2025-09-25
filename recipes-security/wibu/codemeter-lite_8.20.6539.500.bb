@@ -66,7 +66,7 @@ pkg_postinst:${PN} () {
     if [ "${DEBARCH}" = "amd64" ]; then
         if [ ! -e "$D/lib64/ld-linux-x86-64.so.2" ]; then
             install -d $D/lib64
-            ln -s "${@get_glibc_loader(d)}" $D/lib64/ld-linux-x86-64.so.2
+            ln -sf "${@get_glibc_loader(d)}" $D/lib64/ld-linux-x86-64.so.2
         fi
     fi
 }
