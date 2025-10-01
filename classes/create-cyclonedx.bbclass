@@ -192,7 +192,7 @@ python do_create_component_sbom() {
     dest = Path(os.path.join(d.getVar('CYCLONEDX_SSTATEDIR'), d.getVar('PN')))
     if d.getVar('PACKAGE_ARCH') == d.getVar('MACHINE_ARCH'):
         dest = dest / d.getVar('MACHINE_ARCH')
-    dest = dest / (d.getVar('PN') + '.sbom.json')
+    dest = dest / (d.getVar('PN') + '.sbom.cdx.json')
     dest.parent.mkdir(exist_ok=True, parents=True)
     with dest.open("w") as f:
         f.write(json.dumps(comp_sbom, indent=4))
@@ -266,10 +266,10 @@ python do_create_image_sbom() {
     for recipe in installed_recipes:
         comp_sbom = Path(os.path.join(d.getVar('DEPLOY_DIR_CYCLONEDX'),
                                       recipe, d.getVar('MACHINE_ARCH'),
-                                      recipe + '.sbom.json'))
+                                      recipe + '.sbom.cdx.json'))
         if not comp_sbom.is_file():
             comp_sbom = Path(os.path.join(d.getVar('DEPLOY_DIR_CYCLONEDX'),
-                                      recipe, recipe + '.sbom.json'))
+                                      recipe, recipe + '.sbom.cdx.json'))
 
         with comp_sbom.open("r") as f:
             comp = json.loads(f.read())
@@ -279,14 +279,14 @@ python do_create_image_sbom() {
 
     # Write final SBOM
     image_sbom = Path(os.path.join(imgdeploydir,
-                                   image_name + '.sbom.json'))
+                                   image_name + '.sbom.cdx.json'))
     with image_sbom.open("w") as f:
         f.write(json.dumps(sbom, indent=4))
 
     image_sbom_link = Path(os.path.join(imgdeploydir,
-                                        image_link_name + '.sbom.json'))
+                                        image_link_name + '.sbom.cdx.json'))
 
-    image_sbom_link.symlink_to(image_name + '.sbom.json')
+    image_sbom_link.symlink_to(image_name + '.sbom.cdx.json')
 }
 
 do_rootfs[recrdeptask] += "do_create_component_sbom"

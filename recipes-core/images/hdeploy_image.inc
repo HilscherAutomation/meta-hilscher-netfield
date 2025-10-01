@@ -19,7 +19,7 @@ do_hilscher_deploy() {
 		done
 	done
 	# collect sbom if it exists
-	sbom=$(find ${IMGDEPLOYDIR} -type l -name "*.sbom.json")
+	sbom=$(find ${IMGDEPLOYDIR} -type l -name "*.sbom.cdx.json")
 	if [ -n "${sbom}" ]; then
 		hd_sbom_filename="${DISTRO_NAME_SLUG}_${FULL_FW_VERSION}_${MACHINE}_$(basename $sbom)"
 		cp -a $(readlink -f ${sbom}) "${HDEPLOY_PATH_IMAGE}/${hd_sbom_filename}"
@@ -32,7 +32,7 @@ do_archive_extras() {
 	archive_location="${HILSCHER_DEPLOY_ROOT_DIR}/${ORGANIZATION}/${DISTRO_NAME_SLUG}/${FULL_FW_VERSION}/${MACHINE}"
 
 	if [ -d "${archive_location}/extras" ]; then
-		tar zcf "${archive_location}/${DISTRO_NAME_SLUG}_${FULL_FW_VERSION}_${MACHINE}_extras.tar.gz" "${archive_location}/extras"
+		tar zcf "${archive_location}/${DISTRO_NAME_SLUG}_${FULL_FW_VERSION}_${MACHINE}_extras.tar.gz" -C "${archive_location}/extras" $(ls "${archive_location}/extras")
 		rm -rf "${archive_location}/extras"
 	fi
 }
