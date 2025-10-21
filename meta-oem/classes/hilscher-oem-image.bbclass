@@ -144,9 +144,9 @@ create_swu() {
 	for tmp_brand in $brandings_to_include; do
 		tmp_file="$(readlink -f ${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.data-oem.squashfs)"
 		[ "${OEM_BRANDING_MERGE}" = "1" ] &&
-			tmp_file=$(find "${HILSCHER_DEPLOY_ROOT_DIR}/${ORGANIZATION}/${DISTRO_NAME_SLUG}/${FULL_FW_VERSION}/${MACHINE}-${tmp_brand}" -name "*$tmp_brand-*.data-oem.squashfs")
+			tmp_file=$(find "${HILSCHER_DEPLOY_ROOT_DIR}/${ORGANIZATION}/${DISTRO_NAME_SLUG}/${FULL_FW_VERSION}/${MACHINE}-${tmp_brand}" -name "*-$tmp_brand*.data-oem.squashfs")
 		if [ ! -r "$tmp_file" ]; then
-			bbfatal "Missing branding file $tmp_file for $tmp_brand (using find \"${HILSCHER_DEPLOY_ROOT_DIR}/${ORGANIZATION}/${DISTRO_NAME_SLUG}/${FULL_FW_VERSION}/${MACHINE}-${tmp_brand}\" -name \"*$tmp_brand-*.data-oem.squashfs\")"
+			bbfatal "Missing branding file $tmp_file for $tmp_brand (using find \"${HILSCHER_DEPLOY_ROOT_DIR}/${ORGANIZATION}/${DISTRO_NAME_SLUG}/${FULL_FW_VERSION}/${MACHINE}-${tmp_brand}\" -name \"*-$tmp_brand*.data-oem.squashfs\")"
 		fi
 		oem_ovl_images="$oem_ovl_images $tmp_file:$tmp_brand"
 	done
